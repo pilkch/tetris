@@ -1,0 +1,19 @@
+<config>
+	<directory path="data/postrender/"/>
+	<directory path="data/textures/"/>
+	<directory path="data/materials/"/>
+	<directory path="data/shaders/"/>
+	<directory path="data/cubemaps/"/>
+	<directory path="data/"/>
+	
+	<directory path="../shared/"/>
+	<directory path="../shared/postrender/"/>
+	<directory path="../shared/textures/"/>
+	<directory path="../shared/materials/"/>
+	<directory path="../shared/shaders/"/>
+	<directory path="../shared/cubemaps/"/>
+	<directory path="../shared/fonts/"/>
+	<directory path="../shared/boardgame/textures/"/>
+	
+	<render width="1024" height="768" depth="32" fullscreen="false"/>
+</config>

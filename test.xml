@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<config>
+	<!--This is a comment-->
+	<tag attribute1 attribute2></tag>
+	<tag attribute="value" attributewithnovalue1 attributewithnovalue2  attributewithvalue="value" />
+	<messageText caption="Breathe XML Test">Testing &quot;Breathe Engine&quot;.  
+	This file is for testing the XML parser.  
+	</messageText>
+	<depth1><depth2><depth3><depth4>content at depth 5</depth4></depth3></depth2></depth1>
+	<depth1>
+		<depth2>
+			<depth3>
+				<depth4>
+				</depth4>
+			</depth3>
+		</depth2>
+	</depth1>
+	<   testsingleline /   >
+	<  testmultiline    >
+	<deleteme/>
+	<deleteme />
+	<    /   testmultiline    >
+	<  testemptytag    >
+	<    /   testemptytag    >
+	<testcontenttag>
+	This is content say "testing"
+	</testcontenttag>
+	<   testcontenttag   >
+	This is content say "testing"
+	<  /   testcontenttag   >
+</config>

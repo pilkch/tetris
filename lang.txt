@@ -1,0 +1,8 @@
+L_Application "Tetris"
+
+L_Paused "Paused"
+L_Paused_Instructions "Press escape to resume"
+
+L_GameOver "Game Over"
+L_GameOver_Instructions1 "Press R to play another game"
+L_GameOver_Instructions2 "Press escape to quit"

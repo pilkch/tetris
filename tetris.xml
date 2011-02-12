@@ -1,0 +1,106 @@
+<tetris>
+	<board width="10" height="40" x="0.3" y="0.1" next_x="0.8" next_y="0.2"/>
+	
+	<colour name="red" value="1.0, 0.0, 0.0"/>
+	<colour name="green" value="0.0, 1.0, 0.0"/>
+	<colour name="blue" value="0.0, 0.0, 1.0"/>
+	<colour name="pink" value="1.0, 0.0, 0.5"/>
+	<colour name="yellow" value="1.0, 1.0, 0.0"/>
+	<colour name="light_blue" value="0.5, 0.5, 1.0"/>
+	<colour name="orange" value="1.0, 0.5, 0.0"/>
+	
+	<piece>
+		<row>
+			<block colour="red"/>
+		</row>
+		<row>
+			<block colour="red"/>
+		</row>
+		<row>
+			<block colour="red"/>
+		</row>
+		<row>
+			<block colour="red"/>
+		</row>
+	</piece>
+	
+	<piece>
+		<row>
+			<block colour="blue"/>
+			<block colour="blue"/>
+		</row>
+		<row>
+			<block colour="blue"/>
+			<block colour="blue"/>
+		</row>
+	</piece>
+	
+	<piece>
+		<row>
+			<block/>
+			<block colour="yellow"/>
+		</row>
+		<row>
+			<block/>
+			<block colour="yellow"/>
+		</row>
+		<row>
+			<block colour="yellow"/>
+			<block colour="yellow"/>
+		</row>
+	</piece>
+	
+	<piece>
+		<row>
+			<block colour="pink"/>
+			<block/>
+		</row>
+		<row>
+			<block colour="pink"/>
+			<block/>
+		</row>
+		<row>
+			<block colour="pink"/>
+			<block colour="pink"/>
+		</row>
+	</piece>
+	
+	<piece>
+		<row>
+			<block/>
+			<block colour="green"/>
+			<block/>
+		</row>
+		<row>
+			<block colour="green"/>
+			<block colour="green"/>
+			<block colour="green"/>
+		</row>
+	</piece>
+	
+	<piece>
+		<row>
+			<block/>
+			<block colour="light_blue"/>
+			<block colour="light_blue"/>
+		</row>
+		<row>
+			<block colour="light_blue"/>
+			<block colour="light_blue"/>
+			<block/>
+		</row>
+	</piece>
+	
+	<piece>
+		<row>
+			<block colour="orange"/>
+			<block colour="orange"/>
+			<block/>
+		</row>
+		<row>
+			<block/>
+			<block colour="orange"/>
+			<block colour="orange"/>
+		</row>
+	</piece>
+</tetris>
