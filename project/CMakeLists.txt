@@ -5,13 +5,13 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(tetris)
 
 SET(CMAKE_SOURCE_DIR ./../../library/)
-SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
+SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}cmake/")
 
 SET(PROJECT_DIRECTORY "../")
-SET(PROJECT_SRC "${PROJECT_DIRECTORY}/src/")
+SET(PROJECT_SRC "${PROJECT_DIRECTORY}src/")
 
-SET(LIBRARY_INCLUDE "${CMAKE_SOURCE_DIR}/include/")
-SET(LIBRARY_SRC "${CMAKE_SOURCE_DIR}/src/")
+SET(LIBRARY_INCLUDE "${CMAKE_SOURCE_DIR}include/")
+SET(LIBRARY_SRC "${CMAKE_SOURCE_DIR}src/")
 
 # Add definitions, compiler switches, etc.
 ADD_DEFINITIONS("-Wall -W -Wextra -Werror -Wformat -Wformat-y2k -Winit-self -Wstack-protector -Wunknown-pragmas -Wundef -Wcast-qual -Wwrite-strings -Wno-unused-parameter -Wpointer-arith -Wno-switch -Woverloaded-virtual -Wno-stack-protector -Wmissing-include-dirs -Wuninitialized -Wc++0x-compat -std=c++0x -ffor-scope -O2")
@@ -97,7 +97,7 @@ SET(OUTPUT_LIBRARY_SOURCE_FILES ${OUTPUT_FILES})
 
 
 SET(PROJECT_SOURCE_FILES
-main.cpp
+main.cpp tetris.cpp
 )
 PREFIX_PATHS(${PROJECT_SRC} ${PROJECT_SOURCE_FILES})
 SET(OUTPUT_PROJECT_SOURCE_FILES ${OUTPUT_FILES})

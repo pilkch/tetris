@@ -1,183 +1,208 @@
 #ifndef TETRIS_H
 #define TETRIS_H
 
+// Spitfire headers
+#include <spitfire/spitfire.h>
+
+#include <spitfire/algorithm/algorithm.h>
+#include <spitfire/math/cColour.h>
+
 namespace tetris
 {
   class cBoard;
+  class cView;
 
-  class cBoardCollection
+  class cGame
   {
   public:
-    typedef std::list<cBoard*>::iterator iterator;
+    cGame(cView& view);
+
+    typedef std::vector<cBoard*>::iterator iterator;
 
     void OnScoreTetris(const cBoard& rhs);
     void OnScoreOtherThanTetris(const cBoard& rhs, size_t lines);
-    void OnPieceHitsGround(const cBoard& rhs) { _OnPieceHitsGround(rhs); }
-    void OnGameOver(const cBoard& rhs) { _OnGameOver(rhs); }
-    
-    std::list<cBoard*> board;
+    void OnPieceRotated(const cBoard& rhs);
+    void OnPieceHitsGround(const cBoard& rhs);
+    void OnPieceChanged(const cBoard& board);
+    void OnBoardChanged(const cBoard& board);
+    void OnGameOver(const cBoard& rhs);
+
+    std::vector<cBoard*> boards;
+
+    void StartGame(spitfire::sampletime_t currentTime);
+    void Update(spitfire::sampletime_t currentTime);
 
   private:
-    void _AddLinesToEveryOtherBoard(const cBoard& rhs, size_t lines);
+    void _AddRandomLinesToEveryOtherBoard(const cBoard& rhs, size_t lines);
 
-    virtual void _OnScoreOtherThanTetris(const cBoard& rhs) = 0;
-    virtual void _OnScoreTetris(const cBoard& rhs) = 0;
-    virtual void _OnPieceHitsGround(const cBoard& rhs) = 0;
-    virtual void _OnGameOver(const cBoard& rhs) = 0;
+    cView& view;
   };
 
-	class cPiece
-	{
-	public:
-		explicit cPiece();
-		explicit cPiece(size_t width, size_t height);
-		
+  class cPiece
+  {
+  public:
+    explicit cPiece();
+    explicit cPiece(size_t width, size_t height);
+    
     cPiece(const cPiece& rhs);
 
-		cPiece& operator=(const cPiece& rhs);
+    cPiece& operator=(const cPiece& rhs);
 
-		void SetWidth(size_t width);
-		void SetHeight(size_t height);
-		void FlipVertically();
+    size_t GetWidth() const { return width; }
+    void SetWidth(size_t width);
+    size_t GetHeight() const { return height; }
+    void SetHeight(size_t height);
 
-		size_t GetWidth() const { return width; }
-		size_t GetHeight() const { return height; }
+    int GetBlock(size_t x, size_t y) const;
+    void SetBlock(size_t x, size_t y, int colour);
 
-		void SetBlock(size_t x, size_t y, int colour);
-		int GetBlock(size_t x, size_t y) const;
+    cPiece GetRotatedCounterClockWise() const;
+    cPiece GetRotatedClockWise() const;
 
-		cPiece GetRotatedCounterClockWise() const;
-		cPiece GetRotatedClockWise() const;
-
-		void RemoveLine(size_t row);
-		void Clear();
+    void RemoveLine(size_t row);
+    void Clear();
 
     void ShiftUpOneRow();
+    void FlipVertically();
 
-	private:
-		void _Resize(size_t n);
+  private:
+    void _Resize(size_t width, size_t height);
 
-		std::vector<int> block;
-			
-		size_t width;
-		size_t height;
-	};
+    std::vector<int> blocks;
+      
+    size_t width;
+    size_t height;
+  };
 
-	enum STATE
-	{
-		STATE_PLAYING = 0,
-		STATE_FINISHED,
-	};
+  enum STATE
+  {
+    STATE_PLAYING = 0,
+    STATE_FINISHED,
+  };
 
-	class cBoard
-	{
-	public:
-		explicit cBoard(cBoardCollection& collection);
+  class cBoard
+  {
+  public:
+    explicit cBoard(cGame& game);
     ~cBoard();
 
-		void StartGame(breathe::sampletime_t currentTime);
-		void Update(breathe::sampletime_t currentTime);
+    void StartGame(spitfire::sampletime_t currentTime);
+    void Update(spitfire::sampletime_t currentTime);
 
     void CopySettingsFrom(const cBoard& rhs);
-		void SetWidth(size_t width);
-		void SetHeight(size_t height);
-		
-		bool IsPlaying() const { return (state == STATE_PLAYING); }
-		bool IsFinished() const { return (state == STATE_FINISHED); }
-		
+    void SetWidth(size_t width);
+    void SetHeight(size_t height);
+
+    bool IsPlaying() const { return (state == STATE_PLAYING); }
+    bool IsFinished() const { return (state == STATE_FINISHED); }
+
     int GetScore() const { return score; }
-		int GetLevel() const { return level; }
+    int GetLevel() const { return level; }
 
-    void SetPositionBoardX(float x) { position_board_x = x; }
-    void SetPositionBoardY(float y) { position_board_y = y; }
-    float GetPositionBoardX() const { return position_board_x; }
-    float GetPositionBoardY() const { return position_board_y; }
+    size_t GetWidth() const { return board.GetWidth(); }
+    size_t GetHeight() const { return board.GetHeight(); }
+    size_t GetWidestPiece() const { return widest_piece; }
 
-    void SetPositionNextX(float x) { position_next_x = x; }
-    void SetPositionNextY(float y) { position_next_y = y; }
-    float GetPositionNextX() const { return position_next_x; }
-    float GetPositionNextY() const { return position_next_y; }
+    spitfire::math::cColour GetColour(size_t i) const { assert(i < possible_colours.size()); return possible_colours[i]; }
+    size_t GetColourFromName(const std::string& colour);
 
-		size_t GetWidth() const { return board.GetWidth(); }
-		size_t GetHeight() const { return board.GetHeight(); }
-		size_t GetWidestPiece() const { return widest_piece; }
+    void SetBlock(size_t x, size_t y, int colour);
+    int GetBlock(size_t x, size_t y) const;
 
-		breathe::math::cColour GetColour(size_t i) const { assert(i < possible_colours.size()); return possible_colours[i]; }
-		size_t GetColourFromName(const std::string& colour);
+    size_t GetCurrentPieceX() const { return current_x; }
+    size_t GetCurrentPieceY() const { return current_y; }
 
-		void SetBlock(size_t x, size_t y, int colour);
-		int GetBlock(size_t x, size_t y) const;
+    const cPiece& GetBoard() const { return board; }
+    const cPiece& GetCurrentPiece() const { return current_piece; }
+    const cPiece& GetNextPiece() const { return next_piece; }
 
-		size_t GetCurrentPieceX() const { return current_x; }
-		size_t GetCurrentPieceY() const { return current_y; }
+    size_t GetColours() const { return possible_colours.size(); }
 
-		const cPiece& GetBoard() const { return board; }
-		const cPiece& GetCurrentPiece() const { return current_piece; }
-		const cPiece& GetNextPiece() const { return next_piece; }
-
-		size_t GetColours() const { return possible_colours.size(); }
-		
-		void AddPossibleColour(const std::string& name, const breathe::math::cColour& colour);
-		void AddPossiblePiece(const cPiece& piece);
+    void AddPossibleColour(const std::string& name, const spitfire::math::cColour& colour);
+    void AddPossiblePiece(const cPiece& piece);
     void AddRandomLineAddEnd();
-		
-		void PieceGenerate();
 
-		void PieceMoveLeft();
-		void PieceMoveRight();
-		void PieceRotateCounterClockWise();
-		void PieceRotateClockWise();
-		void PieceDropOneRow();
-		void PieceDropToGround();
+    void PieceGenerate(spitfire::sampletime_t currentTime);
 
+    void PieceMoveLeft();
+    void PieceMoveRight();
+    void PieceRotateCounterClockWise();
+    void PieceRotateClockWise();
+    void PieceDropOneRow(spitfire::sampletime_t currentTime);
+    void PieceDropToGround(spitfire::sampletime_t currentTime);
+
+#define BUILD_DEBUG
 #ifdef BUILD_DEBUG
-		// For printing out as debug information
-		const std::vector<cPiece>& GetPossiblePieces() const { return possible_pieces; }
+    // For printing out as debug information
+    const std::list<cPiece>& GetPossiblePieces() const { return possible_pieces.GetPossibleItems(); }
 #endif
-    
-	private:
+
+  private:
     void _AddPieceToScore();
-		void _AddRowsToScore(size_t rows);
-		void _CheckForCompleteLines();
-		void _RemoveLine(size_t row);
-		
-		bool _IsCompleteLine(size_t row) const;
+    void _AddRowsToScore(size_t rows);
+    void _CheckForCompleteLines();
+    void _RemoveLine(size_t row);
 
-		bool _IsCollided(const cPiece& rhs, size_t position_x, size_t position_y) const;
-		
-		void _AddPieceToBoardCheckAndGenerate();
-		void _AddPieceToBoard();
+    bool _IsCompleteLine(size_t row) const;
 
-		std::vector<std::string> possible_colour_names;
-		std::vector<breathe::math::cColour> possible_colours;
-		std::vector<cPiece> possible_pieces;
-		size_t widest_piece;
-		
-		cPiece board;
-		cPiece current_piece;
-		cPiece next_piece;
+    bool _IsCollided(const cPiece& rhs, size_t position_x, size_t position_y) const;
 
-		size_t current_x;
-		size_t current_y;
+    void _AddPieceToBoardCheckAndGenerate(spitfire::sampletime_t currentTime);
+    void _AddPieceToBoard();
 
-    float position_board_x;
-    float position_board_y;
-    float position_next_x;
-    float position_next_y;
+    cGame& game;
 
-		STATE state;
-		uint32_t score;
-		size_t level;
-		size_t rows_this_level;
-		size_t consecutive_tetris;
-		
-		breathe::sampletime_t lastUpdatedTime;
+    std::vector<std::string> possible_colour_names;
+    std::vector<spitfire::math::cColour> possible_colours;
+    spitfire::cRandomBucket<cPiece> possible_pieces;
+    size_t widest_piece;
 
-    cBoardCollection& parentCollection;
+    cPiece board;
+    cPiece current_piece;
+    cPiece next_piece;
+
+    size_t current_x;
+    size_t current_y;
+
+    STATE state;
+    uint32_t score;
+    size_t level;
+    size_t rows_this_level;
+    size_t consecutive_tetris;
+    
+    spitfire::sampletime_t lastUpdatedTime;
 
     cBoard();
-		NO_COPY(cBoard);
-	};
+    NO_COPY(cBoard);
+  };
+
+
+  class cView
+  {
+  public:
+    virtual ~cView() {}
+
+    void OnPieceMoved(const cBoard& board) { _OnPieceMoved(board); }
+    void OnPieceRotated(const cBoard& board) { _OnPieceRotated(board); }
+    void OnPieceChanged(const cBoard& board) { _OnPieceChanged(board); }
+    void OnPieceHitsGround(const cBoard& board) { _OnPieceHitsGround(board); }
+    void OnBoardChanged(const cBoard& board) { _OnBoardChanged(board); }
+    void OnGameScoreTetris(const cBoard& board, uint32_t uiScore) { _OnGameScoreTetris(board, uiScore); }
+    void OnGameScoreOtherThanTetris(const cBoard& board, uint32_t uiScore) { _OnGameScoreOtherThanTetris(board, uiScore); }
+    void OnGameNewLevel(const cBoard& board, uint32_t uiLevel) { _OnGameNewLevel(board, uiLevel); }
+    void OnGameOver(const cBoard& board) { _OnGameOver(board); }
+
+  private:
+    virtual void _OnPieceMoved(const cBoard& board) = 0;
+    virtual void _OnPieceRotated(const cBoard& board) = 0;
+    virtual void _OnPieceChanged(const cBoard& board) = 0;
+    virtual void _OnPieceHitsGround(const cBoard& board) = 0;
+    virtual void _OnBoardChanged(const cBoard& board) = 0;
+    virtual void _OnGameScoreTetris(const cBoard& board, uint32_t uiScore) = 0;
+    virtual void _OnGameScoreOtherThanTetris(const cBoard& board, uint32_t uiScore) = 0;
+    virtual void _OnGameNewLevel(const cBoard& board, uint32_t uiLevel) = 0;
+    virtual void _OnGameOver(const cBoard& board) = 0;
+  };
 }
 
 #endif //TETRIS_H

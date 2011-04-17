@@ -1,186 +1,286 @@
-// Standard includes
-#include <cstdio>
-#include <cstdlib>
-#include <cmath>
 #include <cassert>
+#include <cmath>
+#include <cstring>
 
-#include <bitset>
 #include <string>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <map>
-#include <list>
-#include <stack>
-#include <queue>
-#include <set>
-
-// writing on a text file
 #include <iostream>
-#include <fstream>
+#include <sstream>
 
-//FreeType Headers
-#include <freetype/ft2build.h>
-#include <freetype/freetype.h>
-#include <freetype/ftglyph.h>
-#include <freetype/ftoutln.h>
-#include <freetype/fttrigon.h>
+#include <algorithm>
+#include <map>
+#include <vector>
+#include <list>
 
+#include <spitfire/algorithm/algorithm.h>
+#include <spitfire/math/math.h>
 
-#include <GL/GLee.h>
-
-
-#include <SDL/SDL.h>
-#include <SDL/SDL_opengl.h>
-#include <SDL/SDL_image.h>
-#include <SDL/SDL_ttf.h>
-#include <SDL/SDL_joystick.h>
-#include <SDL/SDL_net.h>
-
-// Breathe
-#include <breathe/breathe.h>
-
-#include <breathe/util/cString.h>
-#include <breathe/util/log.h>
-#include <breathe/util/cVar.h>
-
-#include <breathe/storage/filesystem.h>
-#include <breathe/storage/xml.h>
-
-#include <breathe/util/cTimer.h>
-
-#include <breathe/math/math.h>
-#include <breathe/math/cVec2.h>
-#include <breathe/math/cVec3.h>
-#include <breathe/math/cVec4.h>
-#include <breathe/math/cMat4.h>
-#include <breathe/math/cPlane.h>
-#include <breathe/math/cQuaternion.h>
-#include <breathe/math/cColour.h>
-#include <breathe/math/cFrustum.h>
-#include <breathe/math/cOctree.h>
-
-#include <breathe/util/base.h>
-#include <breathe/render/model/cMesh.h>
-#include <breathe/render/model/cModel.h>
-#include <breathe/render/model/cStatic.h>
-
-
-#include <breathe/render/cTexture.h>
-#include <breathe/render/cTextureAtlas.h>
-#include <breathe/render/cMaterial.h>
-#include <breathe/render/cRender.h>
-#include <breathe/render/cFont.h>
-#include <breathe/render/cParticleSystem.h>
-
-#include <breathe/render/model/cHeightmap.h>
-
-#include <breathe/gui/cWidget.h>
-#include <breathe/gui/cWindow.h>
-#include <breathe/gui/cWindowManager.h>
-
-#include <breathe/util/cVar.h>
-#include <breathe/util/app.h>
-
-#include <breathe/audio/audio.h>
-
-#include <breathe/util/thread.h>
+#include <spitfire/util/cTimer.h>
 
 #include "tetris.h"
 
-#ifdef max
-#undef max
-#endif
-
-#ifdef min
-#undef min
-#endif
-
-namespace breathe
-{
-  namespace vector
-  {
-    template <class T>
-    void push_back(std::vector<T>& v, size_t resize_to, const T& rhs)
-	  {
-      size_t n = v.size();
-      if (n >= resize_to) return;
-
-      n = resize_to - n;
-      for (size_t i = 0; i < n; i++) v.push_back(rhs);
-      assert(v.size() == resize_to);
-    }
-  }
-}
-
 namespace tetris
 {
-  void cBoardCollection::_AddLinesToEveryOtherBoard(const cBoard& rhs, size_t lines)
+  // ** cGame
+
+  cGame::cGame(cView& _view) :
+    view(_view)
+  {
+  }
+
+  void cGame::_AddRandomLinesToEveryOtherBoard(const cBoard& board, size_t lines)
   {
     // Add a random line to every other board that is still playing and not our board
-    iterator iter = board.begin();
-    iterator iterEnd = board.end();
+    iterator iter = boards.begin();
+    const iterator iterEnd = boards.end();
     cBoard* temp = nullptr;
-    const cBoard* pRhs = &rhs;
+    const cBoard* pBoard = &board;
     while (iter != iterEnd) {
       temp = *iter;
-      if ((const_cast<const cBoard*>(temp) != pRhs) && (!temp->IsFinished())) {
+      if ((const_cast<const cBoard*>(temp) != pBoard) && (!temp->IsFinished())) {
         for (size_t i = 0; i < lines; i++) temp->AddRandomLineAddEnd();
       }
       iter++;
     }
   }
 
-  void cBoardCollection::OnScoreTetris(const cBoard& rhs)
+  void cGame::OnScoreTetris(const cBoard& board)
   {
-    _AddLinesToEveryOtherBoard(rhs, 4);
-    
-    _OnScoreTetris(rhs);
+    _AddRandomLinesToEveryOtherBoard(board, 4);
+
+    const uint32_t uiScore = 4;
+    view.OnGameScoreTetris(board, uiScore);
   }
 
-  void cBoardCollection::OnScoreOtherThanTetris(const cBoard& rhs, size_t lines)
+  void cGame::OnScoreOtherThanTetris(const cBoard& board, size_t lines)
   {
-    _AddLinesToEveryOtherBoard(rhs, lines);
+    _AddRandomLinesToEveryOtherBoard(board, lines);
 
-    _OnScoreOtherThanTetris(rhs);
+    const uint32_t uiScore = 1;
+    view.OnGameScoreOtherThanTetris(board, uiScore);
+  }
+
+  void cGame::OnPieceRotated(const cBoard& board)
+  {
+    view.OnPieceRotated(board);
+  }
+
+  void cGame::OnPieceHitsGround(const cBoard& board)
+  {
+    view.OnPieceHitsGround(board);
+  }
+
+  void cGame::OnPieceChanged(const cBoard& board)
+  {
+    view.OnPieceChanged(board);
+  }
+
+  void cGame::OnBoardChanged(const cBoard& board)
+  {
+    view.OnBoardChanged(board);
+  }
+
+  void cGame::OnGameOver(const cBoard& board)
+  {
+    view.OnGameOver(board);
+  }
+
+  void cGame::StartGame(spitfire::sampletime_t currentTime)
+  {
+    const size_t width = 10;
+    const size_t height = 40;
+
+    const spitfire::math::cColour colourRed(1.0f, 0.0f, 0.0f);
+    const spitfire::math::cColour colourGreen(0.0, 1.0, 0.0);
+    const spitfire::math::cColour colourBlue(0.0, 0.0, 1.0);
+    const spitfire::math::cColour colourPink(1.0, 0.0, 0.5);
+    const spitfire::math::cColour colourYellow(1.0, 1.0, 0.0);
+    const spitfire::math::cColour colourLightBlue(0.5, 0.5, 1.0);
+    const spitfire::math::cColour colourOrange(1.0, 0.5, 0.0);
+
+    iterator iter = boards.begin();
+    const iterator iterEnd = boards.end();
+    while (iter != iterEnd) {
+      cBoard* pBoard = *iter;
+      pBoard->SetWidth(width);
+      pBoard->SetHeight(height);
+
+      pBoard->AddPossibleColour("red", colourRed);
+      pBoard->AddPossibleColour("green", colourGreen);
+      pBoard->AddPossibleColour("blue", colourBlue);
+      pBoard->AddPossibleColour("pink", colourPink);
+      pBoard->AddPossibleColour("yellow", colourYellow);
+      pBoard->AddPossibleColour("light_blue", colourLightBlue);
+      pBoard->AddPossibleColour("orange", colourOrange);
+
+
+      //const size_t iBlank = 0;
+      const size_t iRed = pBoard->GetColourFromName("red");
+      const size_t iGreen = pBoard->GetColourFromName("green");
+      const size_t iBlue = pBoard->GetColourFromName("blue");
+      const size_t iPink = pBoard->GetColourFromName("pink");
+      const size_t iYellow = pBoard->GetColourFromName("yellow");
+      const size_t iLightBlue = pBoard->GetColourFromName("light_blue");
+      const size_t iOrange = pBoard->GetColourFromName("orange");
+
+      cPiece pieceLong;
+      pieceLong.SetBlock(0, 0, iRed);
+      pieceLong.SetBlock(0, 1, iRed);
+      pieceLong.SetBlock(0, 2, iRed);
+      pieceLong.SetBlock(0, 3, iRed);
+
+
+      cPiece pieceSquare;
+      pieceSquare.SetBlock(0, 0, iBlue); pieceSquare.SetBlock(1, 0, iBlue);
+      pieceSquare.SetBlock(0, 1, iBlue); pieceSquare.SetBlock(1, 1, iBlue);
+
+
+      cPiece pieceLReverse;
+                                             pieceLReverse.SetBlock(1, 0, iYellow);
+                                             pieceLReverse.SetBlock(1, 1, iYellow);
+      pieceLReverse.SetBlock(0, 2, iYellow); pieceLReverse.SetBlock(1, 2, iYellow);
+
+
+      cPiece pieceL;
+      pieceL.SetBlock(0, 0, iPink);
+      pieceL.SetBlock(0, 1, iPink);
+      pieceL.SetBlock(0, 2, iPink); pieceL.SetBlock(1, 2, iPink);
+
+
+      cPiece piecePyramid;
+                                           piecePyramid.SetBlock(1, 0, iGreen);
+      piecePyramid.SetBlock(0, 1, iGreen); piecePyramid.SetBlock(1, 1, iGreen); piecePyramid.SetBlock(2, 1, iGreen);
+
+
+      cPiece pieceS;
+                                         pieceS.SetBlock(1, 0, iLightBlue); pieceS.SetBlock(2, 0, iLightBlue);
+      pieceS.SetBlock(0, 1, iLightBlue); pieceS.SetBlock(1, 1, iLightBlue);
+
+
+      cPiece pieceZ;
+      pieceZ.SetBlock(0, 0, iOrange); pieceZ.SetBlock(1, 0, iOrange);
+                                      pieceZ.SetBlock(1, 1, iOrange); pieceZ.SetBlock(2, 1, iOrange);
+                                      
+
+      pBoard->AddPossiblePiece(pieceLong);
+      pBoard->AddPossiblePiece(pieceSquare);
+      pBoard->AddPossiblePiece(pieceLReverse);
+      pBoard->AddPossiblePiece(pieceL);
+      pBoard->AddPossiblePiece(piecePyramid);
+      pBoard->AddPossiblePiece(pieceS);
+      pBoard->AddPossiblePiece(pieceZ);
+
+      pBoard->StartGame(currentTime);
+
+      iter++;
+    }
+  }
+
+  void cGame::Update(spitfire::sampletime_t currentTime)
+  {
+    iterator iter = boards.begin();
+    const iterator iterEnd = boards.end();
+    while (iter != iterEnd) {
+      cBoard* pBoard = *iter;
+      pBoard->Update(currentTime);
+
+      iter++;
+    }
   }
 
 
-	cPiece::cPiece() :
-		width(1),
-		height(1)
-	{
-		_Resize(20);
-	}
+  // ** cPiece
 
-	cPiece::cPiece(size_t _width, size_t _height) :
-		width(_width),
-		height(_height)
-	{
-		if (width < 1) width = 1;
-		if (height < 1) height = 1;
+  cPiece::cPiece() :
+    width(1),
+    height(1)
+  {
+    blocks.resize(width * height, 0);
+  }
 
-		_Resize(width * height);
-	}
+  cPiece::cPiece(size_t _width, size_t _height) :
+    width(_width),
+    height(_height)
+  {
+    if (width < 1) width = 1;
+    if (height < 1) height = 1;
 
-	cPiece::cPiece(const cPiece& rhs)
-	{
-		*this = rhs;
-	}
+    blocks.resize(width * height, 0);
+  }
 
-	void cPiece::_Resize(size_t n)
-	{
-		breathe::vector::push_back(block, n, 0);
-	}
+  cPiece::cPiece(const cPiece& rhs)
+  {
+    *this = rhs;
+  }
 
-	void cPiece::RemoveLine(size_t row)
-	{
-		assert(row <= height);
-		std::copy(block.begin() + (row + 1) * width, block.end(), block.begin() + row * width);
-		size_t i = width * (height-1);
-		size_t n = width * height;
-		for (; i < n; i++) block[i] = 0;
-	}
+  void cPiece::_Resize(size_t _width, size_t _height)
+  {
+    if (_width < width) _width = width;
+    if (_height < height) _height = height;
+
+    std::vector<int> temp;
+    temp.resize(_width * _height, 0);
+
+    for (size_t y = 0; y < height; y++) {
+      for (size_t x = 0; x < width; x++) {
+        temp[(y * _width) + x] = blocks[(y * width) + x];
+      }
+    }
+
+    blocks = temp;
+
+    width = _width;
+    height = _height;
+
+    assert((width * height) == blocks.size());
+  }
+
+  void cPiece::SetWidth(size_t _width)
+  {
+    _width++;
+    if (_width < width) return;
+
+    _Resize(_width, height);
+
+    assert(blocks.size() >= (width * height));
+  }
+
+  void cPiece::SetHeight(size_t _height)
+  {
+    _height++;
+    if (_height < height) return;
+
+    _Resize(width, _height);
+
+    assert(blocks.size() >= (width * height));
+  }
+
+  int cPiece::GetBlock(size_t x, size_t y) const
+  {
+    assert(((y * width) + x) < blocks.size());
+    return blocks[(y * width) + x];
+  }
+
+  void cPiece::SetBlock(size_t x, size_t y, int colour)
+  {
+    std::cout<<"cPiece::SetBlock "<<x<<","<<y<<" "<<colour<<" blocks size "<<blocks.size()<<std::endl;
+    _Resize(x + 1, y + 1);
+
+    std::cout<<"cPiece::SetBlock blocks size "<<blocks.size()<<std::endl;
+    assert(((y * width) + x) < blocks.size());
+    blocks[(y * width) + x] = colour;
+
+    // Make sure that our block has now been set to the correct colour
+    assert(GetBlock(x, y) == colour);
+  }
+
+  void cPiece::RemoveLine(size_t row)
+  {
+    assert(row <= height);
+    std::copy(blocks.begin() + (row + 1) * width, blocks.end(), blocks.begin() + row * width);
+    size_t i = width * (height-1);
+    size_t n = width * height;
+    for (; i < n; i++) blocks[i] = 0;
+  }
 
   // For adding a random line at the bottom of the board
   void cPiece::ShiftUpOneRow()
@@ -195,217 +295,140 @@ namespace tetris
     for (i = 0; i < width; i++) temp[i] = 0;
 
     // Copy the rest of the piece to temp
-    std::copy(block.begin(), block.end() - width, temp.begin() + width);
+    std::copy(blocks.begin(), blocks.end() - width, temp.begin() + width);
 
     // Copy the whole thing back again
-    std::copy(temp.begin(), temp.end(), block.begin());
+    blocks = temp;
 
-    assert((temp.size() == block.size()) && (block.size() == n));
+    assert((temp.size() == blocks.size()) && (blocks.size() == n));
   }
 
-	void cPiece::SetWidth(size_t _width)
-	{
-		_width++;
-		if (_width < width) return;
+  void cPiece::FlipVertically()
+  {
+    // Make a temp copy of the whole array so that we don't tread on our original data
+    std::vector<int> temp = blocks;
 
-		size_t oldWidth = width;
-		size_t oldHeight = height;
+    // Now copy back the data in the correct order
+    size_t y2 = height - 1;
+    for (size_t y1 = 0; y1 < height; y1++, y2--) {
+      for (size_t x1 = 0, x2 = 0; x1 < width; x1++, x2++) {
+        blocks[y1 * width + x1] = temp[y2 * width + x2];
+      }
+    }
+  }
 
-		std::vector<int> vOld;
-		breathe::vector::push_back(vOld, block.size(), 0);
+  cPiece cPiece::GetRotatedCounterClockWise() const
+  {
+    std::cout<<"cPiece::GetRotatedCounterClockWise"<<std::endl;
+    cPiece result;
 
-		_Resize(height * _width);
+    // Set our width
+    result.width = height;
+    result.height = width;
 
-		width = _width;
-		assert(block.size() >= (width * height));
-	}
+    // Add enough blocks
+    size_t n = width * height;
+    result.blocks.resize(n, 0);
 
-	void cPiece::SetHeight(size_t _height)
-	{
-		_height++;
-		if (_height < height) return;
+    // Now copy our blocks over to the result piece, but rotated
+    for (size_t y = 0; y < height; y++) {
+      for (size_t x = 0; x < width; x++) {
+        result.blocks[x * height + (height - 1 - y)] = blocks[(y * width) + x];
+      }
+    }
 
-		_Resize(_height * width);
+    return result;
+  }
 
-		size_t n = block.size();
+  cPiece cPiece::GetRotatedClockWise() const
+  {
+    std::cout<<"cPiece::GetRotatedClockWise"<<std::endl;
+    cPiece result;
 
-		height = _height;
-		assert(block.size() >= (width * height));
-	}
+    // Set our width
+    result.width = height;
+    result.height = width;
 
-	void cPiece::SetBlock(size_t x, size_t y, int colour)
-	{
-		SetWidth(x);
-		SetHeight(y);
+    // Add enough blocks
+    size_t n = width * height;
+    result.blocks.resize(n, 0);
 
-		size_t n = block.size();
+    // Now copy our blocks over to the result piece, but rotated
+    for (size_t y = 0; y < height; y++) {
+      for (size_t x = 0; x < width; x++) {
+        result.blocks[((width - 1 - x) * height) + y] = blocks[(y * width) + x];
+      }
+    }
 
-		assert((y * width + x) <= block.size());
-		block[y * width + x] = colour;
-	}
-
-	void cPiece::FlipVertically()
-	{
-		// Make a temp copy of the whole array so that we don't tread on our original data
-		std::vector<int> temp;
-		size_t n = width * height;
-		temp.reserve(n);
-		for (size_t i = 0; i != n; i++) temp.push_back(block[i]);
-
-		// Now copy back the data in the correct order
-		size_t x1 = 0;
-		size_t y1 = 0;
-		size_t x2 = 0;
-		size_t y2 = height - 1;
-		for (; y1 < height; y1++, y2--)
-			for (x1 = 0, x2 = 0; x1 < width; x1++, x2++)
-				block[y1 * width + x1] = temp[y2 * width + x2];
-	}
-
-	cPiece cPiece::GetRotatedCounterClockWise() const
-	{
-		cPiece result;
-
-		// Set our width
-		result.width = height;
-		result.height = width;
-
-		// Add enough blocks
-		std::vector<int>& rhs = result.block;
-		size_t n = width * height;
-		breathe::vector::push_back(rhs, n, 0);
-
-		// Now copy our blocks over to the result piece, but rotated
-		size_t x1 = 0;
-		size_t y1 = 0;
-		size_t i = 0;
-		for (; y1 < height; y1++)
-			for (x1 = 0; x1 < width; x1++)
-				rhs[x1 * height + (height - 1 - y1)] = block[y1 * width + x1];
-
-		return result;
-	}
-
-	cPiece cPiece::GetRotatedClockWise() const
-	{
-		cPiece result;
-
-		// Set our width
-		result.width = height;
-		result.height = width;
-
-		// Add enough blocks
-		std::vector<int>& rhs = result.block;
-		size_t n = width * height;
-		breathe::vector::push_back(rhs, n, 0);
-
-		// Now copy our blocks over to the result piece, but rotated
-		size_t x1 = 0;
-		size_t y1 = 0;
-		size_t i = 0;
-		for (; y1 < height; y1++)
-			for (x1 = 0; x1 < width; x1++)
-				rhs[(width - 1 - x1) * height + y1] = block[y1 * width + x1];
-
-		return result;
-	}
+    return result;
+  }
 
   cPiece& cPiece::operator=(const cPiece& rhs)
-	{
-		size_t n = rhs.block.size();
-
-		_Resize(n);
-
-		size_t i = 0;
-		while (i != n) {
-			block[i] = rhs.block[i];
-			i++;
-		}
-
-		width = rhs.width;
-		height = rhs.height;
+  {
+    blocks = rhs.blocks;
+    width = rhs.width;
+    height = rhs.height;
 
     return *this;
-	}
+  }
 
-	int cPiece::GetBlock(size_t x, size_t y) const
-	{
-		assert((y * width + x) <= block.size());
-		return block[y * width + x];
-	}
-
-	void cPiece::Clear()
-	{
-		block.clear();
-		_Resize(width * height);
-	}
+  void cPiece::Clear()
+  {
+    blocks.resize(width * height, 0);
+  }
 
 
+  // ** cBoard
 
-	cBoard::cBoard(cBoardCollection& collection) :
-    parentCollection(collection),
+  cBoard::cBoard(cGame& _game) :
+    game(_game),
 
-    position_board_x(0.0f),
-    position_board_y(0.0f),
-    position_next_x(0.0f),
-    position_next_y(0.0f),
+    widest_piece(0),
 
-		current_x(0),
-		current_y(0),
+    current_x(0),
+    current_y(0),
 
-		board(),
-		current_piece(),
-		next_piece(),
-		widest_piece(0),
-		consecutive_tetris(0),
-		rows_this_level(0),
+    state(STATE_FINISHED),
 
-		state(STATE_FINISHED)
-	{
-		AddPossibleColour("", breathe::math::cColour());
-	}
+    rows_this_level(0),
+    consecutive_tetris(0)
+  {
+    AddPossibleColour("", spitfire::math::cColour());
+  }
 
-	cBoard::~cBoard()
-	{
-		possible_colours.clear();
-		possible_pieces.clear();
-	}
+  cBoard::~cBoard()
+  {
+    possible_colours.clear();
+    possible_pieces.Clear();
+  }
 
   void cBoard::CopySettingsFrom(const cBoard& rhs)
   {
     board = rhs.board;
 
-    possible_pieces.clear();
-    possible_pieces.resize(rhs.possible_pieces.size());
-    std::copy(rhs.possible_pieces.begin(), rhs.possible_pieces.end(), possible_pieces.begin());
+    possible_pieces = rhs.possible_pieces;
+    possible_colour_names = rhs.possible_colour_names;
+    possible_colours = rhs.possible_colours;
 
-    possible_colour_names.clear();
-    possible_colour_names.resize(rhs.possible_colour_names.size());
-    std::copy(rhs.possible_colour_names.begin(), rhs.possible_colour_names.end(), possible_colour_names.begin());
-
-    possible_colours.clear();
-    possible_colours.resize(rhs.possible_colours.size());
-    std::copy(rhs.possible_colours.begin(), rhs.possible_colours.end(), possible_colours.begin());
-
-		widest_piece = rhs.widest_piece;
+    widest_piece = rhs.widest_piece;
     state = rhs.state;
   }
 
-	void cBoard::StartGame(breathe::sampletime_t currentTime)
-	{
-		lastUpdatedTime = currentTime;
+  void cBoard::StartGame(spitfire::sampletime_t currentTime)
+  {
+    lastUpdatedTime = currentTime;
 
-		state = STATE_PLAYING;
-		score = 0;
-		level = 1;
-		rows_this_level = 0;
+    state = STATE_PLAYING;
+    score = 0;
+    level = 1;
+    rows_this_level = 0;
 
-		// Clear the board
-		board.Clear();
+    // Clear the board
+    board.Clear();
 
-    if (board.GetWidth() != 0) LOG.Error("cBoard::StartGame", "Width not defined");
-    if ((board.GetHeight()>>1) != 0) LOG.Error("cBoard::StartGame", "Height not defined");
-    if (GetColours() != 0) LOG.Error("cBoard::StartGame", "Not enough colours defined");
+    if (board.GetWidth() == 0) std::cout<<"cBoard::StartGame Width not defined"<<std::endl;
+    if ((board.GetHeight()>>1) == 0) std::cout<<"cBoard::StartGame Height not defined"<<std::endl;
+    if (GetColours() == 0) std::cout<<"cBoard::StartGame Not enough colours defined"<<std::endl;
 
     assert(board.GetWidth() != 0);
     assert((board.GetHeight()>>1) != 0);
@@ -413,213 +436,219 @@ namespace tetris
 
 
     // Add some random blocks to make it interesting at the start
-		for (size_t i = 0; i < 60; i++)
-			board.SetBlock(rand() % board.GetWidth(), rand() % (board.GetHeight()>>1), rand() % GetColours());
+    for (size_t i = 0; i < 60; i++) {
+      board.SetBlock(spitfire::math::random(board.GetWidth()), spitfire::math::random(board.GetHeight()>>1), spitfire::math::random(GetColours()));
+    }
 
-		PieceGenerate();
-		PieceGenerate();
-	}
+    PieceGenerate(currentTime);
+    PieceGenerate(currentTime);
+  }
 
-	void cBoard::Update(breathe::sampletime_t currentTime)
-	{
-		// If we have wait a sufficient amount of time, then do an update
-		if ((currentTime - lastUpdatedTime) > (1500/level))
-		{
-			lastUpdatedTime = currentTime;
+  void cBoard::Update(spitfire::sampletime_t currentTime)
+  {
+    // If we have wait a sufficient amount of time, then do an update
+    if ((currentTime - lastUpdatedTime) > (1500/level))
+    {
+      lastUpdatedTime = currentTime;
 
-			if (state != STATE_FINISHED) PieceDropOneRow();
-		}
-	}
+      if (state != STATE_FINISHED) PieceDropOneRow(currentTime);
+    }
+  }
 
   void cBoard::_AddPieceToScore()
   {
     score += 5;
   }
 
-	void cBoard::_AddRowsToScore(size_t rows)
-	{
+  void cBoard::_AddRowsToScore(size_t rows)
+  {
     // Play a sound
-    if (rows > 3) parentCollection.OnScoreTetris(*this);
-    else parentCollection.OnScoreOtherThanTetris(*this, rows);
+    if (rows > 3) game.OnScoreTetris(*this);
+    else game.OnScoreOtherThanTetris(*this, rows);
 
     // Count how many tetrii the player has had in a row
-		if (rows > 3) consecutive_tetris++;
-		else consecutive_tetris = 0;
+    if (rows > 3) consecutive_tetris++;
+    else consecutive_tetris = 0;
 
     // Increase the player's score
-		score += (rows + consecutive_tetris) * 100;
+    score += (rows + consecutive_tetris) * 100;
 
     // If the player has had 8 rows this level increment the level
-		rows_this_level += rows;
-		if (rows_this_level > 8) {
-			rows_this_level = 0;
-			level++;
-		}
-	}
+    rows_this_level += rows;
+    if (rows_this_level > 8) {
+      rows_this_level = 0;
+      level++;
+    }
+  }
 
-	bool cBoard::_IsCompleteLine(size_t row) const
-	{
-		assert(row <= board.GetHeight());
+  bool cBoard::_IsCompleteLine(size_t row) const
+  {
+    assert(row <= board.GetHeight());
 
-		size_t column = 0;
-		for (column = 0; column < board.GetWidth(); column++)
-			if (board.GetBlock(column, row) == 0) return false;
+    size_t column = 0;
+    for (column = 0; column < board.GetWidth(); column++)
+      if (board.GetBlock(column, row) == 0) return false;
 
-		return true;
-	}
+    return true;
+  }
 
-	void cBoard::_RemoveLine(size_t row)
-	{
-		assert(row <= board.GetHeight());
-		board.RemoveLine(row);
-	}
+  void cBoard::_RemoveLine(size_t row)
+  {
+    assert(row <= board.GetHeight());
+    board.RemoveLine(row);
+  }
 
-	void cBoard::_CheckForCompleteLines()
-	{
-		size_t row = 0;
-		size_t consecutive = 0;
-		for (row = 0; row < board.GetHeight(); row++) {
-			consecutive = 0;
-			while (_IsCompleteLine(row)) {
-				_RemoveLine(row);
-				consecutive++;
-			};
+  void cBoard::_CheckForCompleteLines()
+  {
+    size_t row = 0;
+    size_t consecutive = 0;
+    for (row = 0; row < board.GetHeight(); row++) {
+      consecutive = 0;
+      while (_IsCompleteLine(row)) {
+        _RemoveLine(row);
+        consecutive++;
+      }
 
-			// If we actually have one or more complete rows then add them to our score
-			if (consecutive > 0) _AddRowsToScore(consecutive);
-		}
-	}
+      // If we actually have one or more complete rows then add them to our score
+      if (consecutive > 0) _AddRowsToScore(consecutive);
+    }
+  }
 
-	void cBoard::_AddPieceToBoard()
-	{
-		assert(current_x <= board.GetWidth() - current_piece.GetWidth());
+  void cBoard::_AddPieceToBoard()
+  {
+    assert(current_x <= board.GetWidth() - current_piece.GetWidth());
 
-		size_t y1 = 0;
-		size_t x1 = 0;
-		size_t x2 = 0;
-		size_t y2 = 0;
-		size_t width = current_piece.GetWidth();
-		size_t height = current_piece.GetHeight();
-		int colour = 0;
-		for (y1 = 0, y2 = current_y - height; y1 < height; y1++, y2++) {
-			for (x1 = 0, x2 = current_x; x1 < width; x1++, x2++) {
-				colour = current_piece.GetBlock(x1, y1);
-				if ((colour != 0) && (y2 < board.GetHeight())) board.SetBlock(x2, y2, colour);
-			}
-		}
-	}
+    size_t y1 = 0;
+    size_t x1 = 0;
+    size_t x2 = 0;
+    size_t y2 = 0;
+    size_t width = current_piece.GetWidth();
+    size_t height = current_piece.GetHeight();
+    int colour = 0;
+    for (y1 = 0, y2 = current_y - height; y1 < height; y1++, y2++) {
+      for (x1 = 0, x2 = current_x; x1 < width; x1++, x2++) {
+        colour = current_piece.GetBlock(x1, y1);
+        if ((colour != 0) && (y2 < board.GetHeight())) board.SetBlock(x2, y2, colour);
+      }
+    }
+  }
 
-	void cBoard::_AddPieceToBoardCheckAndGenerate()
-	{
-		_AddPieceToBoard();
+  void cBoard::_AddPieceToBoardCheckAndGenerate(spitfire::sampletime_t currentTime)
+  {
+    _AddPieceToBoard();
 
     _AddPieceToScore();
 
-		_CheckForCompleteLines();
+    _CheckForCompleteLines();
 
-		// Now generate our new piece so that we always have a usable piece
-		PieceGenerate();
+    // Now generate our new piece so that we always have a usable piece
+    PieceGenerate(currentTime);
 
-    parentCollection.OnPieceHitsGround(*this);
-	}
+    game.OnPieceHitsGround(*this);
+    game.OnBoardChanged(*this);
+  }
 
-	bool cBoard::_IsCollided(const cPiece& rhs, size_t position_x, size_t position_y) const
-	{
-		if (position_x > board.GetWidth() - rhs.GetWidth()) return true;
+  bool cBoard::_IsCollided(const cPiece& rhs, size_t position_x, size_t position_y) const
+  {
+    if (position_x > board.GetWidth() - rhs.GetWidth()) return true;
 
-		size_t y1 = 0;
-		size_t x1 = 0;
-		size_t x2 = 0;
-		size_t y2 = 0;
-		size_t width = rhs.GetWidth();
-		size_t height = rhs.GetHeight();
-		for (y1 = 0, y2 = position_y - height; y1 < height; y1++, y2++) {
-			for (x1 = 0, x2 = position_x; x1 < width; x1++, x2++) {
-				if (y2 < board.GetHeight() && (rhs.GetBlock(x1, y1) != 0) && (board.GetBlock(x2, y2) != 0)) return true;
-			}
-		}
+    size_t y1 = 0;
+    size_t x1 = 0;
+    size_t x2 = 0;
+    size_t y2 = 0;
+    size_t width = rhs.GetWidth();
+    size_t height = rhs.GetHeight();
+    for (y1 = 0, y2 = position_y - height; y1 < height; y1++, y2++) {
+      for (x1 = 0, x2 = position_x; x1 < width; x1++, x2++) {
+        if (y2 < board.GetHeight() && (rhs.GetBlock(x1, y1) != 0) && (board.GetBlock(x2, y2) != 0)) return true;
+      }
+    }
 
-		return false;
-	}
+    return false;
+  }
 
-	void cBoard::SetWidth(size_t _width)
-	{
-		board.SetWidth(_width);
-	}
+  void cBoard::SetWidth(size_t _width)
+  {
+    board.SetWidth(_width);
+  }
 
-	void cBoard::SetHeight(size_t _height)
-	{
-		board.SetHeight(_height);
-	}
+  void cBoard::SetHeight(size_t _height)
+  {
+    board.SetHeight(_height);
+  }
 
-	void cBoard::AddPossibleColour(const std::string& name, const breathe::math::cColour& colour)
-	{
-		possible_colour_names.push_back(name);
-		possible_colours.push_back(colour);
-	}
+  void cBoard::AddPossibleColour(const std::string& name, const spitfire::math::cColour& colour)
+  {
+    possible_colour_names.push_back(name);
+    possible_colours.push_back(colour);
+  }
 
-	void cBoard::AddPossiblePiece(const cPiece& piece)
-	{
-		possible_pieces.push_back(piece);
+  void cBoard::AddPossiblePiece(const cPiece& piece)
+  {
+    possible_pieces.AddItem(piece);
     widest_piece = std::max(std::max(widest_piece, piece.GetWidth()), piece.GetHeight());
-	}
+  }
 
-	void cBoard::SetBlock(size_t x, size_t y, int colour)
-	{
-		board.SetBlock(x, y, colour);
-	}
+  void cBoard::SetBlock(size_t x, size_t y, int colour)
+  {
+    board.SetBlock(x, y, colour);
+  }
 
-	int cBoard::GetBlock(size_t x, size_t y) const
-	{
-		return board.GetBlock(x, y);
-	}
+  int cBoard::GetBlock(size_t x, size_t y) const
+  {
+    return board.GetBlock(x, y);
+  }
 
-	size_t cBoard::GetColourFromName(const std::string& name)
-	{
-		size_t i = 0;
-		size_t n = possible_colour_names.size();
+  size_t cBoard::GetColourFromName(const std::string& name)
+  {
+    size_t i = 0;
+    size_t n = possible_colour_names.size();
 
-		while (i < n) {
-			if (name == possible_colour_names[i]) return i;
+    while (i < n) {
+      if (name == possible_colour_names[i]) return i;
 
-			i++;
-		}
+      i++;
+    }
 
-		return 0;
-	}
+    return 0;
+  }
 
 
-	void cBoard::PieceGenerate()
-	{
-		current_piece = next_piece;
+  void cBoard::PieceGenerate(spitfire::sampletime_t currentTime)
+  {
+    current_piece = next_piece;
 
-		size_t i = rand() % possible_pieces.size();
-		next_piece = possible_pieces[i];
+    next_piece = possible_pieces.GetRandomItem();
+    std::cout<<"cBoard::PieceGenerate Adding piece which is "<<next_piece.GetWidth()<<" by "<<next_piece.GetHeight()<<std::endl;
 
-		current_x = (board.GetWidth()>>1) - (current_piece.GetWidth()>>1);
-		current_y = board.GetHeight() + current_piece.GetHeight();
-		while (current_y > board.GetHeight()) {
-			if (_IsCollided(current_piece, current_x, current_y - 1)) {
-				_AddPieceToBoard();
-        parentCollection.OnGameOver(*this);
-				state = STATE_FINISHED;
-				break;
-			}
+    current_x = (board.GetWidth()>>1) - (current_piece.GetWidth()>>1);
+    current_y = board.GetHeight() + current_piece.GetHeight();
+    while (current_y > board.GetHeight()) {
+      if (_IsCollided(current_piece, current_x, current_y - 1)) {
+        _AddPieceToBoard();
+        game.OnGameOver(*this);
+        state = STATE_FINISHED;
+        break;
+      }
 
-			current_y--;
-		};
+      current_y--;
+    };
 
-		lastUpdatedTime = breathe::util::GetTime();
-	}
+    lastUpdatedTime = currentTime;
+
+    game.OnPieceChanged(*this);
+  }
 
   template <class T>
   inline T GetListElement(std::list<T>& elements, size_t n)
   {
-    std::list<T>::iterator iter = elements.begin();
+    typedef typename std::list<T>::iterator iterator;
+
+    iterator iter = elements.begin();
     size_t count = elements.size();
     if (1 == count) return *iter;
 
-    std::list<T>::iterator iterEnd = elements.end();
+    iterator iterEnd = elements.end();
     size_t i = 0;
     while (iter != iterEnd) {
       if (i == n) break;
@@ -637,26 +666,26 @@ namespace tetris
   void cBoard::AddRandomLineAddEnd()
   {
     board.ShiftUpOneRow();
-    
+
     size_t width = board.GetWidth();
-    size_t height = board.GetHeight();
-		size_t i = 0;
+    //size_t height = board.GetHeight();
+    size_t i = 0;
     size_t n = 0;
     size_t possible_colours_n = possible_colours.size();
     std::list<int> possible_blocks;
-    
+
     n = (width>>2) + 1;
     for (i = 0; i < n; i ++) possible_blocks.push_back(0);
 
     n = width;
-    for (; i < n; i++) possible_blocks.push_back(rand() % possible_colours_n);
+    for (; i < n; i++) possible_blocks.push_back(spitfire::math::random(possible_colours_n));
 
     size_t colour = 0;
     n = width - 1;
-    size_t startingCount = possible_blocks.size();
+    //size_t startingCount = possible_blocks.size();
     for (i = 0; i < n; i++) {
       size_t count = possible_blocks.size();
-      colour = GetListElement(possible_blocks, rand() % count);
+      colour = GetListElement(possible_blocks, spitfire::math::random(count));
       assert(colour < possible_colours.size());
       board.SetBlock(i, 0, colour);
     }
@@ -664,85 +693,98 @@ namespace tetris
     colour = GetListElement(possible_blocks, 0);
     assert(colour < possible_colours.size());
     board.SetBlock(i, 0, colour);
+
+    game.OnBoardChanged(*this);
   }
 
 
 
-	// *** Input
+  // *** Input
 
-	void cBoard::PieceMoveLeft()
-	{
-		if (state != STATE_PLAYING) return;
+  void cBoard::PieceMoveLeft()
+  {
+    if (state != STATE_PLAYING) return;
 
-		if (current_x > 0) current_x--;
-		if (_IsCollided(current_piece, current_x, current_y)) current_x++;
-	}
+    if (current_x > 0) current_x--;
+    if (_IsCollided(current_piece, current_x, current_y)) current_x++;
+  }
 
-	void cBoard::PieceMoveRight()
-	{
-		if (state != STATE_PLAYING) return;
+  void cBoard::PieceMoveRight()
+  {
+    if (state != STATE_PLAYING) return;
 
-		current_x = std::min(current_x + 1, board.GetWidth() - current_piece.GetWidth());
-		if (_IsCollided(current_piece, current_x, current_y)) current_x--;
-	}
+    current_x = std::min(current_x + 1, board.GetWidth() - current_piece.GetWidth());
+    if (_IsCollided(current_piece, current_x, current_y)) current_x--;
+  }
 
-	void cBoard::PieceRotateCounterClockWise()
-	{
-		if (state != STATE_PLAYING) return;
+  void cBoard::PieceRotateCounterClockWise()
+  {
+    if (state != STATE_PLAYING) return;
 
-		cPiece rotated = current_piece.GetRotatedCounterClockWise();
-		if (_IsCollided(rotated, current_x, current_y)) return;
+    cPiece rotated = current_piece.GetRotatedCounterClockWise();
+    if (_IsCollided(rotated, current_x, current_y)) {
+      std::cout<<"cBoard::PieceRotateCounterClockWise Rotated piece would collide, returning"<<std::endl;
+      return;
+    }
 
-		current_piece = rotated;
-	}
+    current_piece = rotated;
 
-	void cBoard::PieceRotateClockWise()
-	{
-		if (state != STATE_PLAYING) return;
+    game.OnPieceRotated(*this);
+  }
 
-		cPiece rotated = current_piece.GetRotatedClockWise();
-		if (_IsCollided(rotated, current_x, current_y)) return;
+  void cBoard::PieceRotateClockWise()
+  {
+    if (state != STATE_PLAYING) return;
 
-		current_piece = rotated;
-	}
+    cPiece rotated = current_piece.GetRotatedClockWise();
+    if (_IsCollided(rotated, current_x, current_y)) {
+      std::cout<<"cBoard::PieceRotateClockWise Rotated piece would collide, returning"<<std::endl;
+      return;
+    }
 
-	void cBoard::PieceDropOneRow()
-	{
-		if (state != STATE_PLAYING) return;
+    current_piece = rotated;
 
-		if ((int(current_y) - int(current_piece.GetHeight())) <= 0) {
-			current_y = current_piece.GetHeight();
-			_AddPieceToBoardCheckAndGenerate();
-			return;
-		}
+    game.OnPieceRotated(*this);
+  }
 
-		current_y--;
+  void cBoard::PieceDropOneRow(spitfire::sampletime_t currentTime)
+  {
+    if (state != STATE_PLAYING) return;
 
-		if (_IsCollided(current_piece, current_x, current_y)) {
-			current_y++;
-			_AddPieceToBoardCheckAndGenerate();
-			return;
-		}
-	}
+    if ((int(current_y) - int(current_piece.GetHeight())) <= 0) {
+      current_y = current_piece.GetHeight();
+      _AddPieceToBoardCheckAndGenerate(currentTime);
+      return;
+    }
 
-	void cBoard::PieceDropToGround()
-	{
-		if (state != STATE_PLAYING) return;
+    current_y--;
 
-		do {
-			if ((int(current_y) - int(current_piece.GetHeight())) <= 0) {
-				current_y = current_piece.GetHeight();
-				_AddPieceToBoardCheckAndGenerate();
-				return;
-			}
+    if (_IsCollided(current_piece, current_x, current_y)) {
+      current_y++;
+      _AddPieceToBoardCheckAndGenerate(currentTime);
+      return;
+    }
+  }
 
-			current_y--;
+  void cBoard::PieceDropToGround(spitfire::sampletime_t currentTime)
+  {
+    if (state != STATE_PLAYING) return;
 
-			if (_IsCollided(current_piece, current_x, current_y)) {
-				current_y++;
-				_AddPieceToBoardCheckAndGenerate();
-				return;
-			}
-		} while (true);
-	}
+    do {
+      if ((int(current_y) - int(current_piece.GetHeight())) <= 0) {
+        current_y = current_piece.GetHeight();
+        _AddPieceToBoardCheckAndGenerate(currentTime);
+        return;
+      }
+
+      current_y--;
+
+      if (_IsCollided(current_piece, current_x, current_y)) {
+        current_y++;
+        _AddPieceToBoardCheckAndGenerate(currentTime);
+        return;
+      }
+    } while (true);
+  }
 }
+
