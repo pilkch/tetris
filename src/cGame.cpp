@@ -345,7 +345,7 @@ bool cGame::InitScene()
 	LoadConfiguration();
 
   StartGame();
-  
+
   PushState(new cTetrisStatePlaying(*this));
 
 	SDL_ShowCursor(SDL_DISABLE);

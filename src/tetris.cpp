@@ -159,7 +159,7 @@ namespace tetris
       cPiece pieceZ;
       pieceZ.SetBlock(0, 0, iOrange); pieceZ.SetBlock(1, 0, iOrange);
                                       pieceZ.SetBlock(1, 1, iOrange); pieceZ.SetBlock(2, 1, iOrange);
-                                      
+
 
       pBoard->AddPossiblePiece(pieceLong);
       pBoard->AddPossiblePiece(pieceSquare);
@@ -655,7 +655,7 @@ namespace tetris
       i++;
       iter++;
     }
-    
+
     T temp = *iter;
     elements.erase(iter);
     assert(elements.size() == count - 1);
