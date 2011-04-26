@@ -186,8 +186,9 @@ void cApplication::CreateBoardVBO(opengl::cStaticVertexBufferObject* pStaticVert
       // We want to add the blocks in upside down order
       const size_t y = (height - 1) - _y;
 
-      /*if (board.GetBlock(x, y) != 0)*/ {
-        const spitfire::math::cColour colour(board.GetColour(board.GetBlock(x, _y)));
+      int c = board.GetBlock(x, _y);
+      {
+        const spitfire::math::cColour colour(board.GetColour(c));
 
         // Front facing quad
         builder.PushBack(scale * spitfire::math::cVec2(float(x), float(y + 1)), colour, spitfire::math::cVec2(fBlockAndLightmapU, fBlockAndLightmapV2));
@@ -298,7 +299,7 @@ bool cApplication::Create()
   game.boards.push_back(new tetris::cBoard(game));
   game.boards.push_back(new tetris::cBoard(game));
 
-  const tetris::cBoard& board = *(game.boards.front());
+  const tetris::cBoard& board = *(game.boards[0]);
 
   game.StartGame(currentTime);
 
