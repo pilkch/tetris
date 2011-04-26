@@ -52,13 +52,27 @@ public:
   opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectBoardQuads;
   opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectPieceQuads;
   opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectNextPieceQuads;
+
+  bool bIsInputPieceMoveLeft;
+  bool bIsInputPieceMoveRight;
+  bool bIsInputPieceRotateCounterClockWise;
+  bool bIsInputPieceRotateClockWise;
+  bool bIsInputPieceDropOneRow;
+  bool bIsInputPieceDropToGround;
 };
 
 cBoardRepresentation::cBoardRepresentation(tetris::cBoard& _board) :
   board(_board),
   pStaticVertexBufferObjectBoardQuads(nullptr),
   pStaticVertexBufferObjectPieceQuads(nullptr),
-  pStaticVertexBufferObjectNextPieceQuads(nullptr)
+  pStaticVertexBufferObjectNextPieceQuads(nullptr),
+
+  bIsInputPieceMoveLeft(false),
+  bIsInputPieceMoveRight(false),
+  bIsInputPieceRotateCounterClockWise(false),
+  bIsInputPieceRotateClockWise(false),
+  bIsInputPieceDropOneRow(false),
+  bIsInputPieceDropToGround(false)
 {
 }
 
@@ -90,6 +104,9 @@ private:
    void _OnGameScoreOtherThanTetris(const tetris::cBoard& board, uint32_t uiScore);
    void _OnGameNewLevel(const tetris::cBoard& board, uint32_t uiLevel);
    void _OnGameOver(const tetris::cBoard& board);
+
+  void UpdateInput(spitfire::sampletime_t currentTime);
+  void Update(spitfire::sampletime_t currentTime);
 
    bool bIsWireframe;
    bool bIsDone;
@@ -415,12 +432,10 @@ void cApplication::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
 {
   std::cout<<"cApplication::_OnKeyboardEvent"<<std::endl;
 
-  tetris::cBoard& board = *(game.boards.front());
-  const spitfire::sampletime_t currentTime = SDL_GetTicks();
-
   if (event.IsKeyDown()) {
+    std::cout<<"cApplication::_OnKeyboardEvent Key down"<<std::endl;
     switch (event.GetKeyCode()) {
-      case SDLK_ESCAPE: {
+      case opengl::KEY::ESCAPE: {
         std::cout<<"cApplication::_OnKeyboardEvent Escape key pressed, quiting"<<std::endl;
         bIsDone = true;
         break;
@@ -428,38 +443,11 @@ void cApplication::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
     }
   } else if (event.IsKeyUp()) {
     switch (event.GetKeyCode()) {
-      case SDLK_w: {
-        std::cout<<"cApplication::_OnKeyboardEvent w up"<<std::endl;
+      case opengl::KEY::NUMBER_1: {
+        std::cout<<"cApplication::_OnKeyboardEvent 1 up"<<std::endl;
         bIsWireframe = !bIsWireframe;
         break;
       }
-      case SDLK_UP: {
-        std::cout<<"cApplication::_OnKeyboardEvent UP up"<<std::endl;
-        board.PieceRotateClockWise();
-        break;
-      }
-      case SDLK_DOWN: {
-        std::cout<<"cApplication::_OnKeyboardEvent DOWN up"<<std::endl;
-        board.PieceDropOneRow(currentTime);
-        break;
-      }
-      case SDLK_SPACE: {
-        std::cout<<"cApplication::_OnKeyboardEvent SPACE up"<<std::endl;
-        board.PieceDropToGround(currentTime);
-        break;
-      }
-      case SDLK_LEFT: {
-        std::cout<<"cApplication::_OnKeyboardEvent LEFT up"<<std::endl;
-        board.PieceMoveLeft();
-        break;
-      }
-      case SDLK_RIGHT: {
-        std::cout<<"cApplication::_OnKeyboardEvent RIGHT up"<<std::endl;
-        board.PieceMoveRight();
-        break;
-      }
-
-      //board.PieceRotateCounterClockWise();
     }
   }
 }
@@ -561,6 +549,139 @@ void cApplication::_OnGameOver(const tetris::cBoard& board)
   //... show game over screen, stop game
 }
 
+void cApplication::UpdateInput(spitfire::sampletime_t currentTime)
+{
+  assert(pWindow != nullptr);
+
+  if (boardRepresentations.size() == 1) {
+    // Single player
+    cBoardRepresentation* pBoardRepresentation = boardRepresentations[0];
+
+    // Player 1
+    if (pWindow->IsKeyUp(opengl::KEY::BACKSLASH)) {
+      std::cout<<"cApplication::UpdateInput BACKSLASH up"<<std::endl;
+      pBoardRepresentation->bIsInputPieceRotateCounterClockWise = true;
+    }
+    if (pWindow->IsKeyUp(opengl::KEY::UP)) {
+      std::cout<<"cApplication::UpdateInput UP up"<<std::endl;
+      pBoardRepresentation->bIsInputPieceRotateClockWise = true;
+    }
+    if (pWindow->IsKeyHeld(opengl::KEY::DOWN)) {
+      std::cout<<"cApplication::UpdateInput DOWN held"<<std::endl;
+      pBoardRepresentation->bIsInputPieceDropOneRow = true;
+    }
+    if (pWindow->IsKeyUp(opengl::KEY::SPACE)) {
+      std::cout<<"cApplication::UpdateInput SPACE up"<<std::endl;
+      pBoardRepresentation->bIsInputPieceDropToGround = true;
+    }
+    if (pWindow->IsKeyHeld(opengl::KEY::LEFT)) {
+      std::cout<<"cApplication::UpdateInput LEFT Held"<<std::endl;
+      pBoardRepresentation->bIsInputPieceMoveLeft = true;
+    }
+    if (pWindow->IsKeyHeld(opengl::KEY::RIGHT)) {
+      std::cout<<"cApplication::UpdateInput RIGHT Held"<<std::endl;
+      pBoardRepresentation->bIsInputPieceMoveRight = true;
+    }
+  } else {
+    {
+      // Player 1
+      cBoardRepresentation* pBoardRepresentation = boardRepresentations[0];
+
+      if (pWindow->IsKeyUp(opengl::KEY::Q)) {
+        std::cout<<"cApplication::UpdateInput Q up"<<std::endl;
+        pBoardRepresentation->bIsInputPieceRotateCounterClockWise = true;
+      }
+      if (pWindow->IsKeyUp(opengl::KEY::W)) {
+        std::cout<<"cApplication::UpdateInput W up"<<std::endl;
+        pBoardRepresentation->bIsInputPieceRotateClockWise = true;
+      }
+      if (pWindow->IsKeyHeld(opengl::KEY::S)) {
+        std::cout<<"cApplication::UpdateInput S Held"<<std::endl;
+        pBoardRepresentation->bIsInputPieceDropOneRow = true;
+      }
+      if (pWindow->IsKeyUp(opengl::KEY::F)) {
+        std::cout<<"cApplication::UpdateInput F up"<<std::endl;
+        pBoardRepresentation->bIsInputPieceDropToGround = true;
+      }
+      if (pWindow->IsKeyHeld(opengl::KEY::A)) {
+        std::cout<<"cApplication::UpdateInput A Held"<<std::endl;
+        pBoardRepresentation->bIsInputPieceMoveLeft = true;
+      }
+      if (pWindow->IsKeyHeld(opengl::KEY::D)) {
+        std::cout<<"cApplication::UpdateInput D Held"<<std::endl;
+        pBoardRepresentation->bIsInputPieceMoveRight = true;
+      }
+    }
+
+    {
+      // Player 2
+      cBoardRepresentation* pBoardRepresentation = boardRepresentations[1];
+
+      if (pWindow->IsKeyUp(opengl::KEY::BACKSLASH)) {
+        std::cout<<"cApplication::UpdateInput BACKSLASH up"<<std::endl;
+        pBoardRepresentation->bIsInputPieceRotateCounterClockWise = true;
+      }
+      if (pWindow->IsKeyUp(opengl::KEY::UP)) {
+        std::cout<<"cApplication::UpdateInput UP up"<<std::endl;
+        pBoardRepresentation->bIsInputPieceRotateClockWise = true;
+      }
+      if (pWindow->IsKeyHeld(opengl::KEY::DOWN)) {
+        std::cout<<"cApplication::UpdateInput DOWN Held"<<std::endl;
+        pBoardRepresentation->bIsInputPieceDropOneRow = true;
+      }
+      if (pWindow->IsKeyUp(opengl::KEY::SPACE)) {
+        std::cout<<"cApplication::UpdateInput SPACE up"<<std::endl;
+        pBoardRepresentation->bIsInputPieceDropToGround = true;
+      }
+      if (pWindow->IsKeyHeld(opengl::KEY::LEFT)) {
+        std::cout<<"cApplication::UpdateInput LEFT Held"<<std::endl;
+        pBoardRepresentation->bIsInputPieceMoveLeft = true;
+      }
+      if (pWindow->IsKeyHeld(opengl::KEY::RIGHT)) {
+        std::cout<<"cApplication::UpdateInput RIGHT Held"<<std::endl;
+        pBoardRepresentation->bIsInputPieceMoveRight = true;
+      }
+    }
+  }
+}
+
+void cApplication::Update(spitfire::sampletime_t currentTime)
+{
+  // For each board we need to send the inputs to the board
+  const size_t n = boardRepresentations.size();
+  for (size_t i = 0; i < n; i++) {
+    cBoardRepresentation* pBoardRepresentation = boardRepresentations[i];
+    tetris::cBoard& board = pBoardRepresentation->board;
+
+    if (pBoardRepresentation->bIsInputPieceRotateCounterClockWise) {
+      board.PieceRotateCounterClockWise();
+      pBoardRepresentation->bIsInputPieceRotateCounterClockWise = false;
+    }
+    if (pBoardRepresentation->bIsInputPieceRotateClockWise) {
+      board.PieceRotateClockWise();
+      pBoardRepresentation->bIsInputPieceRotateClockWise = false;
+    }
+    if (pBoardRepresentation->bIsInputPieceDropOneRow) {
+      board.PieceDropOneRow(currentTime);
+      pBoardRepresentation->bIsInputPieceDropOneRow = false;
+    }
+    if (pBoardRepresentation->bIsInputPieceDropToGround) {
+      board.PieceDropToGround(currentTime);
+      pBoardRepresentation->bIsInputPieceDropToGround = false;
+    }
+    if (pBoardRepresentation->bIsInputPieceMoveLeft) {
+      board.PieceMoveLeft();
+      pBoardRepresentation->bIsInputPieceMoveLeft = false;
+    }
+    if (pBoardRepresentation->bIsInputPieceMoveRight) {
+      board.PieceMoveRight();
+      pBoardRepresentation->bIsInputPieceMoveRight = false;
+    }
+  }
+
+  game.Update(currentTime);
+}
+
 void cApplication::Run()
 {
    assert(pContext != nullptr);
@@ -617,7 +738,7 @@ void cApplication::Run()
    uint32_t T0 = 0;
    uint32_t Frames = 0;
 
-   uint32_t previousTime = SDL_GetTicks();
+   uint32_t lastUpdateTime = SDL_GetTicks();
    uint32_t currentTime = SDL_GetTicks();
 
    // Setup mouse
@@ -632,10 +753,12 @@ void cApplication::Run()
       pWindow->WarpCursorToMiddleOfScreen();
 
       // Update state
-      previousTime = currentTime;
       currentTime = SDL_GetTicks();
-
-      game.Update(currentTime);
+      UpdateInput(currentTime);
+      if ((currentTime - lastUpdateTime) > 100) {
+        Update(currentTime);
+        lastUpdateTime = currentTime;
+      }
 
       matRotation.SetRotation(rotationZ * rotationX);
 
