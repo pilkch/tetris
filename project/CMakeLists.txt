@@ -17,7 +17,7 @@ SET(LIBRARY_SRC "${CMAKE_SOURCE_DIR}src/")
 ADD_DEFINITIONS("-Wall -W -Wextra -Werror -Wformat -Wformat-y2k -Winit-self -Wstack-protector -Wunknown-pragmas -Wundef -Wcast-qual -Wwrite-strings -Wno-unused-parameter -Wpointer-arith -Wno-switch -Woverloaded-virtual -Wno-stack-protector -Wmissing-include-dirs -Wuninitialized -Wc++0x-compat -std=c++0x -ffor-scope -O2")
 
 
-ADD_DEFINITIONS("-DUNICODE -D_UNICODE")
+ADD_DEFINITIONS("-DUNICODE -D_UNICODE -DBUILD_OPENGLMM_FONT")
 
 IF("${CMAKE_SYSTEM}" MATCHES "Linux")
   ADD_DEFINITIONS("-D__LINUX__")
@@ -63,7 +63,7 @@ SET(OUTPUT_LIBRARY_LIBVOODOOMM_SOURCE_FILES ${OUTPUT_FILES})
 
 SET(LIBRARY_LIBOPENGLMM_SOURCE_DIRECTORY libopenglmm/)
 SET(LIBRARY_LIBOPENGLMM_SOURCE_FILES
-libopenglmm.cpp cContext.cpp cGeometry.cpp cShader.cpp cSystem.cpp cTexture.cpp cVertexArray.cpp cVertexBufferObject.cpp cWindow.cpp)
+libopenglmm.cpp cContext.cpp cFont.cpp cGeometry.cpp cShader.cpp cSystem.cpp cTexture.cpp cVertexArray.cpp cVertexBufferObject.cpp cWindow.cpp)
 
 IF(WIN32)
   SET(LIBRARY_LIBOPENGLMM_SOURCE_FILES ${LIBRARY_LIBOPENGLMM_SOURCE_FILES})
@@ -125,6 +125,7 @@ SET(LIBRARIES_LINKED
   SDL
   SDL_image
   SDL_ttf
+  freetype
 )
 
 

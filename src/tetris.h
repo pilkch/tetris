@@ -43,7 +43,7 @@ namespace tetris
   public:
     explicit cPiece();
     explicit cPiece(size_t width, size_t height);
-    
+
     cPiece(const cPiece& rhs);
 
     cPiece& operator=(const cPiece& rhs);
@@ -69,7 +69,7 @@ namespace tetris
     void _Resize(size_t width, size_t height);
 
     std::vector<int> blocks;
-      
+
     size_t width;
     size_t height;
   };
@@ -97,7 +97,9 @@ namespace tetris
     bool IsFinished() const { return (state == STATE_FINISHED); }
 
     int GetScore() const { return score; }
+    void AddScore(int value) { score += value; }
     int GetLevel() const { return level; }
+    void SetNextLevel() { level++; }
 
     size_t GetWidth() const { return board.GetWidth(); }
     size_t GetHeight() const { return board.GetHeight(); }
@@ -168,8 +170,7 @@ namespace tetris
     uint32_t score;
     size_t level;
     size_t rows_this_level;
-    size_t consecutive_tetris;
-    
+
     spitfire::sampletime_t lastUpdatedTime;
 
     cBoard();

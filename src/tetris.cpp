@@ -47,16 +47,14 @@ namespace tetris
   {
     _AddRandomLinesToEveryOtherBoard(board, 4);
 
-    const uint32_t uiScore = 4;
-    view.OnGameScoreTetris(board, uiScore);
+    view.OnGameScoreTetris(board, 4);
   }
 
   void cGame::OnScoreOtherThanTetris(const cBoard& board, size_t lines)
   {
     _AddRandomLinesToEveryOtherBoard(board, lines);
 
-    const uint32_t uiScore = 1;
-    view.OnGameScoreOtherThanTetris(board, uiScore);
+    view.OnGameScoreOtherThanTetris(board, lines);
   }
 
   void cGame::OnPieceRotated(const cBoard& board)
@@ -390,8 +388,7 @@ namespace tetris
 
     state(STATE_FINISHED),
 
-    rows_this_level(0),
-    consecutive_tetris(0)
+    rows_this_level(0)
   {
     AddPossibleColour("", spitfire::math::cColour());
   }
@@ -447,8 +444,7 @@ namespace tetris
   void cBoard::Update(spitfire::sampletime_t currentTime)
   {
     // If we have wait a sufficient amount of time, then do an update
-    if ((currentTime - lastUpdatedTime) > (1500/level))
-    {
+    if ((currentTime - lastUpdatedTime) > (1500 / level)) {
       lastUpdatedTime = currentTime;
 
       if (state != STATE_FINISHED) PieceDropOneRow(currentTime);
@@ -457,21 +453,12 @@ namespace tetris
 
   void cBoard::_AddPieceToScore()
   {
-    score += 5;
   }
 
   void cBoard::_AddRowsToScore(size_t rows)
   {
-    // Play a sound
-    if (rows > 3) game.OnScoreTetris(*this);
-    else game.OnScoreOtherThanTetris(*this, rows);
-
-    // Count how many tetrii the player has had in a row
-    if (rows > 3) consecutive_tetris++;
-    else consecutive_tetris = 0;
-
     // Increase the player's score
-    score += (rows + consecutive_tetris) * 100;
+    score += (rows * rows) * 100;
 
     // If the player has had 8 rows this level increment the level
     rows_this_level += rows;
@@ -479,6 +466,9 @@ namespace tetris
       rows_this_level = 0;
       level++;
     }
+
+    if (rows > 3) game.OnScoreTetris(*this);
+    else game.OnScoreOtherThanTetris(*this, rows);
   }
 
   bool cBoard::_IsCompleteLine(size_t row) const

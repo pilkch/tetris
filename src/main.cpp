@@ -32,6 +32,7 @@
 // libopenglmm headers
 #include <libopenglmm/libopenglmm.h>
 #include <libopenglmm/cContext.h>
+#include <libopenglmm/cFont.h>
 #include <libopenglmm/cGeometry.h>
 #include <libopenglmm/cShader.h>
 #include <libopenglmm/cSystem.h>
@@ -88,8 +89,9 @@ public:
    void Run();
 
 private:
-   void CreateBoardVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board);
-   void CreatePieceVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board, const tetris::cPiece& piece);
+  void UpdateText();
+  void UpdateBoardVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board);
+  void UpdatePieceVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board, const tetris::cPiece& piece);
 
    void _OnWindowEvent(const opengl::cWindowEvent& event);
    void _OnMouseEvent(const opengl::cMouseEvent& event);
@@ -126,6 +128,10 @@ private:
 
    opengl::cContext* pContext;
 
+  // Text
+  opengl::cFont* pFont;
+  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectText;
+
    opengl::cTexture* pTextureBlock;
 
    opengl::cShader* pShaderBlock;
@@ -147,6 +153,9 @@ cApplication::cApplication() :
   pWindow(nullptr),
   pContext(nullptr),
 
+  pFont(nullptr),
+  pStaticVertexBufferObjectText(nullptr),
+
   pTextureBlock(nullptr),
 
   pShaderBlock(nullptr),
@@ -160,9 +169,77 @@ cApplication::~cApplication()
    Destroy();
 }
 
-void cApplication::CreateBoardVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board)
+void cApplication::UpdateText()
+{
+  assert(pFont != nullptr);
+
+  if (pStaticVertexBufferObjectText != nullptr) {
+    pContext->DestroyStaticVertexBufferObject(pStaticVertexBufferObjectText);
+    pStaticVertexBufferObjectText = nullptr;
+  }
+
+  pStaticVertexBufferObjectText = pContext->CreateStaticVertexBufferObject();
+
+  std::vector<float> vertices;
+  std::vector<float> colours;
+  std::vector<float> textureCoordinates;
+
+  opengl::cGeometryBuilder_v2_c4_t2 builder(vertices, colours, textureCoordinates);
+
+  const spitfire::math::cColour red(1.0f, 0.0f, 0.0f);
+  const spitfire::math::cColour green(0.0f, 1.0f, 0.0f);
+  const spitfire::math::cColour blue(0.0f, 0.0f, 1.0f);
+  const spitfire::math::cColour yellow(1.0f, 1.0f, 0.0f);
+  const spitfire::math::cColour boardColours[] = {
+    red,
+    green,
+    blue,
+    yellow
+  };
+
+  float y = 0.3f;
+
+  for (size_t i = 0; i < game.boards.size(); i++) {
+    tetris::cBoard& board = *(game.boards[i]);
+
+    const spitfire::math::cColour& colour = boardColours[i];
+
+    // Create the text for this board
+    std::wostringstream o;
+
+    const uint32_t uiLevel = board.GetLevel();
+    o<<TEXT("Level ");
+    o<<uiLevel;
+    pFont->PushBack(builder, o.str(), colour, spitfire::math::cVec2(0.0f, y));
+    y += 0.05f;
+    o.str(TEXT(""));
+
+    const uint32_t uiScore = board.GetScore();
+    o<<TEXT("Score ");
+    o<<uiScore;
+    pFont->PushBack(builder, o.str(), colour, spitfire::math::cVec2(0.0f, y));
+    y += 0.05f;
+    o.str(TEXT(""));
+  }
+
+  pStaticVertexBufferObjectText->SetVertices(vertices);
+  pStaticVertexBufferObjectText->SetColours(colours);
+  pStaticVertexBufferObjectText->SetTextureCoordinates(textureCoordinates);
+
+  pStaticVertexBufferObjectText->Compile2D(system);
+
+  std::cout<<"cApplication::CreateBox vertices="<<vertices.size()<<", colours="<<colours.size()<<", textureCoordinates="<<textureCoordinates.size()<<std::endl;
+}
+
+void cApplication::UpdateBoardVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board)
 {
   assert(pStaticVertexBufferObject != nullptr);
+
+  /*if (boardRepresentations[i]->pStaticVertexBufferObjectPieceQuads != nullptr) {
+    pContext->DestroyStaticVertexBufferObject(boardRepresentations[i]->pStaticVertexBufferObjectPieceQuads);
+    boardRepresentations[i]->pStaticVertexBufferObjectPieceQuads = nullptr;
+  }
+  pBoardRepresentation->pStaticVertexBufferObjectBoardQuads = pContext->CreateStaticVertexBufferObject();*/
 
   std::vector<float> vertices;
   //std::vector<float> normals;
@@ -210,9 +287,15 @@ void cApplication::CreateBoardVBO(opengl::cStaticVertexBufferObject* pStaticVert
   }
 }
 
-void cApplication::CreatePieceVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board, const tetris::cPiece& piece)
+void cApplication::UpdatePieceVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board, const tetris::cPiece& piece)
 {
   assert(pStaticVertexBufferObject != nullptr);
+
+  /*if (boardRepresentations[i]->pStaticVertexBufferObjectPieceQuads != nullptr) {
+    pContext->DestroyStaticVertexBufferObject(boardRepresentations[i]->pStaticVertexBufferObjectPieceQuads);
+    boardRepresentations[i]->pStaticVertexBufferObjectPieceQuads = nullptr;
+  }
+  pBoardRepresentation->pStaticVertexBufferObjectBoardQuads = pContext->CreateStaticVertexBufferObject();*/
 
   std::vector<float> vertices;
   //std::vector<float> normals;
@@ -287,6 +370,7 @@ bool cApplication::Create()
     return false;
   }
 
+
   pTextureBlock = pContext->CreateTexture(TEXT("data/textures/block.png"));
 
   pShaderBlock = pContext->CreateShader(TEXT("data/shaders/passthroughwithcolour.vert"), TEXT("data/shaders/passthroughwithcolour.frag"));
@@ -311,17 +395,23 @@ bool cApplication::Create()
   for (size_t i = 0; i < game.boards.size(); i++) {
     tetris::cBoard& board = *(game.boards[i]);
     cBoardRepresentation* pBoardRepresentation = new cBoardRepresentation(board);
+
     pBoardRepresentation->pStaticVertexBufferObjectBoardQuads = pContext->CreateStaticVertexBufferObject();
-    CreateBoardVBO(pBoardRepresentation->pStaticVertexBufferObjectBoardQuads, board);
+    UpdateBoardVBO(pBoardRepresentation->pStaticVertexBufferObjectBoardQuads, board);
 
     pBoardRepresentation->pStaticVertexBufferObjectPieceQuads = pContext->CreateStaticVertexBufferObject();
-    CreatePieceVBO(pBoardRepresentation->pStaticVertexBufferObjectPieceQuads, board, board.GetCurrentPiece());
+    UpdatePieceVBO(pBoardRepresentation->pStaticVertexBufferObjectPieceQuads, board, board.GetCurrentPiece());
 
     pBoardRepresentation->pStaticVertexBufferObjectNextPieceQuads = pContext->CreateStaticVertexBufferObject();
-    CreatePieceVBO(pBoardRepresentation->pStaticVertexBufferObjectNextPieceQuads, board, board.GetNextPiece());
+    UpdatePieceVBO(pBoardRepresentation->pStaticVertexBufferObjectNextPieceQuads, board, board.GetNextPiece());
 
     boardRepresentations.push_back(pBoardRepresentation);
   }
+
+
+  pFont = pContext->CreateFont(TEXT("data/fonts/pricedown.ttf"), 32, TEXT("data/shaders/font.vert"), TEXT("data/shaders/font.frag"));
+  UpdateText();
+
 
   // Setup our event listeners
   pWindow->SetWindowEventListener(*this);
@@ -363,6 +453,18 @@ void cApplication::Destroy()
     pContext->DestroyTexture(pTextureBlock);
     pTextureBlock = nullptr;
   }
+
+
+  if (pStaticVertexBufferObjectText != nullptr) {
+    pContext->DestroyStaticVertexBufferObject(pStaticVertexBufferObjectText);
+    pStaticVertexBufferObjectText = nullptr;
+  }
+
+  if (pFont != nullptr) {
+    pContext->DestroyFont(pFont);
+    pFont = nullptr;
+  }
+
 
   pContext = nullptr;
 
@@ -471,7 +573,7 @@ void cApplication::_OnPieceRotated(const tetris::cBoard& board)
         boardRepresentations[i]->pStaticVertexBufferObjectPieceQuads = nullptr;
       }
       boardRepresentations[i]->pStaticVertexBufferObjectPieceQuads = pContext->CreateStaticVertexBufferObject();
-      CreatePieceVBO(boardRepresentations[i]->pStaticVertexBufferObjectPieceQuads, board, board.GetCurrentPiece());
+      UpdatePieceVBO(boardRepresentations[i]->pStaticVertexBufferObjectPieceQuads, board, board.GetCurrentPiece());
     }
   }
 }
@@ -488,14 +590,14 @@ void cApplication::_OnPieceChanged(const tetris::cBoard& board)
         boardRepresentations[i]->pStaticVertexBufferObjectNextPieceQuads = nullptr;
       }
       boardRepresentations[i]->pStaticVertexBufferObjectNextPieceQuads = pContext->CreateStaticVertexBufferObject();
-      CreatePieceVBO(boardRepresentations[i]->pStaticVertexBufferObjectNextPieceQuads, board, board.GetNextPiece());
+      UpdatePieceVBO(boardRepresentations[i]->pStaticVertexBufferObjectNextPieceQuads, board, board.GetNextPiece());
 
       if (boardRepresentations[i]->pStaticVertexBufferObjectPieceQuads != nullptr) {
         pContext->DestroyStaticVertexBufferObject(boardRepresentations[i]->pStaticVertexBufferObjectPieceQuads);
         boardRepresentations[i]->pStaticVertexBufferObjectPieceQuads = nullptr;
       }
       boardRepresentations[i]->pStaticVertexBufferObjectPieceQuads = pContext->CreateStaticVertexBufferObject();
-      CreatePieceVBO(boardRepresentations[i]->pStaticVertexBufferObjectPieceQuads, board, board.GetCurrentPiece());
+      UpdatePieceVBO(boardRepresentations[i]->pStaticVertexBufferObjectPieceQuads, board, board.GetCurrentPiece());
     }
   }
 }
@@ -518,7 +620,7 @@ void cApplication::_OnBoardChanged(const tetris::cBoard& board)
         boardRepresentations[i]->pStaticVertexBufferObjectBoardQuads = nullptr;
       }
       boardRepresentations[i]->pStaticVertexBufferObjectBoardQuads = pContext->CreateStaticVertexBufferObject();
-      CreateBoardVBO(boardRepresentations[i]->pStaticVertexBufferObjectBoardQuads, board);
+      UpdateBoardVBO(boardRepresentations[i]->pStaticVertexBufferObjectBoardQuads, board);
     }
   }
 }
@@ -527,14 +629,14 @@ void cApplication::_OnGameScoreTetris(const tetris::cBoard& board, uint32_t uiSc
 {
   std::cout<<"cApplication::_OnGameScoreTetris"<<std::endl;
   //play(spitfire::filesystem::FindFile(TEXT("audio/score_tetris.wav")));
-  //... update score text
+  UpdateText();
 }
 
 void cApplication::_OnGameScoreOtherThanTetris(const tetris::cBoard& board, uint32_t uiScore)
 {
   std::cout<<"cApplication::_OnGameScoreOtherThanTetris"<<std::endl;
   //play(spitfire::filesystem::FindFile(TEXT("audio/score_other.wav")));
-  //... update score text
+  UpdateText();
 }
 
 void cApplication::_OnGameNewLevel(const tetris::cBoard& board, uint32_t uiLevel)
@@ -560,27 +662,27 @@ void cApplication::UpdateInput(spitfire::sampletime_t currentTime)
 
     // Player 1
     if (pWindow->IsKeyUp(opengl::KEY::BACKSLASH)) {
-      std::cout<<"cApplication::UpdateInput BACKSLASH up"<<std::endl;
+      //std::cout<<"cApplication::UpdateInput BACKSLASH up"<<std::endl;
       pBoardRepresentation->bIsInputPieceRotateCounterClockWise = true;
     }
     if (pWindow->IsKeyUp(opengl::KEY::UP)) {
-      std::cout<<"cApplication::UpdateInput UP up"<<std::endl;
+      //std::cout<<"cApplication::UpdateInput UP up"<<std::endl;
       pBoardRepresentation->bIsInputPieceRotateClockWise = true;
     }
     if (pWindow->IsKeyHeld(opengl::KEY::DOWN)) {
-      std::cout<<"cApplication::UpdateInput DOWN held"<<std::endl;
+      //std::cout<<"cApplication::UpdateInput DOWN held"<<std::endl;
       pBoardRepresentation->bIsInputPieceDropOneRow = true;
     }
     if (pWindow->IsKeyUp(opengl::KEY::SPACE)) {
-      std::cout<<"cApplication::UpdateInput SPACE up"<<std::endl;
+      //std::cout<<"cApplication::UpdateInput SPACE up"<<std::endl;
       pBoardRepresentation->bIsInputPieceDropToGround = true;
     }
     if (pWindow->IsKeyHeld(opengl::KEY::LEFT)) {
-      std::cout<<"cApplication::UpdateInput LEFT Held"<<std::endl;
+      //std::cout<<"cApplication::UpdateInput LEFT Held"<<std::endl;
       pBoardRepresentation->bIsInputPieceMoveLeft = true;
     }
     if (pWindow->IsKeyHeld(opengl::KEY::RIGHT)) {
-      std::cout<<"cApplication::UpdateInput RIGHT Held"<<std::endl;
+      //std::cout<<"cApplication::UpdateInput RIGHT Held"<<std::endl;
       pBoardRepresentation->bIsInputPieceMoveRight = true;
     }
   } else {
@@ -589,27 +691,27 @@ void cApplication::UpdateInput(spitfire::sampletime_t currentTime)
       cBoardRepresentation* pBoardRepresentation = boardRepresentations[0];
 
       if (pWindow->IsKeyUp(opengl::KEY::Q)) {
-        std::cout<<"cApplication::UpdateInput Q up"<<std::endl;
+        //std::cout<<"cApplication::UpdateInput Q up"<<std::endl;
         pBoardRepresentation->bIsInputPieceRotateCounterClockWise = true;
       }
       if (pWindow->IsKeyUp(opengl::KEY::W)) {
-        std::cout<<"cApplication::UpdateInput W up"<<std::endl;
+        //std::cout<<"cApplication::UpdateInput W up"<<std::endl;
         pBoardRepresentation->bIsInputPieceRotateClockWise = true;
       }
       if (pWindow->IsKeyHeld(opengl::KEY::S)) {
-        std::cout<<"cApplication::UpdateInput S Held"<<std::endl;
+        //std::cout<<"cApplication::UpdateInput S Held"<<std::endl;
         pBoardRepresentation->bIsInputPieceDropOneRow = true;
       }
       if (pWindow->IsKeyUp(opengl::KEY::F)) {
-        std::cout<<"cApplication::UpdateInput F up"<<std::endl;
+        //std::cout<<"cApplication::UpdateInput F up"<<std::endl;
         pBoardRepresentation->bIsInputPieceDropToGround = true;
       }
       if (pWindow->IsKeyHeld(opengl::KEY::A)) {
-        std::cout<<"cApplication::UpdateInput A Held"<<std::endl;
+        //std::cout<<"cApplication::UpdateInput A Held"<<std::endl;
         pBoardRepresentation->bIsInputPieceMoveLeft = true;
       }
       if (pWindow->IsKeyHeld(opengl::KEY::D)) {
-        std::cout<<"cApplication::UpdateInput D Held"<<std::endl;
+        //std::cout<<"cApplication::UpdateInput D Held"<<std::endl;
         pBoardRepresentation->bIsInputPieceMoveRight = true;
       }
     }
@@ -619,27 +721,27 @@ void cApplication::UpdateInput(spitfire::sampletime_t currentTime)
       cBoardRepresentation* pBoardRepresentation = boardRepresentations[1];
 
       if (pWindow->IsKeyUp(opengl::KEY::BACKSLASH)) {
-        std::cout<<"cApplication::UpdateInput BACKSLASH up"<<std::endl;
+        //std::cout<<"cApplication::UpdateInput BACKSLASH up"<<std::endl;
         pBoardRepresentation->bIsInputPieceRotateCounterClockWise = true;
       }
       if (pWindow->IsKeyUp(opengl::KEY::UP)) {
-        std::cout<<"cApplication::UpdateInput UP up"<<std::endl;
+        //std::cout<<"cApplication::UpdateInput UP up"<<std::endl;
         pBoardRepresentation->bIsInputPieceRotateClockWise = true;
       }
       if (pWindow->IsKeyHeld(opengl::KEY::DOWN)) {
-        std::cout<<"cApplication::UpdateInput DOWN Held"<<std::endl;
+        //std::cout<<"cApplication::UpdateInput DOWN Held"<<std::endl;
         pBoardRepresentation->bIsInputPieceDropOneRow = true;
       }
       if (pWindow->IsKeyUp(opengl::KEY::SPACE)) {
-        std::cout<<"cApplication::UpdateInput SPACE up"<<std::endl;
+        //std::cout<<"cApplication::UpdateInput SPACE up"<<std::endl;
         pBoardRepresentation->bIsInputPieceDropToGround = true;
       }
       if (pWindow->IsKeyHeld(opengl::KEY::LEFT)) {
-        std::cout<<"cApplication::UpdateInput LEFT Held"<<std::endl;
+        //std::cout<<"cApplication::UpdateInput LEFT Held"<<std::endl;
         pBoardRepresentation->bIsInputPieceMoveLeft = true;
       }
       if (pWindow->IsKeyHeld(opengl::KEY::RIGHT)) {
-        std::cout<<"cApplication::UpdateInput RIGHT Held"<<std::endl;
+        //std::cout<<"cApplication::UpdateInput RIGHT Held"<<std::endl;
         pBoardRepresentation->bIsInputPieceMoveRight = true;
       }
     }
@@ -687,6 +789,13 @@ void cApplication::Run()
 {
    assert(pContext != nullptr);
    assert(pContext->IsValid());
+
+  // Text
+  assert(pFont != nullptr);
+  assert(pFont->IsValid());
+  assert(pStaticVertexBufferObjectText != nullptr);
+  assert(pStaticVertexBufferObjectText->IsCompiled());
+
    assert(pTextureBlock != nullptr);
    assert(pTextureBlock->IsValid());
    assert(pShaderBlock != nullptr);
@@ -852,6 +961,34 @@ void cApplication::Run()
 
           x += 0.4f;
         }
+
+        pContext->EndRenderMode2D();
+      }
+
+
+      // Draw the text overlay
+      {
+        pContext->BeginRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN);
+
+        // Rendering the font in the middle of the screen
+        spitfire::math::cMat4 matModelView;
+        matModelView.SetTranslation(0.1f, 0.1f, 0.0f);
+
+        //pContext->SetModelViewMatrix(matModelView);
+
+        pContext->BindFont(*pFont);
+
+        pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
+
+        {
+          //pContext->SetModelViewMatrix(matModelView);// * matTranslation * matRotation);
+
+          pContext->DrawStaticVertexBufferObjectQuads2D(*pStaticVertexBufferObjectText);
+        }
+
+        pContext->UnBindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
+
+        pContext->UnBindFont(*pFont);
 
         pContext->EndRenderMode2D();
       }
