@@ -1,3 +1,4 @@
+// Standard headers
 #include <cassert>
 #include <cmath>
 #include <cstring>
@@ -10,6 +11,9 @@
 #include <map>
 #include <vector>
 #include <list>
+
+// Boost headers
+#include <boost/shared_ptr.hpp>
 
 // OpenGL headers
 #include <GL/GLee.h>
@@ -28,6 +32,9 @@
 #include <spitfire/math/cMat4.h>
 #include <spitfire/math/cQuaternion.h>
 #include <spitfire/math/cColour.h>
+
+// Breathe headers
+#include <breathe/audio/audio.h>
 
 // libopenglmm headers
 #include <libopenglmm/libopenglmm.h>
@@ -93,6 +100,8 @@ private:
   void UpdateBoardVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board);
   void UpdatePieceVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board, const tetris::cPiece& piece);
 
+  void PlaySound(breathe::audio::cBufferRef pBuffer);
+
    void _OnWindowEvent(const opengl::cWindowEvent& event);
    void _OnMouseEvent(const opengl::cMouseEvent& event);
    void _OnKeyboardEvent(const opengl::cKeyboardEvent& event);
@@ -132,11 +141,18 @@ private:
   opengl::cFont* pFont;
   opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectText;
 
-   opengl::cTexture* pTextureBlock;
+  opengl::cTexture* pTextureBlock;
 
-   opengl::cShader* pShaderBlock;
+  opengl::cShader* pShaderBlock;
 
-   std::vector<cBoardRepresentation*> boardRepresentations;
+  breathe::audio::cManager* pAudioManager;
+
+  breathe::audio::cBufferRef pAudioBufferPieceHitsGround;
+  breathe::audio::cBufferRef pAudioBufferScoreTetris;
+  breathe::audio::cBufferRef pAudioBufferScoreOtherThanTetris;
+  breathe::audio::cBufferRef pAudioBufferGameOver;
+
+  std::vector<cBoardRepresentation*> boardRepresentations;
 
   tetris::cGame game;
 };
@@ -159,6 +175,8 @@ cApplication::cApplication() :
   pTextureBlock(nullptr),
 
   pShaderBlock(nullptr),
+
+  pAudioManager(nullptr),
 
   game(*this)
 {
@@ -343,6 +361,14 @@ void cApplication::UpdatePieceVBO(opengl::cStaticVertexBufferObject* pStaticVert
   }
 }
 
+void cApplication::PlaySound(breathe::audio::cBufferRef pBuffer)
+{
+  breathe::audio::cSourceRef pSource = pAudioManager->CreateSourceAttachedToScreen(pBuffer);
+  assert(pSource);
+
+  pSource->Play();
+}
+
 bool cApplication::Create()
 {
   const opengl::cCapabilities& capabilities = system.GetCapabilities();
@@ -413,6 +439,19 @@ bool cApplication::Create()
   UpdateText();
 
 
+  pAudioManager = breathe::audio::Create(breathe::audio::DRIVER::OPENAL2);
+
+  // Load our sounds
+  pAudioBufferPieceHitsGround = pAudioManager->CreateBuffer(TEXT("data/audio/piece_hits_ground.wav"));
+  assert(pAudioBufferPieceHitsGround != nullptr);
+  pAudioBufferScoreTetris = pAudioManager->CreateBuffer(TEXT("data/audio/score_tetris.wav"));
+  assert(pAudioBufferScoreTetris != nullptr);
+  pAudioBufferScoreOtherThanTetris = pAudioManager->CreateBuffer(TEXT("data/audio/score_other.wav"));
+  assert(pAudioBufferScoreOtherThanTetris != nullptr);
+  pAudioBufferGameOver = pAudioManager->CreateBuffer(TEXT("data/audio/game_over.wav"));
+  assert(pAudioBufferGameOver != nullptr);
+
+
   // Setup our event listeners
   pWindow->SetWindowEventListener(*this);
   pWindow->SetInputEventListener(*this);
@@ -471,6 +510,29 @@ void cApplication::Destroy()
   if (pWindow != nullptr) {
     system.DestroyWindow(pWindow);
     pWindow = nullptr;
+  }
+
+
+  if (pAudioManager != nullptr) {
+    if (pAudioBufferPieceHitsGround != nullptr) {
+      pAudioManager->DestroyBuffer(pAudioBufferPieceHitsGround);
+      pAudioBufferPieceHitsGround.reset();
+    }
+    if (pAudioBufferScoreTetris != nullptr) {
+      pAudioManager->DestroyBuffer(pAudioBufferScoreTetris);
+      pAudioBufferScoreTetris.reset();
+    }
+    if (pAudioBufferScoreOtherThanTetris != nullptr) {
+      pAudioManager->DestroyBuffer(pAudioBufferScoreOtherThanTetris);
+      pAudioBufferScoreOtherThanTetris.reset();
+    }
+    if (pAudioBufferGameOver != nullptr) {
+      pAudioManager->DestroyBuffer(pAudioBufferGameOver);
+      pAudioBufferGameOver.reset();
+    }
+
+    breathe::audio::Destroy(pAudioManager);
+    pAudioManager = nullptr;
   }
 }
 
@@ -605,7 +667,7 @@ void cApplication::_OnPieceChanged(const tetris::cBoard& board)
 void cApplication::_OnPieceHitsGround(const tetris::cBoard& board)
 {
   std::cout<<"cApplication::_OnPieceHitsGround"<<std::endl;
-  //play(spitfire::filesystem::FindFile(TEXT("audio/piece_hits_ground.wav")));
+  PlaySound(pAudioBufferPieceHitsGround);
 }
 
 void cApplication::_OnBoardChanged(const tetris::cBoard& board)
@@ -628,14 +690,14 @@ void cApplication::_OnBoardChanged(const tetris::cBoard& board)
 void cApplication::_OnGameScoreTetris(const tetris::cBoard& board, uint32_t uiScore)
 {
   std::cout<<"cApplication::_OnGameScoreTetris"<<std::endl;
-  //play(spitfire::filesystem::FindFile(TEXT("audio/score_tetris.wav")));
+  PlaySound(pAudioBufferScoreTetris);
   UpdateText();
 }
 
 void cApplication::_OnGameScoreOtherThanTetris(const tetris::cBoard& board, uint32_t uiScore)
 {
   std::cout<<"cApplication::_OnGameScoreOtherThanTetris"<<std::endl;
-  //play(spitfire::filesystem::FindFile(TEXT("audio/score_other.wav")));
+  PlaySound(pAudioBufferScoreOtherThanTetris);
   UpdateText();
 }
 
@@ -648,7 +710,7 @@ void cApplication::_OnGameNewLevel(const tetris::cBoard& board, uint32_t uiLevel
 void cApplication::_OnGameOver(const tetris::cBoard& board)
 {
   std::cout<<"cApplication::_OnGameOver"<<std::endl;
-  //play(spitfire::filesystem::FindFile(TEXT("audio/game_over.wav")));
+  PlaySound(pAudioBufferGameOver);
   //... show game over screen, stop game
 }
 
@@ -869,6 +931,13 @@ void cApplication::Run()
         Update(currentTime);
         lastUpdateTime = currentTime;
       }
+
+      // Update audio
+      const spitfire::math::cVec3 listenerPosition;
+      const spitfire::math::cVec3 listenerTarget;
+      const spitfire::math::cVec3 listenerUp(0.0f, 0.0f, 1.0f);
+      pAudioManager->Update(currentTime, listenerPosition, listenerTarget, listenerUp);
+
 
       matRotation.SetRotation(rotationZ * rotationX);
 
