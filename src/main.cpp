@@ -439,7 +439,7 @@ bool cApplication::Create()
   UpdateText();
 
 
-  pAudioManager = breathe::audio::Create(breathe::audio::DRIVER::OPENAL2);
+  pAudioManager = breathe::audio::Create(breathe::audio::DRIVER::SDLMIXER);
 
   // Load our sounds
   pAudioBufferPieceHitsGround = pAudioManager->CreateBuffer(TEXT("data/audio/piece_hits_ground.wav"));
