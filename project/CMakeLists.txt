@@ -126,7 +126,7 @@ SET(OUTPUT_LIBRARY_SOURCE_FILES ${OUTPUT_FILES})
 
 
 SET(PROJECT_SOURCE_FILES
-application.cpp main.cpp tetris.cpp
+application.cpp main.cpp states.cpp tetris.cpp
 )
 PREFIX_PATHS(${PROJECT_SRC} ${PROJECT_SOURCE_FILES})
 SET(OUTPUT_PROJECT_SOURCE_FILES ${OUTPUT_FILES})
