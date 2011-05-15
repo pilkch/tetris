@@ -122,7 +122,7 @@ bool cApplication::Create()
   pWindow->SetInputEventListener(*this);
 
   // Push our first state
-  PushState(new cStateGame(*this));
+  PushState(new cStateMenu(*this));
 
   return true;
 }
@@ -195,9 +195,11 @@ void cApplication::PopState()
 {
   cState* pOldState = GetState();
   if (pOldState != nullptr) {
+    // Delete and remove the old state
     delete pOldState;
     states.pop();
 
+    // Prepare the previous state
     cState* pCurrentState = GetState();
     if (pCurrentState != nullptr) pCurrentState->Resume();
   }
@@ -218,6 +220,8 @@ void cApplication::ProcessStateEvents()
     if (pState != nullptr) PushState(pState);
     else PopState(); // A null state event means "Pop the current state"
   }
+
+  stateEvents.clear();
 }
 
 void cApplication::Run()

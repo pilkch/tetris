@@ -82,6 +82,179 @@ cBoardRepresentation::cBoardRepresentation(tetris::cBoard& _board) :
 }
 
 
+// ** cState Menu
+
+cStateMenu::cStateMenu(cApplication& application) :
+  cState(application),
+  pStaticVertexBufferObjectText(nullptr),
+  highlighted(OPTION::NEW_GAME),
+  bIsKeyUp(false),
+  bIsKeyDown(false),
+  bIsKeyReturn(false)
+{
+  UpdateText();
+}
+
+cStateMenu::~cStateMenu()
+{
+  if (pStaticVertexBufferObjectText != nullptr) {
+    pContext->DestroyStaticVertexBufferObject(pStaticVertexBufferObjectText);
+    pStaticVertexBufferObjectText = nullptr;
+  }
+}
+
+void cStateMenu::UpdateText()
+{
+  assert(pFont != nullptr);
+
+  if (pStaticVertexBufferObjectText != nullptr) {
+    pContext->DestroyStaticVertexBufferObject(pStaticVertexBufferObjectText);
+    pStaticVertexBufferObjectText = nullptr;
+  }
+
+  pStaticVertexBufferObjectText = pContext->CreateStaticVertexBufferObject();
+
+  std::vector<float> vertices;
+  std::vector<float> colours;
+  std::vector<float> textureCoordinates;
+
+  opengl::cGeometryBuilder_v2_c4_t2 builder(vertices, colours, textureCoordinates);
+
+  const spitfire::math::cColour white(1.0f, 1.0f, 1.0f);
+  const spitfire::math::cColour red(1.0f, 0.0f, 0.0f);
+
+  const spitfire::string_t options[] = {
+    TEXT("New Game"),
+    TEXT("Preferences"),
+    TEXT("Quit")
+  };
+
+  float y = 0.3f;
+
+  const size_t n = lengthof(options);
+  for (size_t i = 0; i < n; i++) {
+    const spitfire::math::cColour& colour = (int(i) == highlighted) ? red : white;
+
+    // Create the text for this option
+    pFont->PushBack(builder, options[i], colour, spitfire::math::cVec2(0.0f, y));
+    y += 0.05f;
+  }
+
+  pStaticVertexBufferObjectText->SetVertices(vertices);
+  pStaticVertexBufferObjectText->SetColours(colours);
+  pStaticVertexBufferObjectText->SetTextureCoordinates(textureCoordinates);
+
+  pStaticVertexBufferObjectText->Compile2D(system);
+
+  std::cout<<"cStateMenu::UpdateText vertices="<<vertices.size()<<", colours="<<colours.size()<<", textureCoordinates="<<textureCoordinates.size()<<std::endl;
+}
+
+void cStateMenu::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
+{
+  if (event.IsKeyUp()) {
+    switch (event.GetKeyCode()) {
+      case opengl::KEY::UP: {
+        std::cout<<"cStateMenu::_OnKeyboardEvent Up"<<std::endl;
+        bIsKeyUp = true;
+        break;
+      }
+      case opengl::KEY::DOWN: {
+        std::cout<<"cStateMenu::_OnKeyboardEvent Down"<<std::endl;
+        bIsKeyDown = true;
+        break;
+      }
+      case opengl::KEY::RETURN: {
+        std::cout<<"cStateMenu::_OnKeyboardEvent Return"<<std::endl;
+        bIsKeyReturn = true;
+        break;
+      }
+    }
+  }
+}
+
+void cStateMenu::_Update(const cTimeStep& timeStep)
+{
+}
+
+void cStateMenu::_UpdateInput(const cTimeStep& timeStep)
+{
+  if (bIsKeyUp) {
+    bIsKeyUp = false;
+
+    highlighted--;
+    if (highlighted < 0) highlighted = 2;
+
+    UpdateText();
+  } else if (bIsKeyDown) {
+    bIsKeyDown = false;
+
+    highlighted++;
+    if (highlighted > 2) highlighted = 0;
+
+    UpdateText();
+  } else if (bIsKeyReturn) {
+    bIsKeyReturn = false;
+
+    switch (highlighted) {
+      case OPTION::NEW_GAME: {
+        // Push our game state
+        application.PushStateSoon(new cStateGame(application));
+        break;
+      }
+      case OPTION::PREFERENCES: {
+        // TODO: Add preferences for example tile set clasic or new
+        break;
+      }
+      case OPTION::QUIT: {
+        // Pop our menu state
+        application.PopStateSoon();
+        break;
+      }
+    }
+  }
+}
+
+void cStateMenu::_Render(const cTimeStep& timeStep)
+{
+  // Render the scene
+  const spitfire::math::cColour clearColour(0.392156863f, 0.584313725f, 0.929411765f);
+  pContext->SetClearColour(clearColour);
+
+  pContext->BeginRendering();
+
+  {
+    pContext->BeginRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN);
+
+    // Draw the text overlay
+    {
+      // Rendering the font in the middle of the screen
+      spitfire::math::cMat4 matModelView;
+      matModelView.SetTranslation(0.1f, 0.1f, 0.0f);
+
+      //pContext->SetModelViewMatrix(matModelView);
+
+      pContext->BindFont(*pFont);
+
+      pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
+
+      {
+        //pContext->SetModelViewMatrix(matModelView);// * matTranslation * matRotation);
+
+        pContext->DrawStaticVertexBufferObjectQuads2D(*pStaticVertexBufferObjectText);
+      }
+
+      pContext->UnBindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
+
+      pContext->UnBindFont(*pFont);
+    }
+
+    pContext->EndRenderMode2D();
+  }
+
+  pContext->EndRendering();
+}
+
+
 // ** cStateGame
 
 cStateGame::cStateGame(cApplication& application) :
@@ -252,7 +425,7 @@ void cStateGame::UpdateText()
 
   pStaticVertexBufferObjectText->Compile2D(system);
 
-  std::cout<<"cStateGame::CreateBox vertices="<<vertices.size()<<", colours="<<colours.size()<<", textureCoordinates="<<textureCoordinates.size()<<std::endl;
+  std::cout<<"cStateGame::UpdateText vertices="<<vertices.size()<<", colours="<<colours.size()<<", textureCoordinates="<<textureCoordinates.size()<<std::endl;
 }
 
 void cStateGame::UpdateBoardVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board)
