@@ -29,6 +29,27 @@ inline cTimeStep::cTimeStep(spitfire::sampletime_t _currentTimeMS, float _fStepM
 }
 
 
+// ** cBoardRepresentation
+
+class cBoardRepresentation
+{
+public:
+  explicit cBoardRepresentation(tetris::cBoard& board);
+
+  tetris::cBoard& board;
+  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectBoardQuads;
+  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectPieceQuads;
+  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectNextPieceQuads;
+
+  bool bIsInputPieceMoveLeft;
+  bool bIsInputPieceMoveRight;
+  bool bIsInputPieceRotateCounterClockWise;
+  bool bIsInputPieceRotateClockWise;
+  bool bIsInputPieceDropOneRow;
+  bool bIsInputPieceDropToGround;
+};
+
+
 // ** cState
 
 class cState
@@ -72,29 +93,6 @@ private:
   virtual void _UpdateInput(const cTimeStep& timeStep) {}
   virtual void _Render(const cTimeStep& timeStep) {}
 };
-
-
-// ** cBoardRepresentation
-
-class cBoardRepresentation
-{
-public:
-  explicit cBoardRepresentation(tetris::cBoard& board);
-
-  tetris::cBoard& board;
-  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectBoardQuads;
-  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectPieceQuads;
-  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectNextPieceQuads;
-
-  bool bIsInputPieceMoveLeft;
-  bool bIsInputPieceMoveRight;
-  bool bIsInputPieceRotateCounterClockWise;
-  bool bIsInputPieceRotateClockWise;
-  bool bIsInputPieceDropOneRow;
-  bool bIsInputPieceDropToGround;
-};
-
-
 
 
 // ** States
