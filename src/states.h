@@ -108,7 +108,6 @@ private:
 
   void _OnKeyboardEvent(const opengl::cKeyboardEvent& event);
 
-  void _Update(const cTimeStep& timeStep);
   void _UpdateInput(const cTimeStep& timeStep);
   void _Render(const cTimeStep& timeStep);
 
@@ -116,14 +115,35 @@ private:
 
   struct OPTION {
     static const int NEW_GAME = 0;
-    static const int PREFERENCES = 1;
-    static const int QUIT = 2;
+    static const int HIGH_SCORES = 1;
+    static const int PREFERENCES = 2;
+    static const int QUIT = 3;
   };
   int highlighted;
 
   bool bIsKeyUp;
   bool bIsKeyDown;
   bool bIsKeyReturn;
+};
+
+
+class cStateHighScores : public cState
+{
+public:
+  explicit cStateHighScores(cApplication& application);
+  ~cStateHighScores();
+
+private:
+  void UpdateText();
+
+  void _OnKeyboardEvent(const opengl::cKeyboardEvent& event);
+
+  void _UpdateInput(const cTimeStep& timeStep);
+  void _Render(const cTimeStep& timeStep);
+
+  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectText;
+
+  bool bIsDone;
 };
 
 

@@ -82,7 +82,7 @@ cBoardRepresentation::cBoardRepresentation(tetris::cBoard& _board) :
 }
 
 
-// ** cState Menu
+// ** cStateMenu
 
 cStateMenu::cStateMenu(cApplication& application) :
   cState(application),
@@ -125,10 +125,12 @@ void cStateMenu::UpdateText()
 
   const spitfire::string_t options[] = {
     TEXT("New Game"),
+    TEXT("High Scores"),
     TEXT("Preferences"),
     TEXT("Quit")
   };
 
+  const float x = 0.05f;
   float y = 0.3f;
 
   const size_t n = lengthof(options);
@@ -136,7 +138,7 @@ void cStateMenu::UpdateText()
     const spitfire::math::cColour& colour = (int(i) == highlighted) ? red : white;
 
     // Create the text for this option
-    pFont->PushBack(builder, options[i], colour, spitfire::math::cVec2(0.0f, y));
+    pFont->PushBack(builder, options[i], colour, spitfire::math::cVec2(x, y));
     y += 0.05f;
   }
 
@@ -172,24 +174,20 @@ void cStateMenu::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
   }
 }
 
-void cStateMenu::_Update(const cTimeStep& timeStep)
-{
-}
-
 void cStateMenu::_UpdateInput(const cTimeStep& timeStep)
 {
   if (bIsKeyUp) {
     bIsKeyUp = false;
 
     highlighted--;
-    if (highlighted < 0) highlighted = 2;
+    if (highlighted < OPTION::NEW_GAME) highlighted = OPTION::QUIT;
 
     UpdateText();
   } else if (bIsKeyDown) {
     bIsKeyDown = false;
 
     highlighted++;
-    if (highlighted > 2) highlighted = 0;
+    if (highlighted > OPTION::QUIT) highlighted = OPTION::NEW_GAME;
 
     UpdateText();
   } else if (bIsKeyReturn) {
@@ -199,6 +197,11 @@ void cStateMenu::_UpdateInput(const cTimeStep& timeStep)
       case OPTION::NEW_GAME: {
         // Push our game state
         application.PushStateSoon(new cStateGame(application));
+        break;
+      }
+      case OPTION::HIGH_SCORES: {
+        // Push our high scores state
+        application.PushStateSoon(new cStateHighScores(application));
         break;
       }
       case OPTION::PREFERENCES: {
@@ -215,6 +218,137 @@ void cStateMenu::_UpdateInput(const cTimeStep& timeStep)
 }
 
 void cStateMenu::_Render(const cTimeStep& timeStep)
+{
+  // Render the scene
+  const spitfire::math::cColour clearColour(0.392156863f, 0.584313725f, 0.929411765f);
+  pContext->SetClearColour(clearColour);
+
+  pContext->BeginRendering();
+
+  {
+    pContext->BeginRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN);
+
+    // Draw the text overlay
+    {
+      // Rendering the font in the middle of the screen
+      spitfire::math::cMat4 matModelView;
+      matModelView.SetTranslation(0.1f, 0.1f, 0.0f);
+
+      //pContext->SetModelViewMatrix(matModelView);
+
+      pContext->BindFont(*pFont);
+
+      pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
+
+      {
+        //pContext->SetModelViewMatrix(matModelView);// * matTranslation * matRotation);
+
+        pContext->DrawStaticVertexBufferObjectQuads2D(*pStaticVertexBufferObjectText);
+      }
+
+      pContext->UnBindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
+
+      pContext->UnBindFont(*pFont);
+    }
+
+    pContext->EndRenderMode2D();
+  }
+
+  pContext->EndRendering();
+}
+
+
+// ** cStateHighScores
+
+cStateHighScores::cStateHighScores(cApplication& application) :
+  cState(application),
+  pStaticVertexBufferObjectText(nullptr),
+  bIsDone(false)
+{
+  UpdateText();
+}
+
+cStateHighScores::~cStateHighScores()
+{
+  if (pStaticVertexBufferObjectText != nullptr) {
+    pContext->DestroyStaticVertexBufferObject(pStaticVertexBufferObjectText);
+    pStaticVertexBufferObjectText = nullptr;
+  }
+}
+
+void cStateHighScores::UpdateText()
+{
+  assert(pFont != nullptr);
+
+  if (pStaticVertexBufferObjectText != nullptr) {
+    pContext->DestroyStaticVertexBufferObject(pStaticVertexBufferObjectText);
+    pStaticVertexBufferObjectText = nullptr;
+  }
+
+  pStaticVertexBufferObjectText = pContext->CreateStaticVertexBufferObject();
+
+  std::vector<float> vertices;
+  std::vector<float> colours;
+  std::vector<float> textureCoordinates;
+
+  opengl::cGeometryBuilder_v2_c4_t2 builder(vertices, colours, textureCoordinates);
+
+  const spitfire::math::cColour white(1.0f, 1.0f, 1.0f);
+  const spitfire::math::cColour red(1.0f, 0.0f, 0.0f);
+
+  const float x = 0.05f;
+  float y = 0.3f;
+
+  {
+    // Create the text for this option
+    pFont->PushBack(builder, TEXT("High Scores"), red, spitfire::math::cVec2(x, y));
+    y += 0.05f;
+    y += 0.05f;
+    pFont->PushBack(builder, TEXT("Name"), red, spitfire::math::cVec2(x, y));
+    pFont->PushBack(builder, TEXT("Score"), red, spitfire::math::cVec2(x + 0.2f, y));
+    y += 0.05f;
+  }
+
+  const size_t n = 10;
+  for (size_t i = 0; i < n; i++) {
+    pFont->PushBack(builder, TEXT("Name"), white, spitfire::math::cVec2(x, y));
+    pFont->PushBack(builder, TEXT("0"), white, spitfire::math::cVec2(x + 0.2f, y));
+    y += 0.05f;
+  }
+
+  pStaticVertexBufferObjectText->SetVertices(vertices);
+  pStaticVertexBufferObjectText->SetColours(colours);
+  pStaticVertexBufferObjectText->SetTextureCoordinates(textureCoordinates);
+
+  pStaticVertexBufferObjectText->Compile2D(system);
+
+  std::cout<<"cStateHighScores::UpdateText vertices="<<vertices.size()<<", colours="<<colours.size()<<", textureCoordinates="<<textureCoordinates.size()<<std::endl;
+}
+
+void cStateHighScores::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
+{
+  if (event.IsKeyUp()) {
+    switch (event.GetKeyCode()) {
+      case opengl::KEY::ESCAPE:
+      case opengl::KEY::RETURN: {
+        bIsDone = true;
+        break;
+      }
+    }
+  }
+}
+
+void cStateHighScores::_UpdateInput(const cTimeStep& timeStep)
+{
+  if (bIsDone) {
+    bIsDone = false;
+
+    // Pop our high scores state
+    application.PopStateSoon();
+  }
+}
+
+void cStateHighScores::_Render(const cTimeStep& timeStep)
 {
   // Render the scene
   const spitfire::math::cColour clearColour(0.392156863f, 0.584313725f, 0.929411765f);
