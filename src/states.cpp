@@ -33,6 +33,9 @@
 #include <spitfire/math/cQuaternion.h>
 #include <spitfire/math/cColour.h>
 
+#include <spitfire/storage/filesystem.h>
+#include <spitfire/storage/xml.h>
+
 // Breathe headers
 #include <breathe/audio/audio.h>
 
@@ -66,8 +69,10 @@ cState::cState(cApplication& _application) :
 
 // ** cBoardRepresentation
 
-cBoardRepresentation::cBoardRepresentation(tetris::cBoard& _board) :
+cBoardRepresentation::cBoardRepresentation(tetris::cBoard& _board, const spitfire::string_t& _sName) :
   board(_board),
+  sName(_sName),
+
   pStaticVertexBufferObjectBoardQuads(nullptr),
   pStaticVertexBufferObjectPieceQuads(nullptr),
   pStaticVertexBufferObjectNextPieceQuads(nullptr),
@@ -79,6 +84,178 @@ cBoardRepresentation::cBoardRepresentation(tetris::cBoard& _board) :
   bIsInputPieceDropOneRow(false),
   bIsInputPieceDropToGround(false)
 {
+}
+
+
+// ** cHighScoresTableEntry
+
+class cHighScoresTableEntry
+{
+public:
+  bool IsValid() const { return !sName.empty(); }
+
+  static bool ScoreCompare(const cHighScoresTableEntry& lhs, const cHighScoresTableEntry& rhs);
+
+  spitfire::string_t sName;
+  int score;
+};
+
+bool cHighScoresTableEntry::ScoreCompare(const cHighScoresTableEntry& lhs, const cHighScoresTableEntry& rhs)
+{
+  return (lhs.score > rhs.score);
+}
+
+// ** cHighScoresTable
+
+class cHighScoresTable
+{
+public:
+  bool Load();
+  bool Save();
+
+  size_t GetEntryCount() const;
+  const cHighScoresTableEntry& GetEntry(size_t index) const;
+  bool IsScoreGoodEnough(int score) const;
+  bool SubmitEntry(const spitfire::string_t& sName, int score);
+
+private:
+  void Clear();
+
+  static const size_t nMaxEntries = 10;
+
+  std::vector<cHighScoresTableEntry> entries;
+};
+
+void cHighScoresTable::Clear()
+{
+  entries.clear();
+}
+
+bool cHighScoresTable::Load()
+{
+  Clear();
+
+  spitfire::xml::reader reader;
+
+  spitfire::xml::document doc;
+  const spitfire::string_t sFilename = spitfire::filesystem::GetThisApplicationSettingsDirectory() + TEXT("config.xml");
+  if (!reader.ReadFromFile(doc, sFilename)) {
+    std::cout<<"cHighScoresTable::Load \""<<spitfire::string::ToUTF8(sFilename)<<"\" not found"<<std::endl;
+    return false;
+  }
+
+
+  spitfire::xml::cNode::iterator iterConfig(doc);
+  if (!iterConfig.IsValid()) return false;
+
+  iterConfig.FindChild("config");
+  if (!iterConfig.IsValid()) return false;
+
+  // Load high scores
+  {
+    spitfire::xml::cNode::iterator iter(iterConfig);
+
+    iter.FindChild("highscores");
+    if (iter.IsValid()) {
+      iter.FindChild("entry");
+      if (iter.IsValid()) {
+        while (iter.IsValid()) {
+          spitfire::string_t sName;
+          if (iter.GetAttribute("name", sName)) {
+            std::cout<<"Adding High Score "<<spitfire::string::ToUTF8(sName)<<std::endl;
+            cHighScoresTableEntry entry;
+
+            entry.sName = spitfire::string::ToString_t(sName);
+            iter.GetAttribute("score", entry.score);
+
+            entries.push_back(entry);
+          }
+
+          iter.Next("entry");
+        };
+      }
+    }
+  }
+
+  return true;
+}
+
+bool cHighScoresTable::Save()
+{
+  spitfire::xml::document doc;
+
+  spitfire::xml::element* configElement = doc.CreateElement("config");
+  doc.AppendChild(configElement);
+
+  if (!entries.empty()) {
+    spitfire::xml::element* highscoresElement = doc.CreateElement("highscores");
+    configElement->AppendChild(highscoresElement);
+
+    // Entries
+    const size_t n = entries.size();
+    for (size_t i = 0; i < n; i++) {
+      spitfire::xml::element* entryElement = doc.CreateElement("entry");
+      highscoresElement->AppendChild(entryElement);
+
+      entryElement->AddAttribute("name", entries[i].sName);
+      const uint64_t score = entries[i].score;
+      entryElement->AddAttribute("score", score);
+    }
+  }
+
+  // Now actually write the xml to filename
+  spitfire::xml::writer writer;
+
+  const spitfire::string_t sFolder = spitfire::filesystem::GetThisApplicationSettingsDirectory();
+  spitfire::filesystem::CreateDirectory(sFolder);
+  const spitfire::string_t sFilename = sFolder + TEXT("config.xml");
+  std::cout<<"cHighScoresTable::Save "<<spitfire::string::ToUTF8(sFilename)<<std::endl;
+  return writer.WriteToFile(doc, sFilename);
+}
+
+size_t cHighScoresTable::GetEntryCount() const
+{
+  return entries.size();
+}
+
+const cHighScoresTableEntry& cHighScoresTable::GetEntry(size_t index) const
+{
+  assert(index < entries.size());
+  return entries[index];
+}
+
+bool cHighScoresTable::IsScoreGoodEnough(int score) const
+{
+  const size_t n = entries.size();
+  if (n < nMaxEntries) return true;
+
+  // If the score better than the last score than it is not good enough to get in
+  return (score > entries[nMaxEntries - 1].score);
+}
+
+bool cHighScoresTable::SubmitEntry(const spitfire::string_t& sName, int score)
+{
+  // If we don't have enough scores yet then add a new entry
+  if (GetEntryCount() < nMaxEntries) {
+    cHighScoresTableEntry entry;
+    entry.sName = sName;
+    entry.score = score;
+    entries.push_back(entry);
+    return true;
+  }
+
+  if (IsScoreGoodEnough(score)) {
+    // Overwrite the last entry with our new entry
+    cHighScoresTableEntry entry;
+    entry.sName = sName;
+    entry.score = score;
+    entries[nMaxEntries - 1] = entry;
+
+    // Sort the entries
+    std::sort(entries.begin(), entries.end(), cHighScoresTableEntry::ScoreCompare);
+  }
+
+  return false;
 }
 
 
@@ -131,7 +308,7 @@ void cStateMenu::UpdateText()
   };
 
   const float x = 0.05f;
-  float y = 0.3f;
+  float y = 0.2f;
 
   const size_t n = lengthof(options);
   for (size_t i = 0; i < n; i++) {
@@ -297,7 +474,7 @@ void cStateHighScores::UpdateText()
   const spitfire::math::cColour red(1.0f, 0.0f, 0.0f);
 
   const float x = 0.05f;
-  float y = 0.3f;
+  float y = 0.2f;
 
   {
     // Create the text for this option
@@ -309,11 +486,17 @@ void cStateHighScores::UpdateText()
     y += 0.05f;
   }
 
-  const size_t n = 10;
+  cHighScoresTable table;
+  table.Load();
+
+  const size_t n = table.GetEntryCount();
   for (size_t i = 0; i < n; i++) {
-    pFont->PushBack(builder, TEXT("Name"), white, spitfire::math::cVec2(x, y));
-    pFont->PushBack(builder, TEXT("0"), white, spitfire::math::cVec2(x + 0.2f, y));
-    y += 0.05f;
+    const cHighScoresTableEntry& entry = table.GetEntry(i);
+    std::wostringstream o;
+    o<<entry.score;
+    pFont->PushBack(builder, entry.sName, white, spitfire::math::cVec2(x, y));
+    pFont->PushBack(builder, o.str(), white, spitfire::math::cVec2(x + 0.2f, y));
+    y += 0.03f;
   }
 
   pStaticVertexBufferObjectText->SetVertices(vertices);
@@ -426,7 +609,10 @@ cStateGame::cStateGame(cApplication& application) :
 
   for (size_t i = 0; i < game.boards.size(); i++) {
     tetris::cBoard& board = *(game.boards[i]);
-    cBoardRepresentation* pBoardRepresentation = new cBoardRepresentation(board);
+    std::wostringstream o;
+    o<<TEXT("Player");
+    o<<(i + 1);
+    cBoardRepresentation* pBoardRepresentation = new cBoardRepresentation(board, o.str());
 
     pBoardRepresentation->pStaticVertexBufferObjectBoardQuads = pContext->CreateStaticVertexBufferObject();
     UpdateBoardVBO(pBoardRepresentation->pStaticVertexBufferObjectBoardQuads, board);
@@ -528,7 +714,7 @@ void cStateGame::UpdateText()
     yellow
   };
 
-  float y = 0.3f;
+  float y = 0.2f;
 
   for (size_t i = 0; i < game.boards.size(); i++) {
     tetris::cBoard& board = *(game.boards[i]);
@@ -769,6 +955,19 @@ void cStateGame::_OnGameOver(const tetris::cBoard& board)
   std::cout<<"cStateGame::_OnGameOver"<<std::endl;
   application.PlaySound(pAudioBufferGameOver);
   //... show game over screen, stop game
+
+  cHighScoresTable table;
+  table.Load();
+
+  if (table.IsScoreGoodEnough(board.GetScore())) {
+    const size_t n = boardRepresentations.size();
+    for (size_t i = 0; i < n; i++) {
+      if (&boardRepresentations[i]->board == &board) {
+        table.SubmitEntry(boardRepresentations[i]->sName, board.GetScore());
+        table.Save();
+      }
+    }
+  }
 }
 
 void cStateGame::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)

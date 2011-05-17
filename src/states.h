@@ -34,9 +34,11 @@ inline cTimeStep::cTimeStep(spitfire::sampletime_t _currentTimeMS, float _fStepM
 class cBoardRepresentation
 {
 public:
-  explicit cBoardRepresentation(tetris::cBoard& board);
+  cBoardRepresentation(tetris::cBoard& board, const spitfire::string_t& sName);
 
   tetris::cBoard& board;
+  spitfire::string_t sName;
+
   opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectBoardQuads;
   opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectPieceQuads;
   opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectNextPieceQuads;
