@@ -137,7 +137,7 @@ bool cHighScoresTable::Load()
 
   spitfire::xml::reader reader;
 
-  spitfire::xml::document doc;
+  spitfire::document::cDocument doc;
   const spitfire::string_t sFilename = spitfire::filesystem::GetThisApplicationSettingsDirectory() + TEXT("config.xml");
   if (!reader.ReadFromFile(doc, sFilename)) {
     std::cout<<"cHighScoresTable::Load \""<<spitfire::string::ToUTF8(sFilename)<<"\" not found"<<std::endl;
@@ -145,7 +145,7 @@ bool cHighScoresTable::Load()
   }
 
 
-  spitfire::xml::cNode::iterator iterConfig(doc);
+  spitfire::document::cNode::iterator iterConfig(doc);
   if (!iterConfig.IsValid()) return false;
 
   iterConfig.FindChild("config");
@@ -153,7 +153,7 @@ bool cHighScoresTable::Load()
 
   // Load high scores
   {
-    spitfire::xml::cNode::iterator iter(iterConfig);
+    spitfire::document::cNode::iterator iter(iterConfig);
 
     iter.FindChild("highscores");
     if (iter.IsValid()) {
@@ -182,19 +182,19 @@ bool cHighScoresTable::Load()
 
 bool cHighScoresTable::Save()
 {
-  spitfire::xml::document doc;
+  spitfire::document::cDocument doc;
 
-  spitfire::xml::element* configElement = doc.CreateElement("config");
+  spitfire::document::element* configElement = doc.CreateElement("config");
   doc.AppendChild(configElement);
 
   if (!entries.empty()) {
-    spitfire::xml::element* highscoresElement = doc.CreateElement("highscores");
+    spitfire::document::element* highscoresElement = doc.CreateElement("highscores");
     configElement->AppendChild(highscoresElement);
 
     // Entries
     const size_t n = entries.size();
     for (size_t i = 0; i < n; i++) {
-      spitfire::xml::element* entryElement = doc.CreateElement("entry");
+      spitfire::document::element* entryElement = doc.CreateElement("entry");
       highscoresElement->AppendChild(entryElement);
 
       entryElement->AddAttribute("name", entries[i].sName);
