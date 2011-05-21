@@ -58,6 +58,7 @@
 
 cState::cState(cApplication& _application) :
   application(_application),
+  settings(application.settings),
   system(application.system),
   pWindow(application.pWindow),
   pContext(application.pContext),
@@ -87,29 +88,13 @@ cBoardRepresentation::cBoardRepresentation(tetris::cBoard& _board, const spitfir
 }
 
 
-// ** cHighScoresTableEntry
-
-class cHighScoresTableEntry
-{
-public:
-  bool IsValid() const { return !sName.empty(); }
-
-  static bool ScoreCompare(const cHighScoresTableEntry& lhs, const cHighScoresTableEntry& rhs);
-
-  spitfire::string_t sName;
-  int score;
-};
-
-bool cHighScoresTableEntry::ScoreCompare(const cHighScoresTableEntry& lhs, const cHighScoresTableEntry& rhs)
-{
-  return (lhs.score > rhs.score);
-}
-
 // ** cHighScoresTable
 
 class cHighScoresTable
 {
 public:
+  explicit cHighScoresTable(cSettings& settings);
+
   bool Load();
   bool Save();
 
@@ -120,97 +105,47 @@ public:
 
 private:
   void Clear();
+  void Sort();
+
+  cSettings& settings;
 
   static const size_t nMaxEntries = 10;
 
   std::vector<cHighScoresTableEntry> entries;
 };
 
+cHighScoresTable::cHighScoresTable(cSettings& _settings) :
+  settings(_settings)
+{
+}
+
 void cHighScoresTable::Clear()
 {
   entries.clear();
+}
+
+void cHighScoresTable::Sort()
+{
+  // Sort the entries
+  std::sort(entries.begin(), entries.end(), cHighScoresTableEntry::ScoreCompare);
 }
 
 bool cHighScoresTable::Load()
 {
   Clear();
 
-  spitfire::xml::reader reader;
+  entries = settings.GetHighScores();
 
-  spitfire::document::cDocument doc;
-  const spitfire::string_t sFilename = spitfire::filesystem::GetThisApplicationSettingsDirectory() + TEXT("config.xml");
-  if (!reader.ReadFromFile(doc, sFilename)) {
-    std::cout<<"cHighScoresTable::Load \""<<spitfire::string::ToUTF8(sFilename)<<"\" not found"<<std::endl;
-    return false;
-  }
-
-
-  spitfire::document::cNode::iterator iterConfig(doc);
-  if (!iterConfig.IsValid()) return false;
-
-  iterConfig.FindChild("config");
-  if (!iterConfig.IsValid()) return false;
-
-  // Load high scores
-  {
-    spitfire::document::cNode::iterator iter(iterConfig);
-
-    iter.FindChild("highscores");
-    if (iter.IsValid()) {
-      iter.FindChild("entry");
-      if (iter.IsValid()) {
-        while (iter.IsValid()) {
-          spitfire::string_t sName;
-          if (iter.GetAttribute("name", sName)) {
-            std::cout<<"Adding High Score "<<spitfire::string::ToUTF8(sName)<<std::endl;
-            cHighScoresTableEntry entry;
-
-            entry.sName = spitfire::string::ToString_t(sName);
-            iter.GetAttribute("score", entry.score);
-
-            entries.push_back(entry);
-          }
-
-          iter.Next("entry");
-        };
-      }
-    }
-  }
+  Sort();
 
   return true;
 }
 
 bool cHighScoresTable::Save()
 {
-  spitfire::document::cDocument doc;
+  settings.SetHighScores(entries);
 
-  spitfire::document::element* configElement = doc.CreateElement("config");
-  doc.AppendChild(configElement);
-
-  if (!entries.empty()) {
-    spitfire::document::element* highscoresElement = doc.CreateElement("highscores");
-    configElement->AppendChild(highscoresElement);
-
-    // Entries
-    const size_t n = entries.size();
-    for (size_t i = 0; i < n; i++) {
-      spitfire::document::element* entryElement = doc.CreateElement("entry");
-      highscoresElement->AppendChild(entryElement);
-
-      entryElement->AddAttribute("name", entries[i].sName);
-      const uint64_t score = entries[i].score;
-      entryElement->AddAttribute("score", score);
-    }
-  }
-
-  // Now actually write the xml to filename
-  spitfire::xml::writer writer;
-
-  const spitfire::string_t sFolder = spitfire::filesystem::GetThisApplicationSettingsDirectory();
-  spitfire::filesystem::CreateDirectory(sFolder);
-  const spitfire::string_t sFilename = sFolder + TEXT("config.xml");
-  std::cout<<"cHighScoresTable::Save "<<spitfire::string::ToUTF8(sFilename)<<std::endl;
-  return writer.WriteToFile(doc, sFilename);
+  return true;
 }
 
 size_t cHighScoresTable::GetEntryCount() const
@@ -252,7 +187,7 @@ bool cHighScoresTable::SubmitEntry(const spitfire::string_t& sName, int score)
     entries[nMaxEntries - 1] = entry;
 
     // Sort the entries
-    std::sort(entries.begin(), entries.end(), cHighScoresTableEntry::ScoreCompare);
+    Sort();
   }
 
   return false;
@@ -486,7 +421,7 @@ void cStateHighScores::UpdateText()
     y += 0.05f;
   }
 
-  cHighScoresTable table;
+  cHighScoresTable table(settings);
   table.Load();
 
   const size_t n = table.GetEntryCount();
@@ -956,7 +891,7 @@ void cStateGame::_OnGameOver(const tetris::cBoard& board)
   application.PlaySound(pAudioBufferGameOver);
   //... show game over screen, stop game
 
-  cHighScoresTable table;
+  cHighScoresTable table(settings);
   table.Load();
 
   if (table.IsScoreGoodEnough(board.GetScore())) {

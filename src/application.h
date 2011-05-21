@@ -3,6 +3,8 @@
 
 #include <stack>
 
+#include "settings.h"
+
 class cTimeStep;
 class cState;
 
@@ -46,6 +48,7 @@ private:
   typedef cState* cStateEvent;
   std::vector<cStateEvent> stateEvents;
 
+  cSettings settings;
 
   bool bIsDone;
 

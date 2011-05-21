@@ -73,6 +73,7 @@ public:
 
 protected:
   cApplication& application;
+  cSettings& settings;
 
   opengl::cSystem& system;
   opengl::cWindow* pWindow;

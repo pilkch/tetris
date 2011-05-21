@@ -68,11 +68,13 @@ cApplication::cApplication() :
 
   pAudioManager(nullptr)
 {
+  settings.Load();
 }
 
 cApplication::~cApplication()
 {
-   Destroy();
+  Destroy();
+  settings.Save();
 }
 
 void cApplication::PlaySound(breathe::audio::cBufferRef pBuffer)
