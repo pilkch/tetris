@@ -42,6 +42,11 @@ public:
   void SetHighScores(const std::vector<cHighScoresTableEntry>& entries);
 
 private:
+  template <class T>
+  T GetXMLValue(const spitfire::string_t& sSection, const spitfire::string_t& sItem, const spitfire::string_t& sAttribute, const T& valueDefault) const;
+  template <class T>
+  void SetXMLValue(const spitfire::string_t& sSection, const spitfire::string_t& sItem, const spitfire::string_t& sAttribute, const T& value);
+
   spitfire::document::cDocument document;
 };
 

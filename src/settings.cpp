@@ -68,58 +68,132 @@ void cSettings::Save()
   }
 }
 
-size_t cSettings::GetNumberOfPlayers() const
+template <class T>
+T cSettings::GetXMLValue(const spitfire::string_t& sSection, const spitfire::string_t& sItem, const spitfire::string_t& sAttribute, const T& valueDefault) const
 {
-  size_t nPlayers = 1;
-
-  std::vector<cHighScoresTableEntry> entries;
+  T value = valueDefault;
 
   spitfire::document::cNode::const_iterator iterConfig(document);
-  if (!iterConfig.IsValid()) return nPlayers;
+  if (!iterConfig.IsValid()) return value;
 
   iterConfig.FindChild("config");
-  if (!iterConfig.IsValid()) return nPlayers;
+  if (!iterConfig.IsValid()) return value;
 
   {
     spitfire::document::cNode::const_iterator iter(iterConfig);
 
-    iter.FindChild("players");
+    iter.FindChild(spitfire::string::ToUTF8(sSection));
     if (iter.IsValid()) {
-      spitfire::string_t sNumberOfPlayers;
-      if (iter.GetAttribute("numberOfPlayers", sNumberOfPlayers)) {
-        std::cout<<"cSettings::SetHighScores Number of players found "<<spitfire::string::ToUTF8(sNumberOfPlayers)<<std::endl;
-        nPlayers = spitfire::string::ToUnsignedInt(sNumberOfPlayers);
+      iter.FindChild(spitfire::string::ToUTF8(sItem));
+      if (iter.IsValid()) {
+        iter.GetAttribute(spitfire::string::ToUTF8(sAttribute), value);
+        //std::cout<<"cSettings::GetXMLValue Item \""<<sItem<<"\" found "<<spitfire::string::ToString(value)<<std::endl;
       }
     }
   }
 
-  return nPlayers;
+  return value;
+}
+
+template <class T>
+void cSettings::SetXMLValue(const spitfire::string_t& sSection, const spitfire::string_t& sItem, const spitfire::string_t& sAttribute, const T& value)
+{
+  // Get or create the document
+  spitfire::document::cNode::iterator iterConfig(document);
+  if (!iterConfig.IsValid()) {
+    spitfire::document::element* configElement = document.CreateElement("config");
+    document.AppendChild(configElement);
+    iterConfig = document;
+    assert(iterConfig.IsValid());
+  }
+
+  // Get or create the config element
+  iterConfig.FindChild("config");
+  if (!iterConfig.IsValid()) {
+    spitfire::document::element* configElement = document.CreateElement("config");
+    document.AppendChild(configElement);
+    iterConfig = document;
+    assert(iterConfig.IsValid());
+    iterConfig.FindChild("config");
+    assert(iterConfig.IsValid());
+  }
+
+  // Get or create the section element
+  spitfire::document::cNode::iterator iterSection(iterConfig);
+  iterSection.FindChild(spitfire::string::ToUTF8(sSection));
+  if (!iterSection.IsValid()) {
+    spitfire::document::element* sectionElement = document.CreateElement(spitfire::string::ToUTF8(sSection));
+    spitfire::document::element* configElement = iterConfig.Get();
+    configElement->AppendChild(sectionElement);
+    iterSection = iterConfig;
+    assert(iterSection.IsValid());
+    iterSection.FindChild(spitfire::string::ToUTF8(sSection));
+    assert(iterSection.IsValid());
+  }
+
+  // Get or create the item element
+  spitfire::document::cNode::iterator iterItem(iterSection);
+  iterItem.FindChild(spitfire::string::ToUTF8(sItem));
+  if (!iterItem.IsValid()) {
+    spitfire::document::element* itemElement = document.CreateElement(spitfire::string::ToUTF8(sItem));
+    spitfire::document::element* sectionElement = iterSection.Get();
+    sectionElement->AppendChild(itemElement);
+    iterItem = iterSection;
+    assert(iterItem.IsValid());
+    iterItem.FindChild(spitfire::string::ToUTF8(sItem));
+    assert(iterItem.IsValid());
+  }
+
+  spitfire::document::element* itemElement = iterItem.Get();
+
+  // Create and append the item element
+  itemElement->SetAttribute(spitfire::string::ToUTF8(sAttribute), value);
+}
+
+size_t cSettings::GetNumberOfPlayers() const
+{
+  return GetXMLValue(TEXT("settings"), TEXT("numberOfPlayers"), TEXT("value"), 1);
 }
 
 void cSettings::SetNumberOfPlayers(size_t nPlayers)
 {
-  ...
+  SetXMLValue(TEXT("settings"), TEXT("numberOfPlayers"), TEXT("value"), nPlayers);
 }
 
 spitfire::string_t cSettings::GetPlayerName(size_t i) const
 {
   spitfire::ostringstream_t o;
+  o<<"player";
+  o<<i;
+  const spitfire::string_t sItem = o.str();
+
+  // Clear the stream
+  o.clear();
+  o.str(TEXT(""));
   o<<"Player ";
   o<<i;
-  spitfire::string_t sPlayerName = o.str();
+  const spitfire::string_t sDefaultValue = o.str();
 
-  ...
-
-  return sPlayerName;
+  return GetXMLValue(TEXT("players"), sItem, TEXT("name"), sDefaultValue);
 }
 
 void cSettings::SetPlayerName(size_t i, const spitfire::string_t& sName)
 {
-  ...
+  spitfire::ostringstream_t o;
+  o<<"player";
+  o<<i;
+  const spitfire::string_t sItem = o.str();
+
+  SetXMLValue(TEXT("players"), sItem, TEXT("name"), sName);
 }
 
 spitfire::math::cColour cSettings::GetPlayerColour(size_t i) const
 {
+  spitfire::ostringstream_t o;
+  o<<"player";
+  o<<i;
+  const spitfire::string_t sItem = o.str();
+
   const spitfire::math::cColour red(1.0f, 0.0f, 0.0f);
   const spitfire::math::cColour blue(0.0f, 0.0f, 1.0f);
   const spitfire::math::cColour yellow(1.0f, 1.0f, 0.0f);
@@ -131,16 +205,19 @@ spitfire::math::cColour cSettings::GetPlayerColour(size_t i) const
     green
   };
   assert(i < 4);
-  spitfire::math::cColour colour = defaultColours[i];
+  spitfire::math::cColour defaultValue = defaultColours[i];
 
-  ...
-
-  return colour;
+  return GetXMLValue(TEXT("settings"), sItem, TEXT("colour"), defaultValue);
 }
 
 void cSettings::SetPlayerColour(size_t i, const spitfire::math::cColour& colour)
 {
-  ... find the node in document and set the colour
+  spitfire::ostringstream_t o;
+  o<<"player";
+  o<<i;
+  const spitfire::string_t sItem = o.str();
+
+  SetXMLValue(TEXT("settings"), sItem, TEXT("colour"), colour);
 }
 
 std::vector<cHighScoresTableEntry> cSettings::GetHighScores() const
@@ -226,8 +303,8 @@ void cSettings::SetHighScores(const std::vector<cHighScoresTableEntry>& entries)
     spitfire::document::element* entryElement = document.CreateElement("entry");
     highscoresElement->AppendChild(entryElement);
 
-    entryElement->AddAttribute("name", entries[i].sName);
+    entryElement->SetAttribute("name", entries[i].sName);
     const uint64_t score = entries[i].score;
-    entryElement->AddAttribute("score", score);
+    entryElement->SetAttribute("score", score);
   }
 }

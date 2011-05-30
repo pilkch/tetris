@@ -238,7 +238,7 @@ void cStateMenu::UpdateText()
   const spitfire::string_t options[] = {
     TEXT("New Game"),
     TEXT("High Scores"),
-    TEXT("Preferences"),
+    //TEXT("Preferences"),
     TEXT("Quit")
   };
 
@@ -308,7 +308,7 @@ void cStateMenu::_UpdateInput(const cTimeStep& timeStep)
     switch (highlighted) {
       case OPTION::NEW_GAME: {
         // Push our game state
-        application.PushStateSoon(new cStateGame(application));
+        application.PushStateSoon(new cStateNewGame(application));
         break;
       }
       case OPTION::HIGH_SCORES: {
@@ -316,10 +316,10 @@ void cStateMenu::_UpdateInput(const cTimeStep& timeStep)
         application.PushStateSoon(new cStateHighScores(application));
         break;
       }
-      case OPTION::PREFERENCES: {
-        // TODO: Add preferences for example tile set clasic or new
-        break;
-      }
+      //case OPTION::PREFERENCES: {
+      //  // TODO: Add preferences for example tile set clasic or new
+      //  break;
+      //}
       case OPTION::QUIT: {
         // Pop our menu state
         application.PopStateSoon();
@@ -330,6 +330,189 @@ void cStateMenu::_UpdateInput(const cTimeStep& timeStep)
 }
 
 void cStateMenu::_Render(const cTimeStep& timeStep)
+{
+  // Render the scene
+  const spitfire::math::cColour clearColour(0.392156863f, 0.584313725f, 0.929411765f);
+  pContext->SetClearColour(clearColour);
+
+  pContext->BeginRendering();
+
+  {
+    pContext->BeginRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN);
+
+    // Draw the text overlay
+    {
+      // Rendering the font in the middle of the screen
+      spitfire::math::cMat4 matModelView;
+      matModelView.SetTranslation(0.1f, 0.1f, 0.0f);
+
+      //pContext->SetModelViewMatrix(matModelView);
+
+      pContext->BindFont(*pFont);
+
+      pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
+
+      {
+        //pContext->SetModelViewMatrix(matModelView);// * matTranslation * matRotation);
+
+        pContext->DrawStaticVertexBufferObjectQuads2D(*pStaticVertexBufferObjectText);
+      }
+
+      pContext->UnBindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
+
+      pContext->UnBindFont(*pFont);
+    }
+
+    pContext->EndRenderMode2D();
+  }
+
+  pContext->EndRendering();
+}
+
+
+// ** cStateNewGame
+
+cStateNewGame::cStateNewGame(cApplication& application) :
+  cState(application),
+  pStaticVertexBufferObjectText(nullptr),
+  highlighted(OPTION::NUMBER_OF_PLAYERS),
+  bIsKeyUp(false),
+  bIsKeyDown(false),
+  bIsKeyReturn(false)
+{
+  UpdateText();
+}
+
+cStateNewGame::~cStateNewGame()
+{
+  if (pStaticVertexBufferObjectText != nullptr) {
+    pContext->DestroyStaticVertexBufferObject(pStaticVertexBufferObjectText);
+    pStaticVertexBufferObjectText = nullptr;
+  }
+}
+
+void cStateNewGame::UpdateText()
+{
+  assert(pFont != nullptr);
+
+  if (pStaticVertexBufferObjectText != nullptr) {
+    pContext->DestroyStaticVertexBufferObject(pStaticVertexBufferObjectText);
+    pStaticVertexBufferObjectText = nullptr;
+  }
+
+  pStaticVertexBufferObjectText = pContext->CreateStaticVertexBufferObject();
+
+  std::vector<float> vertices;
+  std::vector<float> colours;
+  std::vector<float> textureCoordinates;
+
+  opengl::cGeometryBuilder_v2_c4_t2 builder(vertices, colours, textureCoordinates);
+
+  const spitfire::math::cColour white(1.0f, 1.0f, 1.0f);
+  const spitfire::math::cColour red(1.0f, 0.0f, 0.0f);
+
+  const float x = 0.05f;
+  float y = 0.2f;
+
+  pFont->PushBack(builder, TEXT("Number of Players:"), (OPTION::NUMBER_OF_PLAYERS == highlighted) ? red : white, spitfire::math::cVec2(x, y));
+  pFont->PushBack(builder, TEXT("1"), (OPTION::NUMBER_OF_PLAYERS == highlighted) ? red : white, spitfire::math::cVec2(0.5f, y));
+  y += 0.05f;
+
+  pFont->PushBack(builder, TEXT("Name"), white, spitfire::math::cVec2(x, y));
+  y += 0.05f;
+
+  pFont->PushBack(builder, TEXT("Player 1:"), (OPTION::NAME_PLAYER1 == highlighted) ? red : white, spitfire::math::cVec2(x, y));
+  pFont->PushBack(builder, TEXT("|"), (OPTION::NAME_PLAYER1 == highlighted) ? red : white, spitfire::math::cVec2(0.5f, y));
+  y += 0.05f;
+
+  pFont->PushBack(builder, TEXT("Player 2:"), (OPTION::NAME_PLAYER2 == highlighted) ? red : white, spitfire::math::cVec2(x, y));
+  pFont->PushBack(builder, TEXT("|"), (OPTION::NAME_PLAYER2 == highlighted) ? red : white, spitfire::math::cVec2(0.5f, y));
+  y += 0.05f;
+
+  pFont->PushBack(builder, TEXT("Start Game"), (OPTION::START == highlighted) ? red : white, spitfire::math::cVec2(x, y));
+  y += 0.05f;
+
+  pFont->PushBack(builder, TEXT("Back"), (OPTION::BACK == highlighted) ? red : white, spitfire::math::cVec2(x, y));
+  y += 0.05f;
+
+  pStaticVertexBufferObjectText->SetVertices(vertices);
+  pStaticVertexBufferObjectText->SetColours(colours);
+  pStaticVertexBufferObjectText->SetTextureCoordinates(textureCoordinates);
+
+  pStaticVertexBufferObjectText->Compile2D(system);
+
+  std::cout<<"cStateNewGame::UpdateText vertices="<<vertices.size()<<", colours="<<colours.size()<<", textureCoordinates="<<textureCoordinates.size()<<std::endl;
+}
+
+void cStateNewGame::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
+{
+  if (event.IsKeyUp()) {
+    switch (event.GetKeyCode()) {
+      case opengl::KEY::UP: {
+        std::cout<<"cStateNewGame::_OnKeyboardEvent Up"<<std::endl;
+        bIsKeyUp = true;
+        break;
+      }
+      case opengl::KEY::DOWN: {
+        std::cout<<"cStateNewGame::_OnKeyboardEvent Down"<<std::endl;
+        bIsKeyDown = true;
+        break;
+      }
+      case opengl::KEY::RETURN: {
+        std::cout<<"cStateNewGame::_OnKeyboardEvent Return"<<std::endl;
+        bIsKeyReturn = true;
+        break;
+      }
+    }
+  }
+}
+
+void cStateNewGame::_UpdateInput(const cTimeStep& timeStep)
+{
+  if (bIsKeyUp) {
+    bIsKeyUp = false;
+
+    highlighted--;
+    if (highlighted < OPTION::NUMBER_OF_PLAYERS) highlighted = OPTION::BACK;
+
+    UpdateText();
+  } else if (bIsKeyDown) {
+    bIsKeyDown = false;
+
+    highlighted++;
+    if (highlighted > OPTION::BACK) highlighted = OPTION::NUMBER_OF_PLAYERS;
+
+    UpdateText();
+  } else if (bIsKeyReturn) {
+    bIsKeyReturn = false;
+
+    switch (highlighted) {
+      case OPTION::NUMBER_OF_PLAYERS: {
+        break;
+      }
+      case OPTION::NAME_PLAYER1: {
+        break;
+      }
+      case OPTION::NAME_PLAYER2: {
+        break;
+      }
+      case OPTION::START: {
+        // Pop our current state
+        application.PopStateSoon();
+        // Push our game state
+        application.PushStateSoon(new cStateGame(application));
+        break;
+      }
+      case OPTION::BACK: {
+        // Pop our menu state
+        application.PopStateSoon();
+        break;
+      }
+    }
+  }
+}
+
+void cStateNewGame::_Render(const cTimeStep& timeStep)
 {
   // Render the scene
   const spitfire::math::cColour clearColour(0.392156863f, 0.584313725f, 0.929411765f);
@@ -560,7 +743,6 @@ cStateGame::cStateGame(cApplication& application) :
 
     boardRepresentations.push_back(pBoardRepresentation);
   }
-
 
   UpdateText();
 

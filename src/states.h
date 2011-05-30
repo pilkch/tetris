@@ -119,8 +119,8 @@ private:
   struct OPTION {
     static const int NEW_GAME = 0;
     static const int HIGH_SCORES = 1;
-    static const int PREFERENCES = 2;
-    static const int QUIT = 3;
+    //static const int PREFERENCES = 2;
+    static const int QUIT = 2;
   };
   int highlighted;
 
@@ -129,6 +129,35 @@ private:
   bool bIsKeyReturn;
 };
 
+class cStateNewGame : public cState
+{
+public:
+  explicit cStateNewGame(cApplication& application);
+  ~cStateNewGame();
+
+private:
+  void UpdateText();
+
+  void _OnKeyboardEvent(const opengl::cKeyboardEvent& event);
+
+  void _UpdateInput(const cTimeStep& timeStep);
+  void _Render(const cTimeStep& timeStep);
+
+  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectText;
+
+  struct OPTION {
+    static const int NUMBER_OF_PLAYERS = 0;
+    static const int NAME_PLAYER1 = 1;
+    static const int NAME_PLAYER2 = 2;
+    static const int START = 3;
+    static const int BACK = 4;
+  };
+  int highlighted;
+
+  bool bIsKeyUp;
+  bool bIsKeyDown;
+  bool bIsKeyReturn;
+};
 
 class cStateHighScores : public cState
 {
