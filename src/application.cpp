@@ -287,9 +287,9 @@ void cApplication::Run()
       pState->UpdateInput(timeStep);
     }
 
-    // Perform an Update, these are locked at 100 fps
-    if ((currentTime - lastUpdateTime) > 100) {
-      const cTimeStep timeStep(currentTime, 100);
+    // Perform an Update, these are locked at 30 fps
+    if ((currentTime - lastUpdateTime) > 33) {
+      const cTimeStep timeStep(currentTime, 33);
       cState* pState = GetState();
       assert(pState != nullptr);
       pState->Update(timeStep);

@@ -22,6 +22,17 @@
 // SDL headers
 #include <SDL/SDL_image.h>
 
+// libopenglmm headers
+#include <libopenglmm/libopenglmm.h>
+#include <libopenglmm/cContext.h>
+#include <libopenglmm/cFont.h>
+#include <libopenglmm/cGeometry.h>
+#include <libopenglmm/cShader.h>
+#include <libopenglmm/cSystem.h>
+#include <libopenglmm/cTexture.h>
+#include <libopenglmm/cVertexBufferObject.h>
+#include <libopenglmm/cWindow.h>
+
 // Spitfire headers
 #include <spitfire/spitfire.h>
 
@@ -39,20 +50,15 @@
 // Breathe headers
 #include <breathe/audio/audio.h>
 
-// libopenglmm headers
-#include <libopenglmm/libopenglmm.h>
-#include <libopenglmm/cContext.h>
-#include <libopenglmm/cFont.h>
-#include <libopenglmm/cGeometry.h>
-#include <libopenglmm/cShader.h>
-#include <libopenglmm/cSystem.h>
-#include <libopenglmm/cTexture.h>
-#include <libopenglmm/cVertexBufferObject.h>
-#include <libopenglmm/cWindow.h>
+#include <breathe/gui/cManager.h>
+#include <breathe/gui/cRenderer.h>
 
 // Tetris headers
 #include "application.h"
 #include "states.h"
+
+breathe::gui::cManager* pGuiManager = nullptr;
+breathe::gui::cRenderer* pGuiRenderer = nullptr;
 
 // ** cState
 
@@ -63,7 +69,8 @@ cState::cState(cApplication& _application) :
   pWindow(application.pWindow),
   pContext(application.pContext),
   pFont(application.pFont),
-  pAudioManager(application.pAudioManager)
+  pAudioManager(application.pAudioManager),
+  bIsWireframe(false)
 {
 }
 
@@ -83,7 +90,10 @@ cBoardRepresentation::cBoardRepresentation(tetris::cBoard& _board, const spitfir
   bIsInputPieceRotateCounterClockWise(false),
   bIsInputPieceRotateClockWise(false),
   bIsInputPieceDropOneRow(false),
-  bIsInputPieceDropToGround(false)
+  bIsInputPieceDropToGround(false),
+
+  lastKeyLeft(0),
+  lastKeyRight(0)
 {
 }
 
@@ -194,6 +204,67 @@ bool cHighScoresTable::SubmitEntry(const spitfire::string_t& sName, int score)
 }
 
 
+
+template <class T>
+class cSpring
+{
+public:
+  cSpring();
+
+  T GetPosition() const { return position; }
+  void SetPosition(const T& position);
+
+  void SetVelocity(const T& velocity);
+
+  void Update(const cTimeStep& timeStep);
+
+private:
+  T dv(const T& x, const T& v) const;
+
+  float fMass;
+  float fK;
+  float fDampening;
+  T position;
+  T velocity;
+};
+
+template <class T>
+cSpring<T>::cSpring() :
+  fMass(0.5f),
+  fK(0.3f),
+  fDampening(0.8f),
+  position(0.0f, 0.0f)
+{
+}
+
+template <class T>
+void cSpring<T>::SetPosition(const T& _position)
+{
+  position = _position;
+}
+
+template <class T>
+void cSpring<T>::SetVelocity(const T& _velocity)
+{
+  velocity = _velocity;
+}
+
+template <class T>
+T cSpring<T>::dv(const T& x, const T& v) const
+{
+  return (-fK / fMass) * x - (fDampening / fMass) * v;
+}
+
+template <class T>
+void cSpring<T>::Update(const cTimeStep& timeStep)
+{
+  velocity += dv(position, velocity);
+  position += velocity;
+}
+
+cSpring<spitfire::math::cVec2> spring;
+
+
 // ** cStateMenu
 
 cStateMenu::cStateMenu(cApplication& application) :
@@ -204,11 +275,45 @@ cStateMenu::cStateMenu(cApplication& application) :
   bIsKeyDown(false),
   bIsKeyReturn(false)
 {
+  std::cout<<"cStateMenu::cStateMenu"<<std::endl;
+
+  pGuiManager = new breathe::gui::cManager;
+
+  breathe::gui::cLayer* pRoot = new breathe::gui::cLayer;
+  pGuiManager->SetRoot(pRoot);
+
+  breathe::gui::cWindow* pWindow = new breathe::gui::cWindow;
+  pWindow->sCaption = TEXT("Caption");
+  pWindow->SetRelativePosition(spitfire::math::cVec2(0.1f, 0.15f));
+  pWindow->width = 0.4f;
+  pWindow->height = 0.4f;
+  pRoot->AddChild(pWindow);
+
+  breathe::gui::cStaticText* pStaticText = new breathe::gui::cStaticText;
+  pStaticText->sCaption = TEXT("StaticText");
+  pStaticText->SetRelativePosition(spitfire::math::cVec2(0.05f, 0.05f));
+  pStaticText->width = 0.15f;
+  pStaticText->height = 0.15f;
+  pWindow->AddChild(pStaticText);
+
+  breathe::gui::cButton* pButton = new breathe::gui::cButton;
+  pButton->sCaption = TEXT("Button");
+  pButton->SetRelativePosition(spitfire::math::cVec2(pStaticText->GetX() + pStaticText->GetWidth() + 0.05f, 0.05f));
+  pButton->width = 0.15f;
+  pButton->height = 0.15f;
+  pWindow->AddChild(pButton);
+
+  pGuiRenderer = new breathe::gui::cRenderer(*pGuiManager, system, *pContext);
+  pGuiRenderer->Update();
+
   UpdateText();
 }
 
 cStateMenu::~cStateMenu()
 {
+  spitfire::SAFE_DELETE(pGuiRenderer);
+  spitfire::SAFE_DELETE(pGuiManager);
+
   if (pStaticVertexBufferObjectText != nullptr) {
     pContext->DestroyStaticVertexBufferObject(pStaticVertexBufferObjectText);
     pStaticVertexBufferObjectText = nullptr;
@@ -267,6 +372,18 @@ void cStateMenu::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
 {
   if (event.IsKeyUp()) {
     switch (event.GetKeyCode()) {
+      case opengl::KEY::NUMBER_1: {
+        std::cout<<"cStateMenu::_OnKeyboardEvent 1 up"<<std::endl;
+        bIsWireframe = !bIsWireframe;
+        break;
+      }
+      case opengl::KEY::NUMBER_2: {
+        std::cout<<"cStateMenu::_OnKeyboardEvent 2 up"<<std::endl;
+        spring.SetPosition(spitfire::math::cVec2(0.0f, -0.05f));
+        spring.SetVelocity(spitfire::math::cVec2(0.0f, -0.00001f));
+        break;
+      }
+
       case opengl::KEY::UP: {
         std::cout<<"cStateMenu::_OnKeyboardEvent Up"<<std::endl;
         bIsKeyUp = true;
@@ -284,6 +401,16 @@ void cStateMenu::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
       }
     }
   }
+}
+
+void cStateMenu::_Update(const cTimeStep& timeStep)
+{
+  // Update the hud offset to shake the gui
+  spring.Update(timeStep);
+
+  pGuiManager->SetHUDOffset(spring.GetPosition());
+
+  pGuiRenderer->Update();
 }
 
 void cStateMenu::_UpdateInput(const cTimeStep& timeStep)
@@ -337,6 +464,8 @@ void cStateMenu::_Render(const cTimeStep& timeStep)
 
   pContext->BeginRendering();
 
+  if (bIsWireframe) pContext->EnableWireframe();
+
   {
     pContext->BeginRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN);
 
@@ -364,6 +493,8 @@ void cStateMenu::_Render(const cTimeStep& timeStep)
     }
 
     pContext->EndRenderMode2D();
+
+    pGuiRenderer->Render();
   }
 
   pContext->EndRendering();
@@ -465,6 +596,16 @@ void cStateNewGame::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
       }
     }
   }
+}
+
+void cStateNewGame::_Update(const cTimeStep& timeStep)
+{
+  // Update the hud offset to shake the gui
+  spring.Update(timeStep);
+
+  pGuiManager->SetHUDOffset(spring.GetPosition());
+
+  pGuiRenderer->Update();
 }
 
 void cStateNewGame::_UpdateInput(const cTimeStep& timeStep)
@@ -639,6 +780,16 @@ void cStateHighScores::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
   }
 }
 
+void cStateHighScores::_Update(const cTimeStep& timeStep)
+{
+  // Update the hud offset to shake the gui
+  spring.Update(timeStep);
+
+  pGuiManager->SetHUDOffset(spring.GetPosition());
+
+  pGuiRenderer->Update();
+}
+
 void cStateHighScores::_UpdateInput(const cTimeStep& timeStep)
 {
   if (bIsDone) {
@@ -694,8 +845,6 @@ void cStateHighScores::_Render(const cTimeStep& timeStep)
 
 cStateGame::cStateGame(cApplication& application) :
   cState(application),
-
-  bIsWireframe(false),
 
   pStaticVertexBufferObjectText(nullptr),
 
@@ -777,7 +926,7 @@ cStateGame::~cStateGame()
       pContext->DestroyStaticVertexBufferObject(pBoardRepresentation->pStaticVertexBufferObjectBoardQuads);
       pBoardRepresentation->pStaticVertexBufferObjectBoardQuads = nullptr;
     }
-    delete pBoardRepresentation;
+    spitfire::SAFE_DELETE(pBoardRepresentation);
   }
 
   boardRepresentations.clear();
@@ -1028,6 +1177,10 @@ void cStateGame::_OnPieceHitsGround(const tetris::cBoard& board)
 {
   std::cout<<"cStateGame::_OnPieceHitsGround"<<std::endl;
   application.PlaySound(pAudioBufferPieceHitsGround);
+
+  // Shake the gui
+  spring.SetPosition(spitfire::math::cVec2(0.0f, -0.02f));
+  spring.SetVelocity(spitfire::math::cVec2(0.0f, -0.00001f));
 }
 
 void cStateGame::_OnBoardChanged(const tetris::cBoard& board)
@@ -1052,6 +1205,10 @@ void cStateGame::_OnGameScoreTetris(const tetris::cBoard& board, uint32_t uiScor
   std::cout<<"cStateGame::_OnGameScoreTetris"<<std::endl;
   application.PlaySound(pAudioBufferScoreTetris);
   UpdateText();
+
+  // Shake the gui
+  spring.SetPosition(spitfire::math::cVec2(0.0f, -0.05f));
+  spring.SetVelocity(spitfire::math::cVec2(0.0f, -0.00001f));
 }
 
 void cStateGame::_OnGameScoreOtherThanTetris(const tetris::cBoard& board, uint32_t uiScore)
@@ -1146,6 +1303,14 @@ void cStateGame::_Update(const cTimeStep& timeStep)
   }
 
   game.Update(timeStep.GetCurrentTimeMS());
+
+
+  // Update the hud offset to shake the gui
+  spring.Update(timeStep);
+
+  pGuiManager->SetHUDOffset(spring.GetPosition());
+
+  pGuiRenderer->Update();
 }
 
 void cStateGame::_UpdateInput(const cTimeStep& timeStep)
@@ -1175,11 +1340,17 @@ void cStateGame::_UpdateInput(const cTimeStep& timeStep)
     }
     if (pWindow->IsKeyHeld(opengl::KEY::LEFT)) {
       //std::cout<<"cStateGame::UpdateInput LEFT Held"<<std::endl;
-      pBoardRepresentation->bIsInputPieceMoveLeft = true;
+      if ((timeStep.GetCurrentTimeMS() - pBoardRepresentation->lastKeyLeft) > 50) {
+        pBoardRepresentation->bIsInputPieceMoveLeft = true;
+        pBoardRepresentation->lastKeyLeft = timeStep.GetCurrentTimeMS();
+      }
     }
     if (pWindow->IsKeyHeld(opengl::KEY::RIGHT)) {
       //std::cout<<"cStateGame::UpdateInput RIGHT Held"<<std::endl;
-      pBoardRepresentation->bIsInputPieceMoveRight = true;
+      if ((timeStep.GetCurrentTimeMS() - pBoardRepresentation->lastKeyRight) > 50) {
+        pBoardRepresentation->bIsInputPieceMoveRight = true;
+        pBoardRepresentation->lastKeyRight = timeStep.GetCurrentTimeMS();
+      }
     }
   } else {
     {
@@ -1204,11 +1375,17 @@ void cStateGame::_UpdateInput(const cTimeStep& timeStep)
       }
       if (pWindow->IsKeyHeld(opengl::KEY::A)) {
         //std::cout<<"cStateGame::UpdateInput A Held"<<std::endl;
-        pBoardRepresentation->bIsInputPieceMoveLeft = true;
+        if ((timeStep.GetCurrentTimeMS() - pBoardRepresentation->lastKeyLeft) > 50) {
+          pBoardRepresentation->bIsInputPieceMoveLeft = true;
+          pBoardRepresentation->lastKeyLeft = timeStep.GetCurrentTimeMS();
+        }
       }
       if (pWindow->IsKeyHeld(opengl::KEY::D)) {
         //std::cout<<"cStateGame::UpdateInput D Held"<<std::endl;
-        pBoardRepresentation->bIsInputPieceMoveRight = true;
+        if ((timeStep.GetCurrentTimeMS() - pBoardRepresentation->lastKeyRight) > 50) {
+          pBoardRepresentation->bIsInputPieceMoveRight = true;
+          pBoardRepresentation->lastKeyRight = timeStep.GetCurrentTimeMS();
+        }
       }
     }
 
@@ -1234,11 +1411,17 @@ void cStateGame::_UpdateInput(const cTimeStep& timeStep)
       }
       if (pWindow->IsKeyHeld(opengl::KEY::LEFT)) {
         //std::cout<<"cStateGame::UpdateInput LEFT Held"<<std::endl;
-        pBoardRepresentation->bIsInputPieceMoveLeft = true;
+        if ((timeStep.GetCurrentTimeMS() - pBoardRepresentation->lastKeyLeft) > 50) {
+          pBoardRepresentation->bIsInputPieceMoveLeft = true;
+          pBoardRepresentation->lastKeyLeft = timeStep.GetCurrentTimeMS();
+        }
       }
       if (pWindow->IsKeyHeld(opengl::KEY::RIGHT)) {
         //std::cout<<"cStateGame::UpdateInput RIGHT Held"<<std::endl;
-        pBoardRepresentation->bIsInputPieceMoveRight = true;
+        if ((timeStep.GetCurrentTimeMS() - pBoardRepresentation->lastKeyRight) > 50) {
+          pBoardRepresentation->bIsInputPieceMoveRight = true;
+          pBoardRepresentation->lastKeyRight = timeStep.GetCurrentTimeMS();
+        }
       }
     }
   }
@@ -1356,6 +1539,8 @@ void cStateGame::_Render(const cTimeStep& timeStep)
 
     pContext->EndRenderMode2D();
   }
+
+  pGuiRenderer->Render();
 
   pContext->EndRendering();
 }

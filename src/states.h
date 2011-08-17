@@ -49,6 +49,9 @@ public:
   bool bIsInputPieceRotateClockWise;
   bool bIsInputPieceDropOneRow;
   bool bIsInputPieceDropToGround;
+
+  spitfire::sampletime_t lastKeyLeft;
+  spitfire::sampletime_t lastKeyRight;
 };
 
 
@@ -82,6 +85,8 @@ protected:
 
   breathe::audio::cManager* pAudioManager;
 
+  bool bIsWireframe;
+
 private:
   virtual void _OnEnter() {}
   virtual void _OnExit() {}
@@ -111,6 +116,7 @@ private:
 
   void _OnKeyboardEvent(const opengl::cKeyboardEvent& event);
 
+  void _Update(const cTimeStep& timeStep);
   void _UpdateInput(const cTimeStep& timeStep);
   void _Render(const cTimeStep& timeStep);
 
@@ -140,6 +146,7 @@ private:
 
   void _OnKeyboardEvent(const opengl::cKeyboardEvent& event);
 
+  void _Update(const cTimeStep& timeStep);
   void _UpdateInput(const cTimeStep& timeStep);
   void _Render(const cTimeStep& timeStep);
 
@@ -170,6 +177,7 @@ private:
 
   void _OnKeyboardEvent(const opengl::cKeyboardEvent& event);
 
+  void _Update(const cTimeStep& timeStep);
   void _UpdateInput(const cTimeStep& timeStep);
   void _Render(const cTimeStep& timeStep);
 
@@ -205,8 +213,6 @@ private:
   void _OnGameScoreOtherThanTetris(const tetris::cBoard& board, uint32_t uiScore);
   void _OnGameNewLevel(const tetris::cBoard& board, uint32_t uiLevel);
   void _OnGameOver(const tetris::cBoard& board);
-
-  bool bIsWireframe;
 
   opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectText;
 

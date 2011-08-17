@@ -4,6 +4,10 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 # Set the project name
 PROJECT(tetris)
 
+SET(CMAKE_BUILD_TYPE Debug)
+SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
+SET(CMAKE_C_FLAGS_RELEASE "-O3")
+
 SET(CMAKE_SOURCE_DIR ./../../library/)
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}cmake/")
 
@@ -106,7 +110,8 @@ SET(OUTPUT_LIBRARY_SPITFIRE_SOURCE_FILES ${OUTPUT_FILES})
 
 SET(LIBRARY_BREATHE_SOURCE_DIRECTORY breathe/)
 SET(LIBRARY_BREATHE_SOURCE_FILES
-audio/audio.cpp audio/audio_openal.cpp audio/audio_sdlmixer.cpp)
+audio/audio.cpp audio/audio_openal.cpp audio/audio_sdlmixer.cpp
+gui/cManager.cpp gui/cRenderer.cpp)
 
 IF(WIN32)
   SET(LIBRARY_BREATHE_SOURCE_FILES ${LIBRARY_BREATHE_SOURCE_FILES})
