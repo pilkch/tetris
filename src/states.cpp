@@ -285,23 +285,37 @@ cStateMenu::cStateMenu(cApplication& application) :
   breathe::gui::cWindow* pWindow = new breathe::gui::cWindow;
   pWindow->sCaption = TEXT("Caption");
   pWindow->SetRelativePosition(spitfire::math::cVec2(0.1f, 0.15f));
-  pWindow->width = 0.4f;
-  pWindow->height = 0.4f;
+  pWindow->width = 0.05f + (2.0f * (0.1f + 0.05f));
+  pWindow->height = 0.05f + (2.0f * (0.1f + 0.05f));
   pRoot->AddChild(pWindow);
 
   breathe::gui::cStaticText* pStaticText = new breathe::gui::cStaticText;
   pStaticText->sCaption = TEXT("StaticText");
   pStaticText->SetRelativePosition(spitfire::math::cVec2(0.05f, 0.05f));
-  pStaticText->width = 0.15f;
-  pStaticText->height = 0.15f;
+  pStaticText->width = 0.1f;
+  pStaticText->height = 0.1f;
   pWindow->AddChild(pStaticText);
 
   breathe::gui::cButton* pButton = new breathe::gui::cButton;
   pButton->sCaption = TEXT("Button");
   pButton->SetRelativePosition(spitfire::math::cVec2(pStaticText->GetX() + pStaticText->GetWidth() + 0.05f, 0.05f));
-  pButton->width = 0.15f;
-  pButton->height = 0.15f;
+  pButton->width = 0.1f;
+  pButton->height = 0.1f;
   pWindow->AddChild(pButton);
+
+  breathe::gui::cInput* pInput = new breathe::gui::cInput;
+  pInput->sCaption = TEXT("Input");
+  pInput->SetRelativePosition(spitfire::math::cVec2(pStaticText->GetX(), pStaticText->GetY() + pStaticText->GetHeight() + 0.05f));
+  pInput->width = 0.1f;
+  pInput->height = 0.1f;
+  pWindow->AddChild(pInput);
+
+  breathe::gui::cSlider* pSlider = new breathe::gui::cSlider;
+  pSlider->sCaption = TEXT("Slider");
+  pSlider->SetRelativePosition(spitfire::math::cVec2(pStaticText->GetX() + pStaticText->GetWidth() + 0.05f, pStaticText->GetY() + pStaticText->GetHeight() + 0.05f));
+  pSlider->width = 0.1f;
+  pSlider->height = 0.1f;
+  pWindow->AddChild(pSlider);
 
   pGuiRenderer = new breathe::gui::cRenderer(*pGuiManager, system, *pContext);
   pGuiRenderer->Update();
