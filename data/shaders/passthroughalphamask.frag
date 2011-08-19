@@ -1,7 +1,7 @@
 
 uniform sampler2D texUnit0; // Base texture
 
-const float tolerance = 0.8;
+const float tolerance = 0.1;
 
 void main()
 {
@@ -9,6 +9,6 @@ void main()
   if (diffuse.a < tolerance) discard;
 
   // TODO: Test with alpha = 1.0
-  gl_FragColor = vec4(diffuse.rgb * gl_Color.rgb, diffuse.a);
+  gl_FragColor = vec4(diffuse * gl_Color);
 }
 
