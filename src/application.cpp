@@ -33,9 +33,6 @@
 #include <spitfire/math/cQuaternion.h>
 #include <spitfire/math/cColour.h>
 
-// Breathe headers
-#include <breathe/audio/audio.h>
-
 // libopenglmm headers
 #include <libopenglmm/libopenglmm.h>
 #include <libopenglmm/cContext.h>
@@ -66,7 +63,10 @@ cApplication::cApplication() :
 
   pFont(nullptr),
 
-  pAudioManager(nullptr)
+  pAudioManager(nullptr),
+
+  pGuiManager(nullptr),
+  pGuiRenderer(nullptr)
 {
   settings.Load();
 }
@@ -123,6 +123,10 @@ bool cApplication::Create()
   pWindow->SetWindowEventListener(*this);
   pWindow->SetInputEventListener(*this);
 
+  // Setup our gui
+  pGuiManager = new breathe::gui::cManager;
+  pGuiRenderer = new breathe::gui::cRenderer(*pGuiManager, system, *pContext);
+
   // Push our first state
   PushState(new cStateMenu(*this));
 
@@ -131,6 +135,9 @@ bool cApplication::Create()
 
 void cApplication::Destroy()
 {
+  spitfire::SAFE_DELETE(pGuiRenderer);
+  spitfire::SAFE_DELETE(pGuiManager);
+
   if (pFont != nullptr) {
     pContext->DestroyFont(pFont);
     pFont = nullptr;

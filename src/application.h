@@ -3,6 +3,13 @@
 
 #include <stack>
 
+// Breathe headers
+#include <breathe/audio/audio.h>
+
+#include <breathe/gui/cManager.h>
+#include <breathe/gui/cRenderer.h>
+
+// Tetris headers
 #include "settings.h"
 
 class cTimeStep;
@@ -72,6 +79,9 @@ public:
   opengl::cFont* pFont;
 
   breathe::audio::cManager* pAudioManager;
+
+  breathe::gui::cManager* pGuiManager;
+  breathe::gui::cRenderer* pGuiRenderer;
 };
 
 #endif // TETRIS_APPLICATION_H

@@ -1,6 +1,10 @@
 #ifndef TETRIS_STATES_H
 #define TETRIS_STATES_H
 
+// Breathe headers
+#include <breathe/gui/cManager.h>
+#include <breathe/gui/cRenderer.h>
+
 // Tetris headers
 #include "application.h"
 #include "tetris.h"
@@ -84,6 +88,9 @@ protected:
   opengl::cFont* pFont;
 
   breathe::audio::cManager* pAudioManager;
+
+  breathe::gui::cManager* pGuiManager;
+  breathe::gui::cRenderer* pGuiRenderer;
 
   bool bIsWireframe;
 

@@ -47,18 +47,9 @@
 #include <spitfire/storage/filesystem.h>
 #include <spitfire/storage/xml.h>
 
-// Breathe headers
-#include <breathe/audio/audio.h>
-
-#include <breathe/gui/cManager.h>
-#include <breathe/gui/cRenderer.h>
-
 // Tetris headers
 #include "application.h"
 #include "states.h"
-
-breathe::gui::cManager* pGuiManager = nullptr;
-breathe::gui::cRenderer* pGuiRenderer = nullptr;
 
 // ** cState
 
@@ -70,6 +61,8 @@ cState::cState(cApplication& _application) :
   pContext(application.pContext),
   pFont(application.pFont),
   pAudioManager(application.pAudioManager),
+  pGuiManager(application.pGuiManager),
+  pGuiRenderer(application.pGuiRenderer),
   bIsWireframe(false)
 {
 }
@@ -277,8 +270,6 @@ cStateMenu::cStateMenu(cApplication& application) :
 {
   std::cout<<"cStateMenu::cStateMenu"<<std::endl;
 
-  pGuiManager = new breathe::gui::cManager;
-
   breathe::gui::cLayer* pRoot = new breathe::gui::cLayer;
   pGuiManager->SetRoot(pRoot);
 
@@ -317,7 +308,6 @@ cStateMenu::cStateMenu(cApplication& application) :
   pSlider->height = 0.1f;
   pWindow->AddChild(pSlider);
 
-  pGuiRenderer = new breathe::gui::cRenderer(*pGuiManager, system, *pContext);
   pGuiRenderer->Update();
 
   UpdateText();
