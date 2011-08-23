@@ -63,8 +63,27 @@ cState::cState(cApplication& _application) :
   pAudioManager(application.pAudioManager),
   pGuiManager(application.pGuiManager),
   pGuiRenderer(application.pGuiRenderer),
+  pLayer(nullptr),
   bIsWireframe(false)
 {
+}
+
+cState::~cState()
+{
+  if (pLayer != nullptr) {
+    breathe::gui::cWidget* pRoot = pGuiManager->GetRoot();
+    if (pRoot != nullptr) pRoot->RemoveChildAndDestroy(pLayer);
+  }
+}
+
+void cState::_OnPause()
+{
+  //if (pLayer != nullptr) pLayer->SetVisible(false);
+}
+
+void cState::_OnResume()
+{
+  //if (pLayer != nullptr) pLayer->SetVisible(true);
 }
 
 
@@ -262,7 +281,6 @@ cSpring<spitfire::math::cVec2> spring;
 
 cStateMenu::cStateMenu(cApplication& application) :
   cState(application),
-  pStaticVertexBufferObjectText(nullptr),
   highlighted(OPTION::NEW_GAME),
   bIsKeyUp(false),
   bIsKeyDown(false),
@@ -273,12 +291,39 @@ cStateMenu::cStateMenu(cApplication& application) :
   breathe::gui::cLayer* pRoot = new breathe::gui::cLayer;
   pGuiManager->SetRoot(pRoot);
 
+  pLayer = new breathe::gui::cLayer;
+  pRoot->AddChild(pLayer);
+
+  const spitfire::string_t options[] = {
+    TEXT("New Game"),
+    TEXT("High Scores"),
+    //TEXT("Preferences"),
+    TEXT("Quit")
+  };
+
+  const float x = 0.04f;
+  float y = 0.1f;
+
+  const size_t n = lengthof(options);
+  for (size_t i = 0; i < n; i++) {
+    // Create the text for this option
+    breathe::gui::cStaticText* pStaticText = new breathe::gui::cStaticText;
+    pStaticText->SetId(i + 1);
+    pStaticText->sCaption = options[i];
+    pStaticText->SetRelativePosition(spitfire::math::cVec2(x, y));
+    pStaticText->width = 0.15f;
+    pStaticText->height = pGuiManager->GetStaticTextHeight();
+    pLayer->AddChild(pStaticText);
+
+    y += pGuiManager->GetStaticTextHeight() + 0.007f;
+  }
+
   breathe::gui::cWindow* pWindow = new breathe::gui::cWindow;
   pWindow->sCaption = TEXT("Caption");
   pWindow->SetRelativePosition(spitfire::math::cVec2(0.1f, 0.15f));
   pWindow->width = 0.05f + (2.0f * (0.1f + 0.05f));
   pWindow->height = 0.05f + (2.0f * (0.1f + 0.05f));
-  pRoot->AddChild(pWindow);
+  pLayer->AddChild(pWindow);
 
   breathe::gui::cStaticText* pStaticText = new breathe::gui::cStaticText;
   pStaticText->sCaption = TEXT("StaticText");
@@ -313,63 +358,21 @@ cStateMenu::cStateMenu(cApplication& application) :
   UpdateText();
 }
 
-cStateMenu::~cStateMenu()
-{
-  spitfire::SAFE_DELETE(pGuiRenderer);
-  spitfire::SAFE_DELETE(pGuiManager);
-
-  if (pStaticVertexBufferObjectText != nullptr) {
-    pContext->DestroyStaticVertexBufferObject(pStaticVertexBufferObjectText);
-    pStaticVertexBufferObjectText = nullptr;
-  }
-}
-
 void cStateMenu::UpdateText()
 {
-  assert(pFont != nullptr);
+  assert(pLayer != nullptr);
 
-  if (pStaticVertexBufferObjectText != nullptr) {
-    pContext->DestroyStaticVertexBufferObject(pStaticVertexBufferObjectText);
-    pStaticVertexBufferObjectText = nullptr;
-  }
+  const spitfire::math::cColour colourDefault(pGuiManager->GetColourText());
+  const spitfire::math::cColour colourRed(1.0f, 0.0f, 0.0f);
 
-  pStaticVertexBufferObjectText = pContext->CreateStaticVertexBufferObject();
-
-  std::vector<float> vertices;
-  std::vector<float> colours;
-  std::vector<float> textureCoordinates;
-
-  opengl::cGeometryBuilder_v2_c4_t2 builder(vertices, colours, textureCoordinates);
-
-  const spitfire::math::cColour white(1.0f, 1.0f, 1.0f);
-  const spitfire::math::cColour red(1.0f, 0.0f, 0.0f);
-
-  const spitfire::string_t options[] = {
-    TEXT("New Game"),
-    TEXT("High Scores"),
-    //TEXT("Preferences"),
-    TEXT("Quit")
-  };
-
-  const float x = 0.05f;
-  float y = 0.2f;
-
-  const size_t n = lengthof(options);
+  const size_t n = 3;
   for (size_t i = 0; i < n; i++) {
-    const spitfire::math::cColour& colour = (int(i) == highlighted) ? red : white;
+    const spitfire::math::cColour colour = (int(i) == highlighted) ? colourRed : colourDefault;
 
     // Create the text for this option
-    pFont->PushBack(builder, options[i], colour, spitfire::math::cVec2(x, y));
-    y += 0.05f;
+    breathe::gui::cWidget* pWidget = pLayer->GetChildById(i + 1);
+    if (pWidget != nullptr) pWidget->SetTextColour(colour);
   }
-
-  pStaticVertexBufferObjectText->SetVertices(vertices);
-  pStaticVertexBufferObjectText->SetColours(colours);
-  pStaticVertexBufferObjectText->SetTextureCoordinates(textureCoordinates);
-
-  pStaticVertexBufferObjectText->Compile2D(system);
-
-  std::cout<<"cStateMenu::UpdateText vertices="<<vertices.size()<<", colours="<<colours.size()<<", textureCoordinates="<<textureCoordinates.size()<<std::endl;
 }
 
 void cStateMenu::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
@@ -468,37 +471,8 @@ void cStateMenu::_Render(const cTimeStep& timeStep)
 
   pContext->BeginRendering();
 
-  if (bIsWireframe) pContext->EnableWireframe();
-
   {
-    pContext->BeginRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN);
-
-    // Draw the text overlay
-    {
-      // Rendering the font in the middle of the screen
-      spitfire::math::cMat4 matModelView;
-      matModelView.SetTranslation(0.1f, 0.1f, 0.0f);
-
-      //pContext->SetModelViewMatrix(matModelView);
-
-      pContext->BindFont(*pFont);
-
-      pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
-
-      {
-        //pContext->SetModelViewMatrix(matModelView);// * matTranslation * matRotation);
-
-        pContext->DrawStaticVertexBufferObjectQuads2D(*pStaticVertexBufferObjectText);
-      }
-
-      pContext->UnBindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
-
-      pContext->UnBindFont(*pFont);
-    }
-
-    pContext->EndRenderMode2D();
-
-    pGuiRenderer->Render();
+    if (pGuiRenderer != nullptr) pGuiRenderer->Render();
   }
 
   pContext->EndRendering();
@@ -692,6 +666,8 @@ void cStateNewGame::_Render(const cTimeStep& timeStep)
     }
 
     pContext->EndRenderMode2D();
+
+    if (pGuiRenderer != nullptr) pGuiRenderer->Render();
   }
 
   pContext->EndRendering();
@@ -839,6 +815,8 @@ void cStateHighScores::_Render(const cTimeStep& timeStep)
     }
 
     pContext->EndRenderMode2D();
+
+    if (pGuiRenderer != nullptr) pGuiRenderer->Render();
   }
 
   pContext->EndRendering();
@@ -1542,9 +1520,9 @@ void cStateGame::_Render(const cTimeStep& timeStep)
     }
 
     pContext->EndRenderMode2D();
-  }
 
-  pGuiRenderer->Render();
+    if (pGuiRenderer != nullptr) pGuiRenderer->Render();
+  }
 
   pContext->EndRendering();
 }

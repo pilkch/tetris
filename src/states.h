@@ -65,7 +65,7 @@ class cState
 {
 public:
   explicit cState(cApplication& application);
-  virtual ~cState() {}
+  virtual ~cState();
 
   void Pause() { _OnPause(); }
   void Resume() { _OnResume(); }
@@ -92,13 +92,15 @@ protected:
   breathe::gui::cManager* pGuiManager;
   breathe::gui::cRenderer* pGuiRenderer;
 
+  breathe::gui::cLayer* pLayer;
+
   bool bIsWireframe;
 
 private:
   virtual void _OnEnter() {}
   virtual void _OnExit() {}
-  virtual void _OnPause() {}
-  virtual void _OnResume() {}
+  virtual void _OnPause();
+  virtual void _OnResume();
 
   virtual void _OnWindowEvent(const opengl::cWindowEvent& event) {}
   virtual void _OnMouseEvent(const opengl::cMouseEvent& event) {}
@@ -116,7 +118,6 @@ class cStateMenu : public cState
 {
 public:
   explicit cStateMenu(cApplication& application);
-  ~cStateMenu();
 
 private:
   void UpdateText();
@@ -126,8 +127,6 @@ private:
   void _Update(const cTimeStep& timeStep);
   void _UpdateInput(const cTimeStep& timeStep);
   void _Render(const cTimeStep& timeStep);
-
-  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectText;
 
   struct OPTION {
     static const int NEW_GAME = 0;
