@@ -49,12 +49,18 @@
 
 int main(int argc, char** argv)
 {
-   cApplication application;
 
-   bool bIsSuccess = application.Create();
-   if (bIsSuccess) application.Run();
 
-   application.Destroy();
+  bool bIsSuccess = true;
 
-   return bIsSuccess ? EXIT_SUCCESS : EXIT_FAILURE;
+  {
+    cApplication application;
+
+    bIsSuccess = application.Create();
+    if (bIsSuccess) application.Run();
+
+    application.Destroy();
+  }
+
+  return bIsSuccess ? EXIT_SUCCESS : EXIT_FAILURE;
 }
