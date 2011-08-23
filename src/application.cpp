@@ -194,6 +194,8 @@ void cApplication::PopStateSoon()
 
 void cApplication::PushState(cState* pState)
 {
+  ASSERT(pState != nullptr);
+
   cState* pOldState = GetState();
   if (pOldState != nullptr) pOldState->Pause();
 
@@ -217,7 +219,10 @@ void cApplication::PopState()
 cState* cApplication::GetState()
 {
   cState* pState = nullptr;
-  if (!states.empty()) pState = states.top();
+  if (!states.empty()) {
+    pState = states.top();
+    ASSERT(pState != nullptr);
+  }
   return pState;
 }
 

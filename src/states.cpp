@@ -72,18 +72,41 @@ cState::~cState()
 {
   if (pLayer != nullptr) {
     breathe::gui::cWidget* pRoot = pGuiManager->GetRoot();
-    if (pRoot != nullptr) pRoot->RemoveChildAndDestroy(pLayer);
+    ASSERT(pRoot != nullptr);
+    pRoot->RemoveChildAndDestroy(pLayer);
   }
 }
 
 void cState::_OnPause()
 {
-  //if (pLayer != nullptr) pLayer->SetVisible(false);
+  if (pLayer != nullptr) pLayer->SetVisible(false);
 }
 
 void cState::_OnResume()
 {
-  //if (pLayer != nullptr) pLayer->SetVisible(true);
+  if (pLayer != nullptr) pLayer->SetVisible(true);
+}
+
+void cState::AddStaticText(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width)
+{
+  breathe::gui::cStaticText* pStaticText = new breathe::gui::cStaticText;
+  pStaticText->SetId(id);
+  pStaticText->sCaption = sText;
+  pStaticText->SetRelativePosition(spitfire::math::cVec2(x, y));
+  pStaticText->width = width;
+  pStaticText->height = pGuiManager->GetStaticTextHeight();
+  pLayer->AddChild(pStaticText);
+}
+
+void cState::AddSelectableStaticText(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width)
+{
+  breathe::gui::cStaticText* pStaticText = new breathe::gui::cStaticText;
+  pStaticText->SetId(id);
+  pStaticText->sCaption = sText;
+  pStaticText->SetRelativePosition(spitfire::math::cVec2(x, y));
+  pStaticText->width = width;
+  pStaticText->height = pGuiManager->GetStaticTextHeight();
+  pLayer->AddChild(pStaticText);
 }
 
 
@@ -302,7 +325,7 @@ cStateMenu::cStateMenu(cApplication& application) :
   };
 
   const float x = 0.04f;
-  float y = 0.1f;
+  float y = 0.2f;
 
   const size_t n = lengthof(options);
   for (size_t i = 0; i < n; i++) {
@@ -324,6 +347,8 @@ cStateMenu::cStateMenu(cApplication& application) :
   pWindow->width = 0.05f + (2.0f * (0.1f + 0.05f));
   pWindow->height = 0.05f + (2.0f * (0.1f + 0.05f));
   pLayer->AddChild(pWindow);
+
+  pWindow->SetVisible(false);
 
   breathe::gui::cStaticText* pStaticText = new breathe::gui::cStaticText;
   pStaticText->sCaption = TEXT("StaticText");
@@ -483,74 +508,66 @@ void cStateMenu::_Render(const cTimeStep& timeStep)
 
 cStateNewGame::cStateNewGame(cApplication& application) :
   cState(application),
-  pStaticVertexBufferObjectText(nullptr),
   highlighted(OPTION::NUMBER_OF_PLAYERS),
   bIsKeyUp(false),
   bIsKeyDown(false),
   bIsKeyReturn(false)
 {
-  UpdateText();
-}
+  breathe::gui::cWidget* pRoot = pGuiManager->GetRoot();
 
-cStateNewGame::~cStateNewGame()
-{
-  if (pStaticVertexBufferObjectText != nullptr) {
-    pContext->DestroyStaticVertexBufferObject(pStaticVertexBufferObjectText);
-    pStaticVertexBufferObjectText = nullptr;
-  }
+  pLayer = new breathe::gui::cLayer;
+  pRoot->AddChild(pLayer);
+
+  const float fSpacerVertical = 0.007f;
+  const float fSpacerHorizontal = 0.007f;
+
+  const float x = 0.04f;
+  float y = 0.2f;
+  const float width = 0.4f;
+
+  breathe::gui::id_t id = 1;
+
+  AddStaticText(0, TEXT("Number of Players:"), x, y, width);
+  AddSelectableStaticText(id, TEXT("1"), x + width + fSpacerHorizontal, y, width);
+  y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
+  id++;
+
+  AddStaticText(0, TEXT("Name"), x, y, width);
+  y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
+  AddStaticText(0, TEXT("Player 1:"), x, y, width);
+  AddSelectableStaticText(id, TEXT("|"), x + width + fSpacerHorizontal, y, width);
+  y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
+  id++;
+  AddStaticText(0, TEXT("Player 2:"), x, y, width);
+  AddSelectableStaticText(id, TEXT("|"), x + width + fSpacerHorizontal, y, width);
+  y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
+  id++;
+
+  AddSelectableStaticText(id, TEXT("Start Game"), x, y, width);
+  y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
+  id++;
+  AddSelectableStaticText(id, TEXT("Back"), x, y, width);
+  y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
+  id++;
+
+  UpdateText();
 }
 
 void cStateNewGame::UpdateText()
 {
-  assert(pFont != nullptr);
+  assert(pLayer != nullptr);
 
-  if (pStaticVertexBufferObjectText != nullptr) {
-    pContext->DestroyStaticVertexBufferObject(pStaticVertexBufferObjectText);
-    pStaticVertexBufferObjectText = nullptr;
+  const spitfire::math::cColour colourDefault(pGuiManager->GetColourText());
+  const spitfire::math::cColour colourRed(1.0f, 0.0f, 0.0f);
+
+  const size_t n = 8;
+  for (size_t i = 0; i < n; i++) {
+    const spitfire::math::cColour colour = (int(i) == highlighted) ? colourRed : colourDefault;
+
+    // Create the text for this option
+    breathe::gui::cWidget* pWidget = pLayer->GetChildById(i + 1);
+    if (pWidget != nullptr) pWidget->SetTextColour(colour);
   }
-
-  pStaticVertexBufferObjectText = pContext->CreateStaticVertexBufferObject();
-
-  std::vector<float> vertices;
-  std::vector<float> colours;
-  std::vector<float> textureCoordinates;
-
-  opengl::cGeometryBuilder_v2_c4_t2 builder(vertices, colours, textureCoordinates);
-
-  const spitfire::math::cColour white(1.0f, 1.0f, 1.0f);
-  const spitfire::math::cColour red(1.0f, 0.0f, 0.0f);
-
-  const float x = 0.05f;
-  float y = 0.2f;
-
-  pFont->PushBack(builder, TEXT("Number of Players:"), (OPTION::NUMBER_OF_PLAYERS == highlighted) ? red : white, spitfire::math::cVec2(x, y));
-  pFont->PushBack(builder, TEXT("1"), (OPTION::NUMBER_OF_PLAYERS == highlighted) ? red : white, spitfire::math::cVec2(0.5f, y));
-  y += 0.05f;
-
-  pFont->PushBack(builder, TEXT("Name"), white, spitfire::math::cVec2(x, y));
-  y += 0.05f;
-
-  pFont->PushBack(builder, TEXT("Player 1:"), (OPTION::NAME_PLAYER1 == highlighted) ? red : white, spitfire::math::cVec2(x, y));
-  pFont->PushBack(builder, TEXT("|"), (OPTION::NAME_PLAYER1 == highlighted) ? red : white, spitfire::math::cVec2(0.5f, y));
-  y += 0.05f;
-
-  pFont->PushBack(builder, TEXT("Player 2:"), (OPTION::NAME_PLAYER2 == highlighted) ? red : white, spitfire::math::cVec2(x, y));
-  pFont->PushBack(builder, TEXT("|"), (OPTION::NAME_PLAYER2 == highlighted) ? red : white, spitfire::math::cVec2(0.5f, y));
-  y += 0.05f;
-
-  pFont->PushBack(builder, TEXT("Start Game"), (OPTION::START == highlighted) ? red : white, spitfire::math::cVec2(x, y));
-  y += 0.05f;
-
-  pFont->PushBack(builder, TEXT("Back"), (OPTION::BACK == highlighted) ? red : white, spitfire::math::cVec2(x, y));
-  y += 0.05f;
-
-  pStaticVertexBufferObjectText->SetVertices(vertices);
-  pStaticVertexBufferObjectText->SetColours(colours);
-  pStaticVertexBufferObjectText->SetTextureCoordinates(textureCoordinates);
-
-  pStaticVertexBufferObjectText->Compile2D(system);
-
-  std::cout<<"cStateNewGame::UpdateText vertices="<<vertices.size()<<", colours="<<colours.size()<<", textureCoordinates="<<textureCoordinates.size()<<std::endl;
 }
 
 void cStateNewGame::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
@@ -640,33 +657,6 @@ void cStateNewGame::_Render(const cTimeStep& timeStep)
   pContext->BeginRendering();
 
   {
-    pContext->BeginRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN);
-
-    // Draw the text overlay
-    {
-      // Rendering the font in the middle of the screen
-      spitfire::math::cMat4 matModelView;
-      matModelView.SetTranslation(0.1f, 0.1f, 0.0f);
-
-      //pContext->SetModelViewMatrix(matModelView);
-
-      pContext->BindFont(*pFont);
-
-      pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
-
-      {
-        //pContext->SetModelViewMatrix(matModelView);// * matTranslation * matRotation);
-
-        pContext->DrawStaticVertexBufferObjectQuads2D(*pStaticVertexBufferObjectText);
-      }
-
-      pContext->UnBindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
-
-      pContext->UnBindFont(*pFont);
-    }
-
-    pContext->EndRenderMode2D();
-
     if (pGuiRenderer != nullptr) pGuiRenderer->Render();
   }
 

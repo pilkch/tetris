@@ -79,6 +79,9 @@ public:
   void Render(const cTimeStep& timeStep) { _Render(timeStep); }
 
 protected:
+  void AddStaticText(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
+  void AddSelectableStaticText(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
+
   cApplication& application;
   cSettings& settings;
 
@@ -145,7 +148,6 @@ class cStateNewGame : public cState
 {
 public:
   explicit cStateNewGame(cApplication& application);
-  ~cStateNewGame();
 
 private:
   void UpdateText();
@@ -155,8 +157,6 @@ private:
   void _Update(const cTimeStep& timeStep);
   void _UpdateInput(const cTimeStep& timeStep);
   void _Render(const cTimeStep& timeStep);
-
-  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectText;
 
   struct OPTION {
     static const int NUMBER_OF_PLAYERS = 0;
