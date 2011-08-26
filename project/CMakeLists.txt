@@ -111,7 +111,8 @@ SET(OUTPUT_LIBRARY_SPITFIRE_SOURCE_FILES ${OUTPUT_FILES})
 SET(LIBRARY_BREATHE_SOURCE_DIRECTORY breathe/)
 SET(LIBRARY_BREATHE_SOURCE_FILES
 audio/audio.cpp audio/audio_openal.cpp audio/audio_sdlmixer.cpp
-gui/cManager.cpp gui/cRenderer.cpp)
+gui/cManager.cpp gui/cRenderer.cpp
+render/cTextureAtlas.cpp)
 
 IF(WIN32)
   SET(LIBRARY_BREATHE_SOURCE_FILES ${LIBRARY_BREATHE_SOURCE_FILES})
