@@ -87,6 +87,16 @@ void cState::_OnResume()
   if (pLayer != nullptr) pLayer->SetVisible(true);
 }
 
+void cState::_OnMouseEvent(const opengl::cMouseEvent& event)
+{
+  const float x = event.GetX() / pContext->GetWidth();
+  const float y = event.GetY() / pContext->GetHeight();
+
+  if (event.IsButtonDown()) pGuiManager->InjectEventMouseDown(event.GetButton(), x, y);
+  else if (event.IsButtonUp()) pGuiManager->InjectEventMouseUp(event.GetButton(), x, y);
+  else pGuiManager->InjectEventMouseMove(event.GetButton(), x, y);
+}
+
 void cState::AddStaticText(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width)
 {
   breathe::gui::cStaticText* pStaticText = new breathe::gui::cStaticText;

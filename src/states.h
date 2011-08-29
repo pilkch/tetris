@@ -106,7 +106,7 @@ private:
   virtual void _OnResume();
 
   virtual void _OnWindowEvent(const opengl::cWindowEvent& event) {}
-  virtual void _OnMouseEvent(const opengl::cMouseEvent& event) {}
+  virtual void _OnMouseEvent(const opengl::cMouseEvent& event);
   virtual void _OnKeyboardEvent(const opengl::cKeyboardEvent& event) {}
 
   virtual void _Update(const cTimeStep& timeStep) {}
