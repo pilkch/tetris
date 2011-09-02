@@ -98,7 +98,7 @@ T cSettings::GetXMLValue(const spitfire::string_t& sSection, const spitfire::str
 template <class T>
 void cSettings::SetXMLValue(const spitfire::string_t& sSection, const spitfire::string_t& sItem, const spitfire::string_t& sAttribute, const T& value)
 {
-  // Get or create the document
+  // Get or create the config element
   spitfire::document::cNode::iterator iterConfig(document);
   if (!iterConfig.IsValid()) {
     spitfire::document::element* configElement = document.CreateElement("config");
@@ -237,22 +237,16 @@ std::vector<cHighScoresTableEntry> cSettings::GetHighScores() const
     iter.FindChild("highscores");
     if (iter.IsValid()) {
       iter.FindChild("entry");
-      if (iter.IsValid()) {
-        while (iter.IsValid()) {
-          spitfire::string_t sName;
-          if (iter.GetAttribute("name", sName)) {
-            std::cout<<"cSettings::SetHighScores Adding High Score "<<spitfire::string::ToUTF8(sName)<<std::endl;
-            cHighScoresTableEntry entry;
+      while (iter.IsValid()) {
+        cHighScoresTableEntry entry;
+        if (iter.GetAttribute("name", entry.sName)) {
+          iter.GetAttribute("score", entry.score);
 
-            entry.sName = spitfire::string::ToString_t(sName);
-            iter.GetAttribute("score", entry.score);
+          entries.push_back(entry);
+        }
 
-            entries.push_back(entry);
-          }
-
-          iter.Next("entry");
-        };
-      }
+        iter.Next("entry");
+      };
     }
   }
 
@@ -261,16 +255,9 @@ std::vector<cHighScoresTableEntry> cSettings::GetHighScores() const
 
 void cSettings::SetHighScores(const std::vector<cHighScoresTableEntry>& entries)
 {
-  // Get or create the document
-  spitfire::document::cNode::iterator iterConfig(document);
-  if (!iterConfig.IsValid()) {
-    spitfire::document::element* configElement = document.CreateElement("config");
-    document.AppendChild(configElement);
-    iterConfig = document;
-    assert(iterConfig.IsValid());
-  }
-
   // Get or create the config element
+  spitfire::document::cNode::iterator iterConfig(document);
+
   iterConfig.FindChild("config");
   if (!iterConfig.IsValid()) {
     spitfire::document::element* configElement = document.CreateElement("config");
@@ -282,20 +269,17 @@ void cSettings::SetHighScores(const std::vector<cHighScoresTableEntry>& entries)
   }
 
   // Get or create the highscores element
-  spitfire::document::cNode::iterator iterHighscores(iterConfig);
-  iterHighscores.FindChild("highscores");
+  spitfire::document::cNode::iterator iterHighscores(iterConfig.GetChild("highscores"));
   if (!iterHighscores.IsValid()) {
     spitfire::document::element* highscoresElement = document.CreateElement("highscores");
     spitfire::document::element* configElement = iterConfig.Get();
     configElement->AppendChild(highscoresElement);
-    iterHighscores = iterConfig;
-    assert(iterHighscores.IsValid());
-    iterHighscores.FindChild("highscores");
+    iterHighscores = iterConfig.GetChild("highscores");
     assert(iterHighscores.IsValid());
   }
 
   spitfire::document::element* highscoresElement = iterHighscores.Get();
-  highscoresElement->Clear();
+  highscoresElement->RemoveChildren();
 
   // Entries
   const size_t n = entries.size();

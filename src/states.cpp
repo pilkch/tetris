@@ -235,14 +235,13 @@ bool cHighScoresTable::SubmitEntry(const spitfire::string_t& sName, int score)
   }
 
   if (IsScoreGoodEnough(score)) {
-    // Overwrite the last entry with our new entry
-    cHighScoresTableEntry entry;
-    entry.sName = sName;
-    entry.score = score;
-    entries[nMaxEntries - 1] = entry;
+    // Set the last entry to our new entry
+    entries[nMaxEntries - 1].sName = sName;
+    entries[nMaxEntries - 1].score = score;
 
     // Sort the entries
     Sort();
+    return true;
   }
 
   return false;
@@ -352,6 +351,7 @@ cStateMenu::cStateMenu(cApplication& application) :
   }
 
   breathe::gui::cWindow* pWindow = new breathe::gui::cWindow;
+  pWindow->SetId(101);
   pWindow->sCaption = TEXT("Caption");
   pWindow->SetRelativePosition(spitfire::math::cVec2(0.1f, 0.15f));
   pWindow->width = 0.05f + (2.0f * (0.1f + 0.05f));
@@ -361,6 +361,7 @@ cStateMenu::cStateMenu(cApplication& application) :
   pWindow->SetVisible(false);
 
   breathe::gui::cStaticText* pStaticText = new breathe::gui::cStaticText;
+  pStaticText->SetId(102);
   pStaticText->sCaption = TEXT("StaticText");
   pStaticText->SetRelativePosition(spitfire::math::cVec2(0.03f, 0.05f));
   pStaticText->width = 0.15f;
@@ -368,6 +369,7 @@ cStateMenu::cStateMenu(cApplication& application) :
   pWindow->AddChild(pStaticText);
 
   breathe::gui::cButton* pButton = new breathe::gui::cButton;
+  pButton->SetId(103);
   pButton->sCaption = TEXT("Button");
   pButton->SetRelativePosition(spitfire::math::cVec2(pStaticText->GetX() + pStaticText->GetWidth() + 0.05f, 0.05f));
   pButton->width = 0.15f;
@@ -375,6 +377,7 @@ cStateMenu::cStateMenu(cApplication& application) :
   pWindow->AddChild(pButton);
 
   breathe::gui::cInput* pInput = new breathe::gui::cInput;
+  pInput->SetId(104);
   pInput->sCaption = TEXT("Input");
   pInput->SetRelativePosition(spitfire::math::cVec2(pStaticText->GetX(), pStaticText->GetY() + pStaticText->GetHeight() + 0.05f));
   pInput->width = 0.15f;
@@ -382,6 +385,7 @@ cStateMenu::cStateMenu(cApplication& application) :
   pWindow->AddChild(pInput);
 
   breathe::gui::cSlider* pSlider = new breathe::gui::cSlider;
+  pSlider->SetId(105);
   pSlider->sCaption = TEXT("Slider");
   pSlider->SetRelativePosition(spitfire::math::cVec2(pStaticText->GetX() + pStaticText->GetWidth() + 0.05f, pStaticText->GetY() + pStaticText->GetHeight() + 0.05f));
   pSlider->width = 0.15f;
