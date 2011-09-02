@@ -80,7 +80,8 @@ public:
 
 protected:
   void AddStaticText(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
-  void AddSelectableStaticText(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
+  void AddRetroButton(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
+  void AddRetroInput(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
 
   cApplication& application;
   cSettings& settings;

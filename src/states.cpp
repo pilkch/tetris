@@ -108,15 +108,26 @@ void cState::AddStaticText(breathe::gui::id_t id, const spitfire::string_t& sTex
   pLayer->AddChild(pStaticText);
 }
 
-void cState::AddSelectableStaticText(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width)
+void cState::AddRetroButton(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width)
 {
-  breathe::gui::cStaticText* pStaticText = new breathe::gui::cStaticText;
-  pStaticText->SetId(id);
-  pStaticText->sCaption = sText;
-  pStaticText->SetRelativePosition(spitfire::math::cVec2(x, y));
-  pStaticText->width = width;
-  pStaticText->height = pGuiManager->GetStaticTextHeight();
-  pLayer->AddChild(pStaticText);
+  breathe::gui::cRetroButton* pRetroButton = new breathe::gui::cRetroButton;
+  pRetroButton->SetId(id);
+  pRetroButton->sCaption = sText;
+  pRetroButton->SetRelativePosition(spitfire::math::cVec2(x, y));
+  pRetroButton->width = width;
+  pRetroButton->height = pGuiManager->GetStaticTextHeight();
+  pLayer->AddChild(pRetroButton);
+}
+
+void cState::AddRetroInput(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width)
+{
+  breathe::gui::cRetroInput* pRetroInput = new breathe::gui::cRetroInput;
+  pRetroInput->SetId(id);
+  pRetroInput->sCaption = sText;
+  pRetroInput->SetRelativePosition(spitfire::math::cVec2(x, y));
+  pRetroInput->width = width;
+  pRetroInput->height = pGuiManager->GetStaticTextHeight();
+  pLayer->AddChild(pRetroInput);
 }
 
 
@@ -542,25 +553,25 @@ cStateNewGame::cStateNewGame(cApplication& application) :
   breathe::gui::id_t id = 1;
 
   AddStaticText(0, TEXT("Number of Players:"), x, y, width);
-  AddSelectableStaticText(id, TEXT("1"), x + width + fSpacerHorizontal, y, width);
+  AddRetroInput(id, TEXT("2"), x + width + fSpacerHorizontal, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
   id++;
 
   AddStaticText(0, TEXT("Name"), x, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
   AddStaticText(0, TEXT("Player 1:"), x, y, width);
-  AddSelectableStaticText(id, TEXT("|"), x + width + fSpacerHorizontal, y, width);
+  AddRetroInput(id, TEXT("|"), x + width + fSpacerHorizontal, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
   id++;
   AddStaticText(0, TEXT("Player 2:"), x, y, width);
-  AddSelectableStaticText(id, TEXT("|"), x + width + fSpacerHorizontal, y, width);
+  AddRetroInput(id, TEXT("|"), x + width + fSpacerHorizontal, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
   id++;
 
-  AddSelectableStaticText(id, TEXT("Start Game"), x, y, width);
+  AddRetroButton(id, TEXT("Start Game"), x, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
   id++;
-  AddSelectableStaticText(id, TEXT("Back"), x, y, width);
+  AddRetroButton(id, TEXT("Back"), x, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
   id++;
 
