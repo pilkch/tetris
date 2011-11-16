@@ -177,6 +177,7 @@ SET(LIBRARIES_LINKED
   freetype
   boost_iostreams
   boost_filesystem
+  boost_system
 )
 
 
