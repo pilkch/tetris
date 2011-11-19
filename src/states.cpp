@@ -87,14 +87,26 @@ void cState::_OnResume()
   if (pLayer != nullptr) pLayer->SetVisible(true);
 }
 
+void cState::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
+{
+  bool bIsHandled = false;
+  if (event.IsKeyDown()) bIsHandled = pGuiManager->InjectEventKeyboardDown(event.GetKeyCode());
+  else bIsHandled = pGuiManager->InjectEventKeyboardUp(event.GetKeyCode());
+
+  if (!bIsHandled) _OnStateKeyboardEvent(event);
+}
+
 void cState::_OnMouseEvent(const opengl::cMouseEvent& event)
 {
   const float x = event.GetX() / pContext->GetWidth();
   const float y = event.GetY() / pContext->GetHeight();
 
-  if (event.IsButtonDown()) pGuiManager->InjectEventMouseDown(event.GetButton(), x, y);
-  else if (event.IsButtonUp()) pGuiManager->InjectEventMouseUp(event.GetButton(), x, y);
-  else pGuiManager->InjectEventMouseMove(event.GetButton(), x, y);
+  bool bIsHandled = false;
+  if (event.IsButtonDown()) bIsHandled = pGuiManager->InjectEventMouseDown(event.GetButton(), x, y);
+  else if (event.IsButtonUp()) bIsHandled = pGuiManager->InjectEventMouseUp(event.GetButton(), x, y);
+  else bIsHandled = pGuiManager->InjectEventMouseMove(event.GetButton(), x, y);
+
+  if (!bIsHandled) _OnStateMouseEvent(event);
 }
 
 void cState::AddStaticText(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width)
@@ -425,41 +437,6 @@ void cStateMenu::UpdateText()
   }
 }
 
-void cStateMenu::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
-{
-  if (event.IsKeyUp()) {
-    switch (event.GetKeyCode()) {
-      case opengl::KEY::NUMBER_1: {
-        std::cout<<"cStateMenu::_OnKeyboardEvent 1 up"<<std::endl;
-        bIsWireframe = !bIsWireframe;
-        break;
-      }
-      case opengl::KEY::NUMBER_2: {
-        std::cout<<"cStateMenu::_OnKeyboardEvent 2 up"<<std::endl;
-        spring.SetPosition(spitfire::math::cVec2(0.0f, -0.05f));
-        spring.SetVelocity(spitfire::math::cVec2(0.0f, -0.00001f));
-        break;
-      }
-
-      case opengl::KEY::UP: {
-        std::cout<<"cStateMenu::_OnKeyboardEvent Up"<<std::endl;
-        bIsKeyUp = true;
-        break;
-      }
-      case opengl::KEY::DOWN: {
-        std::cout<<"cStateMenu::_OnKeyboardEvent Down"<<std::endl;
-        bIsKeyDown = true;
-        break;
-      }
-      case opengl::KEY::RETURN: {
-        std::cout<<"cStateMenu::_OnKeyboardEvent Return"<<std::endl;
-        bIsKeyReturn = true;
-        break;
-      }
-    }
-  }
-}
-
 void cStateMenu::_Update(const cTimeStep& timeStep)
 {
   // Update the hud offset to shake the gui
@@ -507,6 +484,42 @@ void cStateMenu::_UpdateInput(const cTimeStep& timeStep)
       case OPTION::QUIT: {
         // Pop our menu state
         application.PopStateSoon();
+        break;
+      }
+    }
+  }
+}
+
+
+void cStateMenu::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
+{
+  if (event.IsKeyUp()) {
+    switch (event.GetKeyCode()) {
+      case opengl::KEY::NUMBER_1: {
+        std::cout<<"cStateMenu::_OnStateKeyboardEvent 1 up"<<std::endl;
+        bIsWireframe = !bIsWireframe;
+        break;
+      }
+      case opengl::KEY::NUMBER_2: {
+        std::cout<<"cStateMenu::_OnStateKeyboardEvent 2 up"<<std::endl;
+        spring.SetPosition(spitfire::math::cVec2(0.0f, -0.05f));
+        spring.SetVelocity(spitfire::math::cVec2(0.0f, -0.00001f));
+        break;
+      }
+
+      case opengl::KEY::UP: {
+        std::cout<<"cStateMenu::_OnStateKeyboardEvent Up"<<std::endl;
+        bIsKeyUp = true;
+        break;
+      }
+      case opengl::KEY::DOWN: {
+        std::cout<<"cStateMenu::_OnStateKeyboardEvent Down"<<std::endl;
+        bIsKeyDown = true;
+        break;
+      }
+      case opengl::KEY::RETURN: {
+        std::cout<<"cStateMenu::_OnStateKeyboardEvent Return"<<std::endl;
+        bIsKeyReturn = true;
         break;
       }
     }
@@ -595,22 +608,22 @@ void cStateNewGame::UpdateText()
   }
 }
 
-void cStateNewGame::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
+void cStateNewGame::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
 {
   if (event.IsKeyUp()) {
     switch (event.GetKeyCode()) {
       case opengl::KEY::UP: {
-        std::cout<<"cStateNewGame::_OnKeyboardEvent Up"<<std::endl;
+        std::cout<<"cStateNewGame::_OnStateKeyboardEvent Up"<<std::endl;
         bIsKeyUp = true;
         break;
       }
       case opengl::KEY::DOWN: {
-        std::cout<<"cStateNewGame::_OnKeyboardEvent Down"<<std::endl;
+        std::cout<<"cStateNewGame::_OnStateKeyboardEvent Down"<<std::endl;
         bIsKeyDown = true;
         break;
       }
       case opengl::KEY::RETURN: {
-        std::cout<<"cStateNewGame::_OnKeyboardEvent Return"<<std::endl;
+        std::cout<<"cStateNewGame::_OnStateKeyboardEvent Return"<<std::endl;
         bIsKeyReturn = true;
         break;
       }
@@ -762,7 +775,7 @@ void cStateHighScores::UpdateText()
   std::cout<<"cStateHighScores::UpdateText vertices="<<vertices.size()<<", colours="<<colours.size()<<", textureCoordinates="<<textureCoordinates.size()<<std::endl;
 }
 
-void cStateHighScores::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
+void cStateHighScores::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
 {
   if (event.IsKeyUp()) {
     switch (event.GetKeyCode()) {
@@ -1241,15 +1254,15 @@ void cStateGame::_OnGameOver(const tetris::cBoard& board)
   }
 }
 
-void cStateGame::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
+void cStateGame::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
 {
-  std::cout<<"cStateGame::_OnKeyboardEvent"<<std::endl;
+  std::cout<<"cStateGame::_OnStateKeyboardEvent"<<std::endl;
 
   if (event.IsKeyDown()) {
-    std::cout<<"cStateGame::_OnKeyboardEvent Key down"<<std::endl;
+    std::cout<<"cStateGame::_OnStateKeyboardEvent Key down"<<std::endl;
     switch (event.GetKeyCode()) {
       case opengl::KEY::ESCAPE: {
-        std::cout<<"cStateGame::_OnKeyboardEvent Escape key pressed, quiting"<<std::endl;
+        std::cout<<"cStateGame::_OnStateKeyboardEvent Escape key pressed, quiting"<<std::endl;
         application.PopStateSoon();
         break;
       }
@@ -1257,7 +1270,7 @@ void cStateGame::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
   } else if (event.IsKeyUp()) {
     switch (event.GetKeyCode()) {
       case opengl::KEY::NUMBER_1: {
-        std::cout<<"cStateGame::_OnKeyboardEvent 1 up"<<std::endl;
+        std::cout<<"cStateGame::_OnStateKeyboardEvent 1 up"<<std::endl;
         bIsWireframe = !bIsWireframe;
         break;
       }

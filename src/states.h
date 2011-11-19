@@ -108,11 +108,15 @@ private:
 
   virtual void _OnWindowEvent(const opengl::cWindowEvent& event) {}
   virtual void _OnMouseEvent(const opengl::cMouseEvent& event);
-  virtual void _OnKeyboardEvent(const opengl::cKeyboardEvent& event) {}
+  virtual void _OnKeyboardEvent(const opengl::cKeyboardEvent& event);
 
   virtual void _Update(const cTimeStep& timeStep) {}
   virtual void _UpdateInput(const cTimeStep& timeStep) {}
   virtual void _Render(const cTimeStep& timeStep) {}
+
+
+  virtual void _OnStateMouseEvent(const opengl::cMouseEvent& event) {}
+  virtual void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event) {}
 };
 
 
@@ -126,11 +130,11 @@ public:
 private:
   void UpdateText();
 
-  void _OnKeyboardEvent(const opengl::cKeyboardEvent& event);
-
   void _Update(const cTimeStep& timeStep);
   void _UpdateInput(const cTimeStep& timeStep);
   void _Render(const cTimeStep& timeStep);
+
+  void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event);
 
   struct OPTION {
     static const int NEW_GAME = 0;
@@ -153,7 +157,7 @@ public:
 private:
   void UpdateText();
 
-  void _OnKeyboardEvent(const opengl::cKeyboardEvent& event);
+  void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event);
 
   void _Update(const cTimeStep& timeStep);
   void _UpdateInput(const cTimeStep& timeStep);
@@ -182,7 +186,7 @@ public:
 private:
   void UpdateText();
 
-  void _OnKeyboardEvent(const opengl::cKeyboardEvent& event);
+  void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event);
 
   void _Update(const cTimeStep& timeStep);
   void _UpdateInput(const cTimeStep& timeStep);
@@ -205,7 +209,7 @@ private:
   void UpdateBoardVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board);
   void UpdatePieceVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board, const tetris::cPiece& piece);
 
-  void _OnKeyboardEvent(const opengl::cKeyboardEvent& event);
+  void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event);
 
   void _Update(const cTimeStep& timeStep);
   void _UpdateInput(const cTimeStep& timeStep);
