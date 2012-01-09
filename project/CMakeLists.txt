@@ -161,6 +161,7 @@ SET(LIBRARIES
   SDL_image
   SDL_mixer
   SDL_ttf
+  XDG-basedir
 )
 
 
@@ -178,6 +179,7 @@ SET(LIBRARIES_LINKED
   boost_iostreams
   boost_filesystem
   boost_system
+  xdg-basedir
 )
 
 
