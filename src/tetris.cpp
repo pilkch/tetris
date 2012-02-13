@@ -14,7 +14,7 @@
 #include <spitfire/algorithm/algorithm.h>
 #include <spitfire/math/math.h>
 
-#include <spitfire/util/cTimer.h>
+#include <spitfire/util/timer.h>
 
 #include "tetris.h"
 
