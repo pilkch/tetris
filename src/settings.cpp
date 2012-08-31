@@ -51,7 +51,9 @@ void cSettings::Load()
   spitfire::xml::reader reader;
 
   const spitfire::string_t sFilename = spitfire::filesystem::GetThisApplicationSettingsDirectory() + TEXT("config.xml");
-  if (!reader.ReadFromFile(document, sFilename)) {
+  spitfire::util::cProcessInterfaceVoid interface;
+  spitfire::util::PROCESS_RESULT result = reader.ReadFromFile(interface, document, sFilename);
+  if (result != spitfire::util::PROCESS_RESULT::COMPLETE) {
     std::cout<<"cSettings::Load \""<<spitfire::string::ToUTF8(sFilename)<<"\" not found"<<std::endl;
     return;
   }

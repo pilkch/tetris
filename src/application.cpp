@@ -250,14 +250,14 @@ void cApplication::Run()
   const spitfire::math::cColour sunColour(0.2, 0.2, 0.0);
 
   // Setup materials
-  const spitfire::math::cColour ambient(sunColour);
-  pContext->SetMaterialAmbientColour(ambient);
-  const spitfire::math::cColour diffuse(0.8, 0.1, 0.0);
-  pContext->SetMaterialDiffuseColour(diffuse);
-  const spitfire::math::cColour specular(1.0, 0.3, 0.3);
-  pContext->SetMaterialSpecularColour(specular);
-  const float fShininess = 50.0f;
-  pContext->SetMaterialShininess(fShininess);
+  //const spitfire::math::cColour ambient(sunColour);
+  //pContext->SetMaterialAmbientColour(ambient);
+  //const spitfire::math::cColour diffuse(0.8, 0.1, 0.0);
+  //pContext->SetMaterialDiffuseColour(diffuse);
+  //const spitfire::math::cColour specular(1.0, 0.3, 0.3);
+  //pContext->SetMaterialSpecularColour(specular);
+  //const float fShininess = 50.0f;
+  //pContext->SetMaterialShininess(fShininess);*/
 
 
   // Setup lighting

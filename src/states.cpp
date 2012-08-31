@@ -359,7 +359,7 @@ cStateMenu::cStateMenu(cApplication& application) :
   const float x = 0.04f;
   float y = 0.2f;
 
-  const size_t n = lengthof(options);
+  const size_t n = countof(options);
   for (size_t i = 0; i < n; i++) {
     // Create the text for this option
     breathe::gui::cStaticText* pStaticText = new breathe::gui::cStaticText;
@@ -731,11 +731,9 @@ void cStateHighScores::UpdateText()
 
   pStaticVertexBufferObjectText = pContext->CreateStaticVertexBufferObject();
 
-  std::vector<float> vertices;
-  std::vector<float> colours;
-  std::vector<float> textureCoordinates;
+  opengl::cGeometryDataPtr pGeometryDataPtr = opengl::CreateGeometryData();
 
-  opengl::cGeometryBuilder_v2_c4_t2 builder(vertices, colours, textureCoordinates);
+  opengl::cGeometryBuilder_v2_c4_t2 builder(*pGeometryDataPtr);
 
   const spitfire::math::cColour white(1.0f, 1.0f, 1.0f);
   const spitfire::math::cColour red(1.0f, 0.0f, 0.0f);
@@ -759,20 +757,16 @@ void cStateHighScores::UpdateText()
   const size_t n = table.GetEntryCount();
   for (size_t i = 0; i < n; i++) {
     const cHighScoresTableEntry& entry = table.GetEntry(i);
-    std::wostringstream o;
+    std::ostringstream o;
     o<<entry.score;
     pFont->PushBack(builder, entry.sName, white, spitfire::math::cVec2(x, y));
     pFont->PushBack(builder, o.str(), white, spitfire::math::cVec2(x + 0.2f, y));
     y += 0.03f;
   }
 
-  pStaticVertexBufferObjectText->SetVertices(vertices);
-  pStaticVertexBufferObjectText->SetColours(colours);
-  pStaticVertexBufferObjectText->SetTextureCoordinates(textureCoordinates);
+  pStaticVertexBufferObjectText->SetData(pGeometryDataPtr);
 
   pStaticVertexBufferObjectText->Compile2D(system);
-
-  std::cout<<"cStateHighScores::UpdateText vertices="<<vertices.size()<<", colours="<<colours.size()<<", textureCoordinates="<<textureCoordinates.size()<<std::endl;
 }
 
 void cStateHighScores::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
@@ -822,17 +816,15 @@ void cStateHighScores::_Render(const cTimeStep& timeStep)
     // Draw the text overlay
     {
       // Rendering the font in the middle of the screen
-      spitfire::math::cMat4 matModelView;
-      matModelView.SetTranslation(0.1f, 0.1f, 0.0f);
-
-      //pContext->SetModelViewMatrix(matModelView);
+      spitfire::math::cMat4 matModelView2D;
+      matModelView2D.SetTranslation(0.1f, 0.1f, 0.0f);
 
       pContext->BindFont(*pFont);
 
       pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
 
       {
-        //pContext->SetModelViewMatrix(matModelView);// * matTranslation * matRotation);
+        pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
 
         pContext->DrawStaticVertexBufferObjectQuads2D(*pStaticVertexBufferObjectText);
       }
@@ -867,7 +859,6 @@ cStateGame::cStateGame(cApplication& application) :
   pTextureBlock = pContext->CreateTexture(TEXT("data/textures/block.png"));
 
   pShaderBlock = pContext->CreateShader(TEXT("data/shaders/passthroughwithcolour.vert"), TEXT("data/shaders/passthroughwithcolour.frag"));
-  pShaderBlock->bTexUnit0 = true;
 
   const spitfire::sampletime_t currentTime = SDL_GetTicks();
 
@@ -886,7 +877,7 @@ cStateGame::cStateGame(cApplication& application) :
 
   for (size_t i = 0; i < game.boards.size(); i++) {
     tetris::cBoard& board = *(game.boards[i]);
-    std::wostringstream o;
+    spitfire::ostringstream_t o;
     o<<TEXT("Player");
     o<<(i + 1);
     cBoardRepresentation* pBoardRepresentation = new cBoardRepresentation(board, o.str());
@@ -973,11 +964,9 @@ void cStateGame::UpdateText()
 
   pStaticVertexBufferObjectText = pContext->CreateStaticVertexBufferObject();
 
-  std::vector<float> vertices;
-  std::vector<float> colours;
-  std::vector<float> textureCoordinates;
+  opengl::cGeometryDataPtr pGeometryDataPtr = opengl::CreateGeometryData();
 
-  opengl::cGeometryBuilder_v2_c4_t2 builder(vertices, colours, textureCoordinates);
+  opengl::cGeometryBuilder_v2_c4_t2 builder(*pGeometryDataPtr);
 
   const spitfire::math::cColour red(1.0f, 0.0f, 0.0f);
   const spitfire::math::cColour green(0.0f, 1.0f, 0.0f);
@@ -998,7 +987,7 @@ void cStateGame::UpdateText()
     const spitfire::math::cColour& colour = boardColours[i];
 
     // Create the text for this board
-    std::wostringstream o;
+    spitfire::ostringstream_t o;
 
     const uint32_t uiLevel = board.GetLevel();
     o<<TEXT("Level ");
@@ -1015,13 +1004,9 @@ void cStateGame::UpdateText()
     o.str(TEXT(""));
   }
 
-  pStaticVertexBufferObjectText->SetVertices(vertices);
-  pStaticVertexBufferObjectText->SetColours(colours);
-  pStaticVertexBufferObjectText->SetTextureCoordinates(textureCoordinates);
+  pStaticVertexBufferObjectText->SetData(pGeometryDataPtr);
 
   pStaticVertexBufferObjectText->Compile2D(system);
-
-  std::cout<<"cStateGame::UpdateText vertices="<<vertices.size()<<", colours="<<colours.size()<<", textureCoordinates="<<textureCoordinates.size()<<std::endl;
 }
 
 void cStateGame::UpdateBoardVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board)
@@ -1034,13 +1019,9 @@ void cStateGame::UpdateBoardVBO(opengl::cStaticVertexBufferObject* pStaticVertex
   //}
   //pBoardRepresentation->pStaticVertexBufferObjectBoardQuads = pContext->CreateStaticVertexBufferObject();
 
-  std::vector<float> vertices;
-  //std::vector<float> normals;
-  std::vector<float> textureCoordinates;
-  std::vector<float> colours;
-  //std::vector<uint16_t> indices;
+  opengl::cGeometryDataPtr pGeometryDataPtr = opengl::CreateGeometryData();
 
-  opengl::cGeometryBuilder_v2_c4_t2 builder(vertices, colours, textureCoordinates);
+  opengl::cGeometryBuilder_v2_c4_t2 builder(*pGeometryDataPtr);
 
   const spitfire::math::cVec2 scale(0.015f, 0.015f);
 
@@ -1069,12 +1050,8 @@ void cStateGame::UpdateBoardVBO(opengl::cStaticVertexBufferObject* pStaticVertex
     }
   }
 
-  if (!vertices.empty()) {
-    pStaticVertexBufferObject->SetVertices(vertices);
-    //pStaticVertexBufferObject->SetNormals(normals);
-    pStaticVertexBufferObject->SetTextureCoordinates(textureCoordinates);
-    pStaticVertexBufferObject->SetColours(colours);
-    //pStaticVertexBufferObject->SetIndices(indices);
+  if (pGeometryDataPtr->nVertexCount != 0) {
+    pStaticVertexBufferObject->SetData(pGeometryDataPtr);
 
     pStaticVertexBufferObject->Compile2D(system);
   }
@@ -1090,13 +1067,9 @@ void cStateGame::UpdatePieceVBO(opengl::cStaticVertexBufferObject* pStaticVertex
   //}
   //pBoardRepresentation->pStaticVertexBufferObjectBoardQuads = pContext->CreateStaticVertexBufferObject();
 
-  std::vector<float> vertices;
-  //std::vector<float> normals;
-  std::vector<float> textureCoordinates;
-  std::vector<float> colours;
-  //std::vector<uint16_t> indices;
+  opengl::cGeometryDataPtr pGeometryDataPtr = opengl::CreateGeometryData();
 
-  opengl::cGeometryBuilder_v2_c4_t2 builder(vertices, colours, textureCoordinates);
+  opengl::cGeometryBuilder_v2_c4_t2 builder(*pGeometryDataPtr);
 
   const spitfire::math::cVec2 scale(0.015f, 0.015f);
 
@@ -1125,12 +1098,8 @@ void cStateGame::UpdatePieceVBO(opengl::cStaticVertexBufferObject* pStaticVertex
     }
   }
 
-  if (!vertices.empty()) {
-    pStaticVertexBufferObject->SetVertices(vertices);
-    //pStaticVertexBufferObject->SetNormals(normals);
-    pStaticVertexBufferObject->SetTextureCoordinates(textureCoordinates);
-    pStaticVertexBufferObject->SetColours(colours);
-    //pStaticVertexBufferObject->SetIndices(indices);
+  if (pGeometryDataPtr->nVertexCount != 0) {
+    pStaticVertexBufferObject->SetData(pGeometryDataPtr);
 
     pStaticVertexBufferObject->Compile2D(system);
   }
@@ -1471,8 +1440,9 @@ void cStateGame::_Render(const cTimeStep& timeStep)
 
           pContext->BindShader(*pShaderBlock);
 
+          pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
+
           pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectBoardQuads);
-          pContext->SetModelViewMatrix(matModelView2D);
           pContext->DrawStaticVertexBufferObjectQuads2D(*pStaticVertexBufferObjectBoardQuads);
           pContext->UnBindStaticVertexBufferObject2D(*pStaticVertexBufferObjectBoardQuads);
 
@@ -1490,8 +1460,9 @@ void cStateGame::_Render(const cTimeStep& timeStep)
 
           pContext->BindShader(*pShaderBlock);
 
+          pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
+
           pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectPieceQuads);
-          pContext->SetModelViewMatrix(matModelView2D);
           pContext->DrawStaticVertexBufferObjectQuads2D(*pStaticVertexBufferObjectPieceQuads);
           pContext->UnBindStaticVertexBufferObject2D(*pStaticVertexBufferObjectPieceQuads);
 
@@ -1509,8 +1480,9 @@ void cStateGame::_Render(const cTimeStep& timeStep)
 
           pContext->BindShader(*pShaderBlock);
 
+          pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
+
           pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectNextPieceQuads);
-          pContext->SetModelViewMatrix(matModelView2D);
           pContext->DrawStaticVertexBufferObjectQuads2D(*pStaticVertexBufferObjectNextPieceQuads);
           pContext->UnBindStaticVertexBufferObject2D(*pStaticVertexBufferObjectNextPieceQuads);
 
