@@ -533,7 +533,10 @@ void cStateMenu::_Render(const cTimeStep& timeStep)
   pContext->BeginRenderToScreen();
 
   {
-    if (pGuiRenderer != nullptr) pGuiRenderer->Render();
+    if (pGuiRenderer != nullptr) {
+      pGuiRenderer->SetWireFrame(bIsWireframe);
+      pGuiRenderer->Render();
+    }
   }
 
   pContext->EndRenderToScreen();
@@ -693,7 +696,10 @@ void cStateNewGame::_Render(const cTimeStep& timeStep)
   pContext->BeginRenderToScreen();
 
   {
-    if (pGuiRenderer != nullptr) pGuiRenderer->Render();
+    if (pGuiRenderer != nullptr) {
+      pGuiRenderer->SetWireFrame(bIsWireframe);
+      pGuiRenderer->Render();
+    }
   }
 
   pContext->EndRenderToScreen();
@@ -834,7 +840,10 @@ void cStateHighScores::_Render(const cTimeStep& timeStep)
 
     pContext->EndRenderMode2D();
 
-    if (pGuiRenderer != nullptr) pGuiRenderer->Render();
+    if (pGuiRenderer != nullptr) {
+      pGuiRenderer->SetWireFrame(bIsWireframe);
+      pGuiRenderer->Render();
+    }
   }
 
   pContext->EndRenderToScreen();
@@ -1522,7 +1531,10 @@ void cStateGame::_Render(const cTimeStep& timeStep)
 
     pContext->EndRenderMode2D();
 
-    if (pGuiRenderer != nullptr) pGuiRenderer->Render();
+    if (pGuiRenderer != nullptr) {
+      pGuiRenderer->SetWireFrame(bIsWireframe);
+      pGuiRenderer->Render();
+    }
   }
 
   pContext->EndRenderToScreen();
