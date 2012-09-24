@@ -1143,12 +1143,7 @@ void cStateGame::_OnPieceChanged(const tetris::cBoard& board)
         boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles = nullptr;
       }
       boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles = pContext->CreateStaticVertexBufferObject();
-      if (!UpdatePieceVBO(boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles, board, board.GetCurrentPiece())) {
-        // We have an empty piece VBO, destroy it so that we don't render any piece
-        pContext->DestroyStaticVertexBufferObject(boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles);
-        boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles = nullptr;
-        assert(false);
-      }
+      UpdatePieceVBO(boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles, board, board.GetCurrentPiece());
 
       if (boardRepresentations[i]->pStaticVertexBufferObjectNextPieceTriangles != nullptr) {
         pContext->DestroyStaticVertexBufferObject(boardRepresentations[i]->pStaticVertexBufferObjectNextPieceTriangles);
