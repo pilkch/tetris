@@ -515,10 +515,10 @@ namespace tetris
     size_t width = current_piece.GetWidth();
     size_t height = current_piece.GetHeight();
     int colour = 0;
-    for (y1 = 0, y2 = current_y - height; y1 < height; y1++, y2++) {
+    for (y1 = 0, y2 = current_y - height; (y1 < height) && (y2 < board.GetHeight()); y1++, y2++) {
       for (x1 = 0, x2 = current_x; x1 < width; x1++, x2++) {
         colour = current_piece.GetBlock(x1, y1);
-        if ((colour != 0) && (y2 < board.GetHeight())) board.SetBlock(x2, y2, colour);
+        if (colour != 0) board.SetBlock(x2, y2, colour);
       }
     }
   }
@@ -615,9 +615,16 @@ namespace tetris
     current_y = board.GetHeight() + current_piece.GetHeight();
     while (current_y > board.GetHeight()) {
       if (_IsCollided(current_piece, current_x, current_y - 1)) {
+        // Add as much of the piece as possible to the board
         _AddPieceToBoard();
+
+        // Tell the game that this board has finished
         game.OnGameOver(*this);
         state = STATE_FINISHED;
+
+        // Clear the piece
+        current_piece.Clear();
+
         break;
       }
 

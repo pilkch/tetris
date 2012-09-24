@@ -63,7 +63,11 @@ void cSettings::Save()
 {
   spitfire::xml::writer writer;
 
-  const spitfire::string_t sFilename = spitfire::filesystem::GetThisApplicationSettingsDirectory() + TEXT("config.xml");
+  const spitfire::string_t sDirectory = spitfire::filesystem::GetThisApplicationSettingsDirectory();
+  std::cout<<"cSettings::Save Creating directory \""<<sDirectory<<"\""<<std::endl;
+  spitfire::filesystem::CreateDirectory(sDirectory);
+  const spitfire::string_t sFilename = sDirectory + TEXT("config.xml");
+  std::cout<<"cSettings::Save Creating file \""<<sFilename<<"\""<<std::endl;
   if (!writer.WriteToFile(document, sFilename)) {
     std::cout<<"cSettings::Save Error saving to file \""<<spitfire::string::ToUTF8(sFilename)<<"\""<<std::endl;
     return;
@@ -76,9 +80,6 @@ T cSettings::GetXMLValue(const spitfire::string_t& sSection, const spitfire::str
   T value = valueDefault;
 
   spitfire::document::cNode::const_iterator iterConfig(document);
-  if (!iterConfig.IsValid()) return value;
-
-  iterConfig.FindChild("config");
   if (!iterConfig.IsValid()) return value;
 
   {
@@ -110,7 +111,6 @@ void cSettings::SetXMLValue(const spitfire::string_t& sSection, const spitfire::
   }
 
   // Get or create the config element
-  iterConfig.FindChild("config");
   if (!iterConfig.IsValid()) {
     spitfire::document::element* configElement = document.CreateElement("config");
     document.AppendChild(configElement);

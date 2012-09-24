@@ -43,9 +43,9 @@ public:
   tetris::cBoard& board;
   spitfire::string_t sName;
 
-  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectBoardQuads;
-  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectPieceQuads;
-  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectNextPieceQuads;
+  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectBoardTriangles;
+  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectPieceTriangles;
+  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectNextPieceTriangles;
 
   bool bIsInputPieceMoveLeft;
   bool bIsInputPieceMoveRight;
