@@ -271,65 +271,7 @@ bool cHighScoresTable::SubmitEntry(const spitfire::string_t& sName, int score)
 }
 
 
-
-template <class T>
-class cSpring
-{
-public:
-  cSpring();
-
-  T GetPosition() const { return position; }
-  void SetPosition(const T& position);
-
-  void SetVelocity(const T& velocity);
-
-  void Update(const cTimeStep& timeStep);
-
-private:
-  T dv(const T& x, const T& v) const;
-
-  float fMass;
-  float fK;
-  float fDampening;
-  T position;
-  T velocity;
-};
-
-template <class T>
-cSpring<T>::cSpring() :
-  fMass(0.5f),
-  fK(0.3f),
-  fDampening(0.8f),
-  position(0.0f, 0.0f)
-{
-}
-
-template <class T>
-void cSpring<T>::SetPosition(const T& _position)
-{
-  position = _position;
-}
-
-template <class T>
-void cSpring<T>::SetVelocity(const T& _velocity)
-{
-  velocity = _velocity;
-}
-
-template <class T>
-T cSpring<T>::dv(const T& x, const T& v) const
-{
-  return (-fK / fMass) * x - (fDampening / fMass) * v;
-}
-
-template <class T>
-void cSpring<T>::Update(const cTimeStep& timeStep)
-{
-  velocity += dv(position, velocity);
-  position += velocity;
-}
-
-cSpring<spitfire::math::cVec2> spring;
+spitfire::math::cSpring<spitfire::math::cVec2> spring;
 
 
 // ** cStateMenu
@@ -433,7 +375,7 @@ void cStateMenu::UpdateText()
   }
 }
 
-void cStateMenu::_Update(const cTimeStep& timeStep)
+void cStateMenu::_Update(const spitfire::math::cTimeStep& timeStep)
 {
   // Update the hud offset to shake the gui
   spring.Update(timeStep);
@@ -445,7 +387,7 @@ void cStateMenu::_Update(const cTimeStep& timeStep)
   UpdateText();
 }
 
-void cStateMenu::_UpdateInput(const cTimeStep& timeStep)
+void cStateMenu::_UpdateInput(const spitfire::math::cTimeStep& timeStep)
 {
   if (bIsKeyUp) {
     bIsKeyUp = false;
@@ -524,7 +466,7 @@ void cStateMenu::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
   }
 }
 
-void cStateMenu::_Render(const cTimeStep& timeStep)
+void cStateMenu::_Render(const spitfire::math::cTimeStep& timeStep)
 {
   // Render the scene
   const spitfire::math::cColour clearColour(0.392156863f, 0.584313725f, 0.929411765f);
@@ -632,7 +574,7 @@ void cStateNewGame::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
   }
 }
 
-void cStateNewGame::_Update(const cTimeStep& timeStep)
+void cStateNewGame::_Update(const spitfire::math::cTimeStep& timeStep)
 {
   // Update the hud offset to shake the gui
   spring.Update(timeStep);
@@ -642,7 +584,7 @@ void cStateNewGame::_Update(const cTimeStep& timeStep)
   pGuiRenderer->Update();
 }
 
-void cStateNewGame::_UpdateInput(const cTimeStep& timeStep)
+void cStateNewGame::_UpdateInput(const spitfire::math::cTimeStep& timeStep)
 {
   if (bIsKeyUp) {
     bIsKeyUp = false;
@@ -687,7 +629,7 @@ void cStateNewGame::_UpdateInput(const cTimeStep& timeStep)
   }
 }
 
-void cStateNewGame::_Render(const cTimeStep& timeStep)
+void cStateNewGame::_Render(const spitfire::math::cTimeStep& timeStep)
 {
   // Render the scene
   const spitfire::math::cColour clearColour(0.392156863f, 0.584313725f, 0.929411765f);
@@ -786,7 +728,7 @@ void cStateHighScores::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event
   }
 }
 
-void cStateHighScores::_Update(const cTimeStep& timeStep)
+void cStateHighScores::_Update(const spitfire::math::cTimeStep& timeStep)
 {
   // Update the hud offset to shake the gui
   spring.Update(timeStep);
@@ -796,7 +738,7 @@ void cStateHighScores::_Update(const cTimeStep& timeStep)
   pGuiRenderer->Update();
 }
 
-void cStateHighScores::_UpdateInput(const cTimeStep& timeStep)
+void cStateHighScores::_UpdateInput(const spitfire::math::cTimeStep& timeStep)
 {
   if (bIsDone) {
     bIsDone = false;
@@ -806,7 +748,7 @@ void cStateHighScores::_UpdateInput(const cTimeStep& timeStep)
   }
 }
 
-void cStateHighScores::_Render(const cTimeStep& timeStep)
+void cStateHighScores::_Render(const spitfire::math::cTimeStep& timeStep)
 {
   // Render the scene
   const spitfire::math::cColour clearColour(0.392156863f, 0.584313725f, 0.929411765f);
@@ -1259,7 +1201,7 @@ void cStateGame::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
   }
 }
 
-void cStateGame::_Update(const cTimeStep& timeStep)
+void cStateGame::_Update(const spitfire::math::cTimeStep& timeStep)
 {
   // For each board we need to send the inputs to the board
   const size_t n = boardRepresentations.size();
@@ -1304,7 +1246,7 @@ void cStateGame::_Update(const cTimeStep& timeStep)
   pGuiRenderer->Update();
 }
 
-void cStateGame::_UpdateInput(const cTimeStep& timeStep)
+void cStateGame::_UpdateInput(const spitfire::math::cTimeStep& timeStep)
 {
   assert(pWindow != nullptr);
 
@@ -1418,7 +1360,7 @@ void cStateGame::_UpdateInput(const cTimeStep& timeStep)
   }
 }
 
-void cStateGame::_Render(const cTimeStep& timeStep)
+void cStateGame::_Render(const spitfire::math::cTimeStep& timeStep)
 {
   // Render the scene
   const spitfire::math::cColour clearColour(0.392156863f, 0.584313725f, 0.929411765f);

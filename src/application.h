@@ -1,7 +1,11 @@
 #ifndef TETRIS_APPLICATION_H
 #define TETRIS_APPLICATION_H
 
+// Standard headers
 #include <stack>
+
+// Spitfire headers
+#include <spitfire/math/math.h>
 
 // Breathe headers
 #include <breathe/audio/audio.h>
@@ -12,7 +16,6 @@
 // Tetris headers
 #include "settings.h"
 
-class cTimeStep;
 class cState;
 
 // ** cApplication

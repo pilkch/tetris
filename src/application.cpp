@@ -293,7 +293,7 @@ void cApplication::Run()
     lastTime = currentTime;
     currentTime = SDL_GetTicks();
     {
-      const cTimeStep timeStep(currentTime, currentTime - lastTime);
+      const spitfire::math::cTimeStep timeStep(currentTime, currentTime - lastTime);
       cState* pState = GetState();
       assert(pState != nullptr);
       pState->UpdateInput(timeStep);
@@ -301,7 +301,7 @@ void cApplication::Run()
 
     // Perform an Update, these are locked at 30 fps
     if ((currentTime - lastUpdateTime) > 33) {
-      const cTimeStep timeStep(currentTime, 33);
+      const spitfire::math::cTimeStep timeStep(currentTime, 33);
       cState* pState = GetState();
       assert(pState != nullptr);
       pState->Update(timeStep);
@@ -316,7 +316,7 @@ void cApplication::Run()
 
     // Render a frame
     {
-      const cTimeStep timeStep(currentTime, currentTime - lastTime);
+      const spitfire::math::cTimeStep timeStep(currentTime, currentTime - lastTime);
       cState* pState = GetState();
       assert(pState != nullptr);
       pState->Render(timeStep);

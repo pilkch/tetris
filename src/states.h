@@ -11,27 +11,6 @@
 
 class cApplication;
 
-// ** cTimeStep
-
-class cTimeStep
-{
-public:
-  cTimeStep(spitfire::sampletime_t currentTimeMS, float fStepMS);
-
-  spitfire::sampletime_t GetCurrentTimeMS() const { return currentTimeMS; }
-  float GetStepMS() const { return fStepMS; }
-
-private:
-  spitfire::sampletime_t currentTimeMS;
-  float fStepMS;
-};
-
-inline cTimeStep::cTimeStep(spitfire::sampletime_t _currentTimeMS, float _fStepMS) :
-  currentTimeMS(_currentTimeMS),
-  fStepMS(_fStepMS)
-{
-}
-
 
 // ** cBoardRepresentation
 
@@ -74,9 +53,9 @@ public:
   void OnMouseEvent(const opengl::cMouseEvent& event) { _OnMouseEvent(event); }
   void OnKeyboardEvent(const opengl::cKeyboardEvent& event) { _OnKeyboardEvent(event); }
 
-  void Update(const cTimeStep& timeStep) { _Update(timeStep); }
-  void UpdateInput(const cTimeStep& timeStep) { _UpdateInput(timeStep); }
-  void Render(const cTimeStep& timeStep) { _Render(timeStep); }
+  void Update(const spitfire::math::cTimeStep& timeStep) { _Update(timeStep); }
+  void UpdateInput(const spitfire::math::cTimeStep& timeStep) { _UpdateInput(timeStep); }
+  void Render(const spitfire::math::cTimeStep& timeStep) { _Render(timeStep); }
 
 protected:
   void AddStaticText(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
@@ -110,9 +89,9 @@ private:
   virtual void _OnMouseEvent(const opengl::cMouseEvent& event);
   virtual void _OnKeyboardEvent(const opengl::cKeyboardEvent& event);
 
-  virtual void _Update(const cTimeStep& timeStep) {}
-  virtual void _UpdateInput(const cTimeStep& timeStep) {}
-  virtual void _Render(const cTimeStep& timeStep) {}
+  virtual void _Update(const spitfire::math::cTimeStep& timeStep) {}
+  virtual void _UpdateInput(const spitfire::math::cTimeStep& timeStep) {}
+  virtual void _Render(const spitfire::math::cTimeStep& timeStep) {}
 
 
   virtual void _OnStateMouseEvent(const opengl::cMouseEvent& event) {}
@@ -130,9 +109,9 @@ public:
 private:
   void UpdateText();
 
-  void _Update(const cTimeStep& timeStep);
-  void _UpdateInput(const cTimeStep& timeStep);
-  void _Render(const cTimeStep& timeStep);
+  void _Update(const spitfire::math::cTimeStep& timeStep);
+  void _UpdateInput(const spitfire::math::cTimeStep& timeStep);
+  void _Render(const spitfire::math::cTimeStep& timeStep);
 
   void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event);
 
@@ -159,9 +138,9 @@ private:
 
   void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event);
 
-  void _Update(const cTimeStep& timeStep);
-  void _UpdateInput(const cTimeStep& timeStep);
-  void _Render(const cTimeStep& timeStep);
+  void _Update(const spitfire::math::cTimeStep& timeStep);
+  void _UpdateInput(const spitfire::math::cTimeStep& timeStep);
+  void _Render(const spitfire::math::cTimeStep& timeStep);
 
   struct OPTION {
     static const int NUMBER_OF_PLAYERS = 0;
@@ -188,9 +167,9 @@ private:
 
   void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event);
 
-  void _Update(const cTimeStep& timeStep);
-  void _UpdateInput(const cTimeStep& timeStep);
-  void _Render(const cTimeStep& timeStep);
+  void _Update(const spitfire::math::cTimeStep& timeStep);
+  void _UpdateInput(const spitfire::math::cTimeStep& timeStep);
+  void _Render(const spitfire::math::cTimeStep& timeStep);
 
   opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectText;
 
@@ -211,9 +190,9 @@ private:
 
   void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event);
 
-  void _Update(const cTimeStep& timeStep);
-  void _UpdateInput(const cTimeStep& timeStep);
-  void _Render(const cTimeStep& timeStep);
+  void _Update(const spitfire::math::cTimeStep& timeStep);
+  void _UpdateInput(const spitfire::math::cTimeStep& timeStep);
+  void _Render(const spitfire::math::cTimeStep& timeStep);
 
   void _OnPieceMoved(const tetris::cBoard& board);
   void _OnPieceRotated(const tetris::cBoard& board);
