@@ -291,6 +291,12 @@ cStateMenu::cStateMenu(cApplication& application) :
   pLayer = new breathe::gui::cLayer;
   pRoot->AddChild(pLayer);
 
+  const size_t ids[] = {
+    OPTION::NEW_GAME,
+    OPTION::HIGH_SCORES,
+    //OPTION::PREFERENCES,
+    OPTION::QUIT,
+  };
   const spitfire::string_t options[] = {
     TEXT("New Game"),
     TEXT("High Scores"),
@@ -304,13 +310,13 @@ cStateMenu::cStateMenu(cApplication& application) :
   const size_t n = countof(options);
   for (size_t i = 0; i < n; i++) {
     // Create the text for this option
-    breathe::gui::cStaticText* pStaticText = new breathe::gui::cStaticText;
-    pStaticText->SetId(i + 1);
-    pStaticText->sCaption = options[i];
-    pStaticText->SetRelativePosition(spitfire::math::cVec2(x, y));
-    pStaticText->width = 0.15f;
-    pStaticText->height = pGuiManager->GetStaticTextHeight();
-    pLayer->AddChild(pStaticText);
+    breathe::gui::cRetroButton* pRetroButton = new breathe::gui::cRetroButton;
+    pRetroButton->SetId(ids[i]);
+    pRetroButton->sCaption = options[i];
+    pRetroButton->SetRelativePosition(spitfire::math::cVec2(x, y));
+    pRetroButton->width = 0.15f;
+    pRetroButton->height = pGuiManager->GetStaticTextHeight();
+    pLayer->AddChild(pRetroButton);
 
     y += pGuiManager->GetStaticTextHeight() + 0.007f;
   }
@@ -367,7 +373,7 @@ void cStateMenu::UpdateText()
 
   const size_t n = 3;
   for (size_t i = 0; i < n; i++) {
-    const spitfire::math::cColour colour = (int(i) == highlighted) ? colourRed : colourDefault;
+    const spitfire::math::cColour colour = (int(i + 1) == highlighted) ? colourRed : colourDefault;
 
     // Create the text for this option
     breathe::gui::cWidget* pWidget = pLayer->GetChildById(i + 1);
@@ -506,30 +512,23 @@ cStateNewGame::cStateNewGame(cApplication& application) :
   float y = 0.2f;
   const float width = 0.4f;
 
-  breathe::gui::id_t id = 1;
-
   AddStaticText(0, TEXT("Number of Players:"), x, y, width);
-  AddRetroInput(id, TEXT("2"), x + width + fSpacerHorizontal, y, width);
+  AddRetroInput(OPTION::NUMBER_OF_PLAYERS, TEXT("2"), x + width + fSpacerHorizontal, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
-  id++;
 
   AddStaticText(0, TEXT("Name"), x, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
   AddStaticText(0, TEXT("Player 1:"), x, y, width);
-  AddRetroInput(id, TEXT("|"), x + width + fSpacerHorizontal, y, width);
+  AddRetroInput(OPTION::NAME_PLAYER1, TEXT("|"), x + width + fSpacerHorizontal, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
-  id++;
   AddStaticText(0, TEXT("Player 2:"), x, y, width);
-  AddRetroInput(id, TEXT("|"), x + width + fSpacerHorizontal, y, width);
+  AddRetroInput(OPTION::NAME_PLAYER2, TEXT("|"), x + width + fSpacerHorizontal, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
-  id++;
 
-  AddRetroButton(id, TEXT("Start Game"), x, y, width);
+  AddRetroButton(OPTION::START, TEXT("Start Game"), x, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
-  id++;
-  AddRetroButton(id, TEXT("Back"), x, y, width);
+  AddRetroButton(OPTION::BACK, TEXT("Back"), x, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
-  id++;
 
   UpdateText();
 }
@@ -543,7 +542,7 @@ void cStateNewGame::UpdateText()
 
   const size_t n = 8;
   for (size_t i = 0; i < n; i++) {
-    const spitfire::math::cColour colour = (int(i) == highlighted) ? colourRed : colourDefault;
+    const spitfire::math::cColour colour = (int(i + 1) == highlighted) ? colourRed : colourDefault;
 
     // Create the text for this option
     breathe::gui::cWidget* pWidget = pLayer->GetChildById(i + 1);
