@@ -34,7 +34,7 @@ SET(LIBRARY_INCLUDE "${CMAKE_SOURCE_DIR}include/")
 SET(LIBRARY_SRC "${CMAKE_SOURCE_DIR}src/")
 
 # Add definitions, compiler switches, etc.
-ADD_DEFINITIONS("-Wall -W -Wextra -Werror -Wformat -Wformat-y2k -Winit-self -Wstack-protector -Wunknown-pragmas -Wundef -Wcast-qual -Wwrite-strings -Wno-unused-parameter -Wpointer-arith -Wno-switch -Woverloaded-virtual -Wno-stack-protector -Wmissing-include-dirs -Wuninitialized -Wc++0x-compat -std=c++0x -ffor-scope -O2")
+ADD_DEFINITIONS("-Wall -W -Wextra -Werror -Wformat -Wformat-y2k -Winit-self -Wstack-protector -Wunknown-pragmas -Wundef -Wwrite-strings -Wno-unused-parameter -Wpointer-arith -Wno-switch -Woverloaded-virtual -Wno-stack-protector -Wmissing-include-dirs -Wuninitialized -Wc++0x-compat -std=c++0x -ffor-scope -O2")
 
 IF("${CMAKE_SYSTEM}" MATCHES "Linux")
   ADD_DEFINITIONS("-D__LINUX__")

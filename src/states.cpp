@@ -84,7 +84,11 @@ void cState::_OnPause()
 
 void cState::_OnResume()
 {
-  if (pLayer != nullptr) pLayer->SetVisible(true);
+  if (pLayer != nullptr) {
+    pLayer->SetVisible(true);
+
+    pLayer->SetFocusToFirstChild();
+  }
 }
 
 void cState::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
@@ -109,37 +113,44 @@ void cState::_OnMouseEvent(const opengl::cMouseEvent& event)
   if (!bIsHandled) _OnStateMouseEvent(event);
 }
 
-void cState::AddStaticText(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width)
+breathe::gui::cStaticText* cState::AddStaticText(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width)
 {
   breathe::gui::cStaticText* pStaticText = new breathe::gui::cStaticText;
   pStaticText->SetId(id);
-  pStaticText->sCaption = sText;
+  pStaticText->SetCaption(sText);
   pStaticText->SetRelativePosition(spitfire::math::cVec2(x, y));
-  pStaticText->width = width;
-  pStaticText->height = pGuiManager->GetStaticTextHeight();
+  pStaticText->SetWidth(width);
+  pStaticText->SetHeight(pGuiManager->GetStaticTextHeight());
   pLayer->AddChild(pStaticText);
+
+  return pStaticText;
 }
 
-void cState::AddRetroButton(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width)
+breathe::gui::cRetroButton* cState::AddRetroButton(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width)
 {
   breathe::gui::cRetroButton* pRetroButton = new breathe::gui::cRetroButton;
+  pRetroButton->SetEventListener(*this);
   pRetroButton->SetId(id);
-  pRetroButton->sCaption = sText;
+  pRetroButton->SetCaption(sText);
   pRetroButton->SetRelativePosition(spitfire::math::cVec2(x, y));
-  pRetroButton->width = width;
-  pRetroButton->height = pGuiManager->GetStaticTextHeight();
+  pRetroButton->SetWidth(width);
+  pRetroButton->SetHeight(pGuiManager->GetStaticTextHeight());
   pLayer->AddChild(pRetroButton);
+
+  return pRetroButton;
 }
 
-void cState::AddRetroInput(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width)
+breathe::gui::cRetroInput* cState::AddRetroInput(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width)
 {
   breathe::gui::cRetroInput* pRetroInput = new breathe::gui::cRetroInput;
   pRetroInput->SetId(id);
-  pRetroInput->sCaption = sText;
+  pRetroInput->SetCaption(sText);
   pRetroInput->SetRelativePosition(spitfire::math::cVec2(x, y));
-  pRetroInput->width = width;
-  pRetroInput->height = pGuiManager->GetStaticTextHeight();
+  pRetroInput->SetWidth(width);
+  pRetroInput->SetHeight(pGuiManager->GetStaticTextHeight());
   pLayer->AddChild(pRetroInput);
+
+  return pRetroInput;
 }
 
 
@@ -278,9 +289,6 @@ spitfire::math::cSpring<spitfire::math::cVec2> spring;
 
 cStateMenu::cStateMenu(cApplication& application) :
   cState(application),
-  highlighted(OPTION::NEW_GAME),
-  bIsKeyUp(false),
-  bIsKeyDown(false),
   bIsKeyReturn(false)
 {
   std::cout<<"cStateMenu::cStateMenu"<<std::endl;
@@ -310,75 +318,55 @@ cStateMenu::cStateMenu(cApplication& application) :
   const size_t n = countof(options);
   for (size_t i = 0; i < n; i++) {
     // Create the text for this option
-    breathe::gui::cRetroButton* pRetroButton = new breathe::gui::cRetroButton;
-    pRetroButton->SetId(ids[i]);
-    pRetroButton->sCaption = options[i];
-    pRetroButton->SetRelativePosition(spitfire::math::cVec2(x, y));
-    pRetroButton->width = 0.15f;
-    pRetroButton->height = pGuiManager->GetStaticTextHeight();
-    pLayer->AddChild(pRetroButton);
+    AddRetroButton(ids[i], options[i], x, y, 0.15f);
 
     y += pGuiManager->GetStaticTextHeight() + 0.007f;
   }
 
+  pLayer->SetFocusToNextChild();
+
+
   breathe::gui::cWindow* pWindow = new breathe::gui::cWindow;
   pWindow->SetId(101);
-  pWindow->sCaption = TEXT("Caption");
+  pWindow->SetCaption(TEXT("Caption"));
   pWindow->SetRelativePosition(spitfire::math::cVec2(0.1f, 0.15f));
-  pWindow->width = 0.05f + (2.0f * (0.1f + 0.05f));
-  pWindow->height = 0.05f + (2.0f * (0.1f + 0.05f));
+  pWindow->SetWidth(0.05f + (2.0f * (0.1f + 0.05f)));
+  pWindow->SetHeight(0.05f + (2.0f * (0.1f + 0.05f)));
   pLayer->AddChild(pWindow);
 
   //pWindow->SetVisible(false);
 
   breathe::gui::cStaticText* pStaticText = new breathe::gui::cStaticText;
   pStaticText->SetId(102);
-  pStaticText->sCaption = TEXT("StaticText");
+  pStaticText->SetCaption(TEXT("StaticText"));
   pStaticText->SetRelativePosition(spitfire::math::cVec2(0.03f, 0.05f));
-  pStaticText->width = 0.15f;
-  pStaticText->height = pGuiManager->GetStaticTextHeight();
+  pStaticText->SetWidth(0.15f);
+  pStaticText->SetHeight(pGuiManager->GetStaticTextHeight());
   pWindow->AddChild(pStaticText);
 
   breathe::gui::cButton* pButton = new breathe::gui::cButton;
   pButton->SetId(103);
-  pButton->sCaption = TEXT("Button");
+  pButton->SetCaption(TEXT("Button"));
   pButton->SetRelativePosition(spitfire::math::cVec2(pStaticText->GetX() + pStaticText->GetWidth() + 0.05f, 0.05f));
-  pButton->width = 0.15f;
-  pButton->height = pGuiManager->GetButtonHeight();
+  pButton->SetWidth(0.15f);
+  pButton->SetHeight(pGuiManager->GetButtonHeight());
   pWindow->AddChild(pButton);
 
   breathe::gui::cInput* pInput = new breathe::gui::cInput;
   pInput->SetId(104);
-  pInput->sCaption = TEXT("Input");
+  pInput->SetCaption(TEXT("Input"));
   pInput->SetRelativePosition(spitfire::math::cVec2(pStaticText->GetX(), pStaticText->GetY() + pStaticText->GetHeight() + 0.05f));
-  pInput->width = 0.15f;
-  pInput->height = pGuiManager->GetInputHeight();
+  pInput->SetWidth(0.15f);
+  pInput->SetHeight(pGuiManager->GetInputHeight());
   pWindow->AddChild(pInput);
 
   breathe::gui::cSlider* pSlider = new breathe::gui::cSlider;
   pSlider->SetId(105);
-  pSlider->sCaption = TEXT("Slider");
+  pSlider->SetCaption(TEXT("Slider"));
   pSlider->SetRelativePosition(spitfire::math::cVec2(pStaticText->GetX() + pStaticText->GetWidth() + 0.05f, pStaticText->GetY() + pStaticText->GetHeight() + 0.05f));
-  pSlider->width = 0.15f;
-  pSlider->height = 0.1f;
+  pSlider->SetWidth(0.15f);
+  pSlider->SetHeight(0.1f);
   pWindow->AddChild(pSlider);
-}
-
-void cStateMenu::UpdateText()
-{
-  assert(pLayer != nullptr);
-
-  const spitfire::math::cColour colourDefault(pGuiManager->GetColourText());
-  const spitfire::math::cColour colourRed(1.0f, 0.0f, 0.0f);
-
-  const size_t n = 3;
-  for (size_t i = 0; i < n; i++) {
-    const spitfire::math::cColour colour = (int(i + 1) == highlighted) ? colourRed : colourDefault;
-
-    // Create the text for this option
-    breathe::gui::cWidget* pWidget = pLayer->GetChildById(i + 1);
-    if (pWidget != nullptr) pWidget->SetTextColour(colour);
-  }
 }
 
 void cStateMenu::_Update(const spitfire::math::cTimeStep& timeStep)
@@ -389,51 +377,6 @@ void cStateMenu::_Update(const spitfire::math::cTimeStep& timeStep)
   pGuiManager->SetHUDOffset(spring.GetPosition());
 
   pGuiRenderer->Update();
-
-  UpdateText();
-}
-
-void cStateMenu::_UpdateInput(const spitfire::math::cTimeStep& timeStep)
-{
-  if (bIsKeyUp) {
-    bIsKeyUp = false;
-
-    highlighted--;
-    if (highlighted < OPTION::NEW_GAME) highlighted = OPTION::QUIT;
-
-    UpdateText();
-  } else if (bIsKeyDown) {
-    bIsKeyDown = false;
-
-    highlighted++;
-    if (highlighted > OPTION::QUIT) highlighted = OPTION::NEW_GAME;
-
-    UpdateText();
-  } else if (bIsKeyReturn) {
-    bIsKeyReturn = false;
-
-    switch (highlighted) {
-      case OPTION::NEW_GAME: {
-        // Push our game state
-        application.PushStateSoon(new cStateNewGame(application));
-        break;
-      }
-      case OPTION::HIGH_SCORES: {
-        // Push our high scores state
-        application.PushStateSoon(new cStateHighScores(application));
-        break;
-      }
-      //case OPTION::PREFERENCES: {
-      //  // TODO: Add preferences for example tile set clasic or new
-      //  break;
-      //}
-      case OPTION::QUIT: {
-        // Pop our menu state
-        application.PopStateSoon();
-        break;
-      }
-    }
-  }
 }
 
 
@@ -452,20 +395,33 @@ void cStateMenu::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
         spring.SetVelocity(spitfire::math::cVec2(0.0f, -0.00001f));
         break;
       }
+    }
+  }
+}
 
-      case opengl::KEY::UP: {
-        std::cout<<"cStateMenu::_OnStateKeyboardEvent Up"<<std::endl;
-        bIsKeyUp = true;
+void cStateMenu::_OnWidgetEvent(const breathe::gui::cWidgetEvent& event)
+{
+  std::cout<<"cStateMenu::_OnWidgetEvent"<<std::endl;
+
+  if (event.IsPressed()) {
+    switch (event.GetWidget()->GetId()) {
+      case OPTION::NEW_GAME: {
+        // Push our game state
+        application.PushStateSoon(new cStateNewGame(application));
         break;
       }
-      case opengl::KEY::DOWN: {
-        std::cout<<"cStateMenu::_OnStateKeyboardEvent Down"<<std::endl;
-        bIsKeyDown = true;
+      case OPTION::HIGH_SCORES: {
+        // Push our high scores state
+        application.PushStateSoon(new cStateHighScores(application));
         break;
       }
-      case opengl::KEY::RETURN: {
-        std::cout<<"cStateMenu::_OnStateKeyboardEvent Return"<<std::endl;
-        bIsKeyReturn = true;
+      //case OPTION::PREFERENCES: {
+        //  // TODO: Add preferences for example tile set clasic or new
+        //  break;
+        //}
+      case OPTION::QUIT: {
+        // Pop our menu state
+        application.PopStateSoon();
         break;
       }
     }
@@ -495,7 +451,6 @@ void cStateMenu::_Render(const spitfire::math::cTimeStep& timeStep)
 
 cStateNewGame::cStateNewGame(cApplication& application) :
   cState(application),
-  highlighted(OPTION::NUMBER_OF_PLAYERS),
   bIsKeyUp(false),
   bIsKeyDown(false),
   bIsKeyReturn(false)
@@ -529,25 +484,6 @@ cStateNewGame::cStateNewGame(cApplication& application) :
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
   AddRetroButton(OPTION::BACK, TEXT("Back"), x, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
-
-  UpdateText();
-}
-
-void cStateNewGame::UpdateText()
-{
-  assert(pLayer != nullptr);
-
-  const spitfire::math::cColour colourDefault(pGuiManager->GetColourText());
-  const spitfire::math::cColour colourRed(1.0f, 0.0f, 0.0f);
-
-  const size_t n = 8;
-  for (size_t i = 0; i < n; i++) {
-    const spitfire::math::cColour colour = (int(i + 1) == highlighted) ? colourRed : colourDefault;
-
-    // Create the text for this option
-    breathe::gui::cWidget* pWidget = pLayer->GetChildById(i + 1);
-    if (pWidget != nullptr) pWidget->SetTextColour(colour);
-  }
 }
 
 void cStateNewGame::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
@@ -573,36 +509,12 @@ void cStateNewGame::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
   }
 }
 
-void cStateNewGame::_Update(const spitfire::math::cTimeStep& timeStep)
+void cStateNewGame::_OnWidgetEvent(const breathe::gui::cWidgetEvent& event)
 {
-  // Update the hud offset to shake the gui
-  spring.Update(timeStep);
+  std::cout<<"cStateMenu::_OnWidgetEvent"<<std::endl;
 
-  pGuiManager->SetHUDOffset(spring.GetPosition());
-
-  pGuiRenderer->Update();
-}
-
-void cStateNewGame::_UpdateInput(const spitfire::math::cTimeStep& timeStep)
-{
-  if (bIsKeyUp) {
-    bIsKeyUp = false;
-
-    highlighted--;
-    if (highlighted < OPTION::NUMBER_OF_PLAYERS) highlighted = OPTION::BACK;
-
-    UpdateText();
-  } else if (bIsKeyDown) {
-    bIsKeyDown = false;
-
-    highlighted++;
-    if (highlighted > OPTION::BACK) highlighted = OPTION::NUMBER_OF_PLAYERS;
-
-    UpdateText();
-  } else if (bIsKeyReturn) {
-    bIsKeyReturn = false;
-
-    switch (highlighted) {
+  if (event.IsPressed()) {
+    switch (event.GetWidget()->GetId()) {
       case OPTION::NUMBER_OF_PLAYERS: {
         break;
       }
@@ -626,6 +538,16 @@ void cStateNewGame::_UpdateInput(const spitfire::math::cTimeStep& timeStep)
       }
     }
   }
+}
+
+void cStateNewGame::_Update(const spitfire::math::cTimeStep& timeStep)
+{
+  // Update the hud offset to shake the gui
+  spring.Update(timeStep);
+
+  pGuiManager->SetHUDOffset(spring.GetPosition());
+
+  pGuiRenderer->Update();
 }
 
 void cStateNewGame::_Render(const spitfire::math::cTimeStep& timeStep)
@@ -655,6 +577,30 @@ cStateHighScores::cStateHighScores(cApplication& application) :
   bIsDone(false)
 {
   UpdateText();
+
+  breathe::gui::cWidget* pRoot = pGuiManager->GetRoot();
+
+  pLayer = new breathe::gui::cLayer;
+  pRoot->AddChild(pLayer);
+
+  const float fSpacerVertical = 0.007f;
+
+  const float x = 0.04f;
+  float y = 0.2f;
+  const float width = 0.4f;
+
+  // Header
+  y += 0.05f;
+  y += 0.05f;
+  y += 0.05f;
+
+  cHighScoresTable table(settings);
+  table.Load();
+
+  y += float(table.GetEntryCount()) * 0.03f;
+
+  AddRetroButton(OPTION::BACK, TEXT("Back"), x, y, width);
+  y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
 }
 
 cStateHighScores::~cStateHighScores()
@@ -683,7 +629,7 @@ void cStateHighScores::UpdateText()
   const spitfire::math::cColour white(1.0f, 1.0f, 1.0f);
   const spitfire::math::cColour red(1.0f, 0.0f, 0.0f);
 
-  const float x = 0.05f;
+  const float x = 0.04f;
   float y = 0.2f;
 
   {
@@ -716,11 +662,26 @@ void cStateHighScores::UpdateText()
 
 void cStateHighScores::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
 {
-  if (event.IsKeyUp()) {
+  if (event.IsKeyDown()) {
     switch (event.GetKeyCode()) {
       case opengl::KEY::ESCAPE:
       case opengl::KEY::RETURN: {
         bIsDone = true;
+        break;
+      }
+    }
+  }
+}
+
+void cStateHighScores::_OnWidgetEvent(const breathe::gui::cWidgetEvent& event)
+{
+  std::cout<<"cStateHighScores::_OnWidgetEvent"<<std::endl;
+
+  if (event.IsPressed()) {
+    switch (event.GetWidget()->GetId()) {
+      case OPTION::BACK: {
+        // Pop our menu state
+        application.PopStateSoon();
         break;
       }
     }

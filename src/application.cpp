@@ -200,12 +200,16 @@ void cApplication::PushState(cState* pState)
   if (pOldState != nullptr) pOldState->Pause();
 
   states.push(pState);
+
+  pState->Resume();
 }
 
 void cApplication::PopState()
 {
   cState* pOldState = GetState();
   if (pOldState != nullptr) {
+    pOldState->Pause();
+
     // Delete and remove the old state
     delete pOldState;
     states.pop();

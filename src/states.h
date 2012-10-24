@@ -40,7 +40,7 @@ public:
 
 // ** cState
 
-class cState
+class cState : public breathe::gui::cWidgetEventListener
 {
 public:
   explicit cState(cApplication& application);
@@ -58,9 +58,9 @@ public:
   void Render(const spitfire::math::cTimeStep& timeStep) { _Render(timeStep); }
 
 protected:
-  void AddStaticText(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
-  void AddRetroButton(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
-  void AddRetroInput(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
+  breathe::gui::cStaticText* AddStaticText(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
+  breathe::gui::cRetroButton* AddRetroButton(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
+  breathe::gui::cRetroInput* AddRetroInput(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
 
   cApplication& application;
   cSettings& settings;
@@ -96,6 +96,8 @@ private:
 
   virtual void _OnStateMouseEvent(const opengl::cMouseEvent& event) {}
   virtual void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event) {}
+
+  virtual void _OnWidgetEvent(const breathe::gui::cWidgetEvent& event) {}
 };
 
 
@@ -107,13 +109,12 @@ public:
   explicit cStateMenu(cApplication& application);
 
 private:
-  void UpdateText();
-
   void _Update(const spitfire::math::cTimeStep& timeStep);
-  void _UpdateInput(const spitfire::math::cTimeStep& timeStep);
   void _Render(const spitfire::math::cTimeStep& timeStep);
 
   void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event);
+
+  void _OnWidgetEvent(const breathe::gui::cWidgetEvent& event);
 
   struct OPTION {
     static const int NEW_GAME = 1;
@@ -121,10 +122,7 @@ private:
     //static const int PREFERENCES = 3;
     static const int QUIT = 3;
   };
-  int highlighted;
 
-  bool bIsKeyUp;
-  bool bIsKeyDown;
   bool bIsKeyReturn;
 };
 
@@ -134,12 +132,11 @@ public:
   explicit cStateNewGame(cApplication& application);
 
 private:
-  void UpdateText();
-
   void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event);
 
+  void _OnWidgetEvent(const breathe::gui::cWidgetEvent& event);
+
   void _Update(const spitfire::math::cTimeStep& timeStep);
-  void _UpdateInput(const spitfire::math::cTimeStep& timeStep);
   void _Render(const spitfire::math::cTimeStep& timeStep);
 
   struct OPTION {
@@ -149,7 +146,6 @@ private:
     static const int START = 4;
     static const int BACK = 5;
   };
-  int highlighted;
 
   bool bIsKeyUp;
   bool bIsKeyDown;
@@ -167,9 +163,15 @@ private:
 
   void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event);
 
+  void _OnWidgetEvent(const breathe::gui::cWidgetEvent& event);
+
   void _Update(const spitfire::math::cTimeStep& timeStep);
   void _UpdateInput(const spitfire::math::cTimeStep& timeStep);
   void _Render(const spitfire::math::cTimeStep& timeStep);
+
+  struct OPTION {
+    static const int BACK = 1;
+  };
 
   opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectText;
 
@@ -185,6 +187,7 @@ public:
 
 private:
   void UpdateText();
+
   void UpdateBoardVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board);
   void UpdatePieceVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board, const tetris::cPiece& piece);
 
