@@ -61,6 +61,7 @@ protected:
   breathe::gui::cStaticText* AddStaticText(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
   breathe::gui::cRetroButton* AddRetroButton(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
   breathe::gui::cRetroInput* AddRetroInput(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
+  breathe::gui::cRetroInputUpDown* AddRetroInputUpDown(breathe::gui::id_t id, int min, int max, int value, float x, float y, float width);
 
   cApplication& application;
   cSettings& settings;
@@ -146,6 +147,10 @@ private:
     static const int START = 4;
     static const int BACK = 5;
   };
+
+  breathe::gui::cRetroInputUpDown* pNumberOfPlayers;
+  breathe::gui::cRetroInput* pPlayerName1;
+  breathe::gui::cRetroInput* pPlayerName2;
 
   bool bIsKeyUp;
   bool bIsKeyDown;

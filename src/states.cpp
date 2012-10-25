@@ -153,6 +153,20 @@ breathe::gui::cRetroInput* cState::AddRetroInput(breathe::gui::id_t id, const sp
   return pRetroInput;
 }
 
+breathe::gui::cRetroInputUpDown* cState::AddRetroInputUpDown(breathe::gui::id_t id, int min, int max, int value, float x, float y, float width)
+{
+  breathe::gui::cRetroInputUpDown* pRetroInputUpDown = new breathe::gui::cRetroInputUpDown;
+  pRetroInputUpDown->SetId(id);
+  pRetroInputUpDown->SetRange(min, max);
+  pRetroInputUpDown->SetValue(value);
+  pRetroInputUpDown->SetRelativePosition(spitfire::math::cVec2(x, y));
+  pRetroInputUpDown->SetWidth(width);
+  pRetroInputUpDown->SetHeight(pGuiManager->GetStaticTextHeight());
+  pLayer->AddChild(pRetroInputUpDown);
+
+  return pRetroInputUpDown;
+}
+
 
 // ** cBoardRepresentation
 
@@ -451,6 +465,9 @@ void cStateMenu::_Render(const spitfire::math::cTimeStep& timeStep)
 
 cStateNewGame::cStateNewGame(cApplication& application) :
   cState(application),
+  pNumberOfPlayers(nullptr),
+  pPlayerName1(nullptr),
+  pPlayerName2(nullptr),
   bIsKeyUp(false),
   bIsKeyDown(false),
   bIsKeyReturn(false)
@@ -468,16 +485,16 @@ cStateNewGame::cStateNewGame(cApplication& application) :
   const float width = 0.4f;
 
   AddStaticText(0, TEXT("Number of Players:"), x, y, width);
-  AddRetroInput(OPTION::NUMBER_OF_PLAYERS, TEXT("2"), x + width + fSpacerHorizontal, y, width);
+  pNumberOfPlayers = AddRetroInputUpDown(OPTION::NUMBER_OF_PLAYERS, 1, 2, settings.GetNumberOfPlayers(), x + width + fSpacerHorizontal, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
 
   AddStaticText(0, TEXT("Name"), x, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
   AddStaticText(0, TEXT("Player 1:"), x, y, width);
-  AddRetroInput(OPTION::NAME_PLAYER1, TEXT("|"), x + width + fSpacerHorizontal, y, width);
+  pPlayerName1 = AddRetroInput(OPTION::NAME_PLAYER1, settings.GetPlayerName(0), x + width + fSpacerHorizontal, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
   AddStaticText(0, TEXT("Player 2:"), x, y, width);
-  AddRetroInput(OPTION::NAME_PLAYER2, TEXT("|"), x + width + fSpacerHorizontal, y, width);
+  pPlayerName2 = AddRetroInput(OPTION::NAME_PLAYER2, settings.GetPlayerName(1), x + width + fSpacerHorizontal, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
 
   AddRetroButton(OPTION::START, TEXT("Start Game"), x, y, width);
@@ -525,6 +542,12 @@ void cStateNewGame::_OnWidgetEvent(const breathe::gui::cWidgetEvent& event)
         break;
       }
       case OPTION::START: {
+        // Update our settings
+        settings.SetNumberOfPlayers(pNumberOfPlayers->GetValue());
+        settings.SetPlayerName(0, pPlayerName1->GetCaption());
+        settings.SetPlayerName(1, pPlayerName2->GetCaption());
+        settings.Save();
+
         // Pop our current state
         application.PopStateSoon();
         // Push our game state
@@ -721,9 +744,9 @@ void cStateHighScores::_Render(const spitfire::math::cTimeStep& timeStep)
 
     // Draw the text overlay
     {
-      // Rendering the font in the middle of the screen
+      // Render the text
       spitfire::math::cMat4 matModelView2D;
-      matModelView2D.SetTranslation(0.1f, 0.1f, 0.0f);
+      matModelView2D.SetTranslation(0.0f, 0.0f, 0.0f);
 
       pContext->BindFont(*pFont);
 
@@ -774,7 +797,7 @@ cStateGame::cStateGame(cApplication& application) :
   spitfire::math::SetRandomSeed(currentTime);
 
   game.boards.push_back(new tetris::cBoard(game));
-  game.boards.push_back(new tetris::cBoard(game));
+  if (settings.GetNumberOfPlayers() != 1) game.boards.push_back(new tetris::cBoard(game));
 
   game.StartGame(currentTime);
 
@@ -786,10 +809,8 @@ cStateGame::cStateGame(cApplication& application) :
 
   for (size_t i = 0; i < game.boards.size(); i++) {
     tetris::cBoard& board = *(game.boards[i]);
-    spitfire::ostringstream_t o;
-    o<<TEXT("Player");
-    o<<(i + 1);
-    cBoardRepresentation* pBoardRepresentation = new cBoardRepresentation(board, o.str());
+
+    cBoardRepresentation* pBoardRepresentation = new cBoardRepresentation(board, settings.GetPlayerName(i));
 
     pBoardRepresentation->pStaticVertexBufferObjectBoardTriangles = pContext->CreateStaticVertexBufferObject();
     UpdateBoardVBO(pBoardRepresentation->pStaticVertexBufferObjectBoardTriangles, board);
@@ -896,6 +917,9 @@ void cStateGame::UpdateText()
     const spitfire::math::cColour& colour = boardColours[i];
 
     // Create the text for this board
+    pFont->PushBack(builder, settings.GetPlayerName(i), colour, spitfire::math::cVec2(0.0f, y));
+    y += 0.05f;
+
     spitfire::ostringstream_t o;
 
     const uint32_t uiLevel = board.GetLevel();
