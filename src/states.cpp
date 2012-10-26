@@ -143,6 +143,7 @@ breathe::gui::cRetroButton* cState::AddRetroButton(breathe::gui::id_t id, const 
 breathe::gui::cRetroInput* cState::AddRetroInput(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width)
 {
   breathe::gui::cRetroInput* pRetroInput = new breathe::gui::cRetroInput;
+  pRetroInput->SetEventListener(*this);
   pRetroInput->SetId(id);
   pRetroInput->SetCaption(sText);
   pRetroInput->SetRelativePosition(spitfire::math::cVec2(x, y));
@@ -156,15 +157,29 @@ breathe::gui::cRetroInput* cState::AddRetroInput(breathe::gui::id_t id, const sp
 breathe::gui::cRetroInputUpDown* cState::AddRetroInputUpDown(breathe::gui::id_t id, int min, int max, int value, float x, float y, float width)
 {
   breathe::gui::cRetroInputUpDown* pRetroInputUpDown = new breathe::gui::cRetroInputUpDown;
+  pRetroInputUpDown->SetEventListener(*this);
   pRetroInputUpDown->SetId(id);
   pRetroInputUpDown->SetRange(min, max);
-  pRetroInputUpDown->SetValue(value);
+  pRetroInputUpDown->SetValue(value, false);
   pRetroInputUpDown->SetRelativePosition(spitfire::math::cVec2(x, y));
   pRetroInputUpDown->SetWidth(width);
   pRetroInputUpDown->SetHeight(pGuiManager->GetStaticTextHeight());
   pLayer->AddChild(pRetroInputUpDown);
 
   return pRetroInputUpDown;
+}
+
+breathe::gui::cRetroColourPicker* cState::AddRetroColourPicker(breathe::gui::id_t id, float x, float y, float width)
+{
+  breathe::gui::cRetroColourPicker* pRetroColourPicker = new breathe::gui::cRetroColourPicker;
+  pRetroColourPicker->SetEventListener(*this);
+  pRetroColourPicker->SetId(id);
+  pRetroColourPicker->SetRelativePosition(spitfire::math::cVec2(x, y));
+  pRetroColourPicker->SetWidth(width);
+  pRetroColourPicker->SetHeight(pGuiManager->GetStaticTextHeight());
+  pLayer->AddChild(pRetroColourPicker);
+
+  return pRetroColourPicker;
 }
 
 
@@ -413,7 +428,7 @@ void cStateMenu::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
   }
 }
 
-void cStateMenu::_OnWidgetEvent(const breathe::gui::cWidgetEvent& event)
+breathe::gui::EVENT_RESULT cStateMenu::_OnWidgetEvent(const breathe::gui::cWidgetEvent& event)
 {
   std::cout<<"cStateMenu::_OnWidgetEvent"<<std::endl;
 
@@ -440,6 +455,8 @@ void cStateMenu::_OnWidgetEvent(const breathe::gui::cWidgetEvent& event)
       }
     }
   }
+
+  return breathe::gui::EVENT_RESULT::NOT_HANDLED_PERCOLATE;
 }
 
 void cStateMenu::_Render(const spitfire::math::cTimeStep& timeStep)
@@ -470,7 +487,9 @@ cStateNewGame::cStateNewGame(cApplication& application) :
   pPlayerName2(nullptr),
   bIsKeyUp(false),
   bIsKeyDown(false),
-  bIsKeyReturn(false)
+  bIsKeyReturn(false),
+  previousColour1(0),
+  previousColour2(1)
 {
   breathe::gui::cWidget* pRoot = pGuiManager->GetRoot();
 
@@ -488,19 +507,52 @@ cStateNewGame::cStateNewGame(cApplication& application) :
   pNumberOfPlayers = AddRetroInputUpDown(OPTION::NUMBER_OF_PLAYERS, 1, 2, settings.GetNumberOfPlayers(), x + width + fSpacerHorizontal, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
 
-  AddStaticText(0, TEXT("Name"), x, y, width);
+  AddStaticText(0, TEXT("Player 1"), x, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
-  AddStaticText(0, TEXT("Player 1:"), x, y, width);
+  AddStaticText(0, TEXT("Name:"), x, y, width);
   pPlayerName1 = AddRetroInput(OPTION::NAME_PLAYER1, settings.GetPlayerName(0), x + width + fSpacerHorizontal, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
-  AddStaticText(0, TEXT("Player 2:"), x, y, width);
+  AddStaticText(0, TEXT("Colour:"), x, y, width);
+  pPlayerColour1 = AddRetroColourPicker(OPTION::COLOUR_PLAYER1, x + width + fSpacerHorizontal, y, width);
+  AddColours(pPlayerColour1);
+  const spitfire::string_t sPlayerColour1 = settings.GetPlayerColour(0);
+  previousColour1 = 0;
+  if (sPlayerColour1 == TEXT("Red")) previousColour1 = 0;
+  else if (sPlayerColour1 == TEXT("Blue")) previousColour1 = 1;
+  else if (sPlayerColour1 == TEXT("Green")) previousColour1 = 2;
+  else if (sPlayerColour1 == TEXT("Yellow")) previousColour1 = 3;
+  pPlayerColour1->SetSelectedColour(previousColour1, false);
+  y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
+
+  AddStaticText(0, TEXT("Player 2"), x, y, width);
+  y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
+  AddStaticText(0, TEXT("Name:"), x, y, width);
   pPlayerName2 = AddRetroInput(OPTION::NAME_PLAYER2, settings.GetPlayerName(1), x + width + fSpacerHorizontal, y, width);
+  y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
+  AddStaticText(0, TEXT("Colour:"), x, y, width);
+  pPlayerColour2 = AddRetroColourPicker(OPTION::COLOUR_PLAYER2, x + width + fSpacerHorizontal, y, width);
+  AddColours(pPlayerColour2);
+  const spitfire::string_t sPlayerColour2 = settings.GetPlayerColour(1);
+  previousColour2 = 1;
+  if (sPlayerColour2 == TEXT("Red")) previousColour2 = 0;
+  else if (sPlayerColour2 == TEXT("Blue")) previousColour2 = 1;
+  else if (sPlayerColour2 == TEXT("Green")) previousColour2 = 2;
+  else if (sPlayerColour2 == TEXT("Yellow")) previousColour2 = 3;
+  pPlayerColour2->SetSelectedColour(previousColour2, false);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
 
   AddRetroButton(OPTION::START, TEXT("Start Game"), x, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
   AddRetroButton(OPTION::BACK, TEXT("Back"), x, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
+}
+
+void cStateNewGame::AddColours(breathe::gui::cRetroColourPicker* pColourPicker)
+{
+  pColourPicker->AddColour(TEXT("Red"), spitfire::math::cColour(1.0f, 0.0f, 0.0f));
+  pColourPicker->AddColour(TEXT("Blue"), spitfire::math::cColour(0.0f, 0.0f, 1.0f));
+  pColourPicker->AddColour(TEXT("Green"), spitfire::math::cColour(0.0f, 1.0f, 0.0f));
+  pColourPicker->AddColour(TEXT("Yellow"), spitfire::math::cColour(1.0f, 1.0f, 0.0f));
 }
 
 void cStateNewGame::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
@@ -526,41 +578,97 @@ void cStateNewGame::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
   }
 }
 
-void cStateNewGame::_OnWidgetEvent(const breathe::gui::cWidgetEvent& event)
+breathe::gui::EVENT_RESULT cStateNewGame::_OnWidgetEvent(const breathe::gui::cWidgetEvent& event)
 {
   std::cout<<"cStateMenu::_OnWidgetEvent"<<std::endl;
 
-  if (event.IsPressed()) {
-    switch (event.GetWidget()->GetId()) {
-      case OPTION::NUMBER_OF_PLAYERS: {
-        break;
+  switch (event.GetWidget()->GetId()) {
+    case OPTION::COLOUR_PLAYER1:
+    case OPTION::COLOUR_PLAYER2: {
+      if (event.IsChanged()) {
+        // If the same colour has been selected for both players then veto the event
+        if ((pPlayerColour1 != nullptr) && (pPlayerColour2 != nullptr)) {
+          if (pPlayerColour1->GetSelectedColour() == pPlayerColour2->GetSelectedColour()) {
+            if (event.GetWidget()->GetId() == OPTION::COLOUR_PLAYER1) {
+              if (previousColour1 < pPlayerColour1->GetSelectedColour()) {
+                // Going up
+                size_t newColour = pPlayerColour1->GetSelectedColour() + 1;
+                if (newColour < pPlayerColour1->GetNumberOfColours()) {
+                  // Skip a colour
+                  pPlayerColour1->SetSelectedColour(newColour, false);
+                } else {
+                  // Revert to the previous colour
+                  pPlayerColour1->SetSelectedColour(previousColour1, false);
+                }
+              } else {
+                // Going down
+                if (pPlayerColour1->GetSelectedColour() == 0) {
+                  // Revert to the previous colour
+                  pPlayerColour1->SetSelectedColour(previousColour1, false);
+                } else {
+                  // Skip a colour
+                  pPlayerColour1->SetSelectedColour(pPlayerColour1->GetSelectedColour() - 1, false);
+                }
+              }
+            } else {
+              if (previousColour2 < pPlayerColour2->GetSelectedColour()) {
+                // Going up
+                size_t newColour = pPlayerColour2->GetSelectedColour() + 1;
+                if (newColour < pPlayerColour2->GetNumberOfColours()) {
+                  // Skip a colour
+                  pPlayerColour2->SetSelectedColour(newColour, false);
+                } else {
+                  // Revert to the previous colour
+                  pPlayerColour2->SetSelectedColour(previousColour2, false);
+                }
+              } else {
+                // Going down
+                if (pPlayerColour2->GetSelectedColour() == 0) {
+                  // Revert to the previous colour
+                  pPlayerColour2->SetSelectedColour(previousColour2, false);
+                } else {
+                  // Skip a colour
+                  pPlayerColour2->SetSelectedColour(pPlayerColour2->GetSelectedColour() - 1, false);
+                }
+              }
+            }
+          }
+
+          // Update our previous colours
+          previousColour1 = pPlayerColour1->GetSelectedColour();
+          previousColour2 = pPlayerColour2->GetSelectedColour();
+        }
       }
-      case OPTION::NAME_PLAYER1: {
-        break;
-      }
-      case OPTION::NAME_PLAYER2: {
-        break;
-      }
-      case OPTION::START: {
+
+      break;
+    }
+    case OPTION::START: {
+      if (event.IsPressed()) {
         // Update our settings
         settings.SetNumberOfPlayers(pNumberOfPlayers->GetValue());
         settings.SetPlayerName(0, pPlayerName1->GetCaption());
+        settings.SetPlayerColour(0, pPlayerColour1->GetColourName(pPlayerColour1->GetSelectedColour()));
         settings.SetPlayerName(1, pPlayerName2->GetCaption());
+        settings.SetPlayerColour(1, pPlayerColour2->GetColourName(pPlayerColour2->GetSelectedColour()));
         settings.Save();
 
         // Pop our current state
         application.PopStateSoon();
         // Push our game state
         application.PushStateSoon(new cStateGame(application));
-        break;
       }
-      case OPTION::BACK: {
+      break;
+    }
+    case OPTION::BACK: {
+      if (event.IsPressed()) {
         // Pop our menu state
         application.PopStateSoon();
-        break;
       }
+      break;
     }
   }
+
+  return breathe::gui::EVENT_RESULT::NOT_HANDLED_PERCOLATE;
 }
 
 void cStateNewGame::_Update(const spitfire::math::cTimeStep& timeStep)
@@ -696,7 +804,7 @@ void cStateHighScores::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event
   }
 }
 
-void cStateHighScores::_OnWidgetEvent(const breathe::gui::cWidgetEvent& event)
+breathe::gui::EVENT_RESULT cStateHighScores::_OnWidgetEvent(const breathe::gui::cWidgetEvent& event)
 {
   std::cout<<"cStateHighScores::_OnWidgetEvent"<<std::endl;
 
@@ -709,6 +817,8 @@ void cStateHighScores::_OnWidgetEvent(const breathe::gui::cWidgetEvent& event)
       }
     }
   }
+
+  return breathe::gui::EVENT_RESULT::NOT_HANDLED_PERCOLATE;
 }
 
 void cStateHighScores::_Update(const spitfire::math::cTimeStep& timeStep)
@@ -902,19 +1012,17 @@ void cStateGame::UpdateText()
   const spitfire::math::cColour green(0.0f, 1.0f, 0.0f);
   const spitfire::math::cColour blue(0.0f, 0.0f, 1.0f);
   const spitfire::math::cColour yellow(1.0f, 1.0f, 0.0f);
-  const spitfire::math::cColour boardColours[] = {
-    red,
-    green,
-    blue,
-    yellow
-  };
 
   float y = 0.2f;
 
   for (size_t i = 0; i < game.boards.size(); i++) {
     tetris::cBoard& board = *(game.boards[i]);
 
-    const spitfire::math::cColour& colour = boardColours[i];
+    const spitfire::string_t sColour = settings.GetPlayerColour(i);
+    spitfire::math::cColour colour = red;
+    if (sColour == TEXT("Green")) colour = green;
+    else if (sColour == TEXT("Blue")) colour = blue;
+    else if (sColour == TEXT("Yellow")) colour = yellow;
 
     // Create the text for this board
     pFont->PushBack(builder, settings.GetPlayerName(i), colour, spitfire::math::cVec2(0.0f, y));
@@ -935,6 +1043,8 @@ void cStateGame::UpdateText()
     pFont->PushBack(builder, o.str(), colour, spitfire::math::cVec2(0.0f, y));
     y += 0.05f;
     o.str(TEXT(""));
+
+    y += 0.05f;
   }
 
   pStaticVertexBufferObjectText->SetData(pGeometryDataPtr);

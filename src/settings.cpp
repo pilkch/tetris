@@ -189,30 +189,26 @@ void cSettings::SetPlayerName(size_t i, const spitfire::string_t& sName)
   SetXMLValue(TEXT("players"), sItem, TEXT("name"), sName);
 }
 
-spitfire::math::cColour cSettings::GetPlayerColour(size_t i) const
+spitfire::string_t cSettings::GetPlayerColour(size_t i) const
 {
   spitfire::ostringstream_t o;
   o<<"player";
   o<<i;
   const spitfire::string_t sItem = o.str();
 
-  const spitfire::math::cColour red(1.0f, 0.0f, 0.0f);
-  const spitfire::math::cColour blue(0.0f, 0.0f, 1.0f);
-  const spitfire::math::cColour yellow(1.0f, 1.0f, 0.0f);
-  const spitfire::math::cColour green(0.0f, 1.0f, 0.0f);
-  const spitfire::math::cColour defaultColours[] = {
-    red,
-    blue,
-    yellow,
-    green
+  const spitfire::string_t defaultColours[] = {
+    TEXT("Red"),
+    TEXT("Blue"),
+    TEXT("Yellow"),
+    TEXT("Green")
   };
   assert(i < 4);
-  spitfire::math::cColour defaultValue = defaultColours[i];
+  spitfire::string_t defaultValue = defaultColours[i];
 
   return GetXMLValue(TEXT("settings"), sItem, TEXT("colour"), defaultValue);
 }
 
-void cSettings::SetPlayerColour(size_t i, const spitfire::math::cColour& colour)
+void cSettings::SetPlayerColour(size_t i, const spitfire::string_t& colour)
 {
   spitfire::ostringstream_t o;
   o<<"player";

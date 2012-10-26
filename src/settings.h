@@ -35,8 +35,8 @@ public:
 
   spitfire::string_t GetPlayerName(size_t i) const;
   void SetPlayerName(size_t i, const spitfire::string_t& sName);
-  spitfire::math::cColour GetPlayerColour(size_t i) const;
-  void SetPlayerColour(size_t i, const spitfire::math::cColour& colour);
+  spitfire::string_t GetPlayerColour(size_t i) const;
+  void SetPlayerColour(size_t i, const spitfire::string_t& colour);
 
   std::vector<cHighScoresTableEntry> GetHighScores() const;
   void SetHighScores(const std::vector<cHighScoresTableEntry>& entries);

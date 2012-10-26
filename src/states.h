@@ -62,6 +62,7 @@ protected:
   breathe::gui::cRetroButton* AddRetroButton(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
   breathe::gui::cRetroInput* AddRetroInput(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
   breathe::gui::cRetroInputUpDown* AddRetroInputUpDown(breathe::gui::id_t id, int min, int max, int value, float x, float y, float width);
+  breathe::gui::cRetroColourPicker* AddRetroColourPicker(breathe::gui::id_t id, float x, float y, float width);
 
   cApplication& application;
   cSettings& settings;
@@ -98,7 +99,7 @@ private:
   virtual void _OnStateMouseEvent(const opengl::cMouseEvent& event) {}
   virtual void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event) {}
 
-  virtual void _OnWidgetEvent(const breathe::gui::cWidgetEvent& event) {}
+  virtual breathe::gui::EVENT_RESULT _OnWidgetEvent(const breathe::gui::cWidgetEvent& event) { return breathe::gui::EVENT_RESULT::NOT_HANDLED_PERCOLATE; }
 };
 
 
@@ -115,7 +116,7 @@ private:
 
   void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event);
 
-  void _OnWidgetEvent(const breathe::gui::cWidgetEvent& event);
+  breathe::gui::EVENT_RESULT _OnWidgetEvent(const breathe::gui::cWidgetEvent& event);
 
   struct OPTION {
     static const int NEW_GAME = 1;
@@ -133,28 +134,37 @@ public:
   explicit cStateNewGame(cApplication& application);
 
 private:
+  void AddColours(breathe::gui::cRetroColourPicker* pColourPicker);
+
   void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event);
 
-  void _OnWidgetEvent(const breathe::gui::cWidgetEvent& event);
+  breathe::gui::EVENT_RESULT _OnWidgetEvent(const breathe::gui::cWidgetEvent& event);
 
   void _Update(const spitfire::math::cTimeStep& timeStep);
   void _Render(const spitfire::math::cTimeStep& timeStep);
 
   struct OPTION {
-    static const int NUMBER_OF_PLAYERS = 1;
-    static const int NAME_PLAYER1 = 2;
-    static const int NAME_PLAYER2 = 3;
-    static const int START = 4;
-    static const int BACK = 5;
+    static const size_t NUMBER_OF_PLAYERS = 1;
+    static const size_t NAME_PLAYER1 = 2;
+    static const size_t COLOUR_PLAYER1 = 3;
+    static const size_t NAME_PLAYER2 = 4;
+    static const size_t COLOUR_PLAYER2 = 5;
+    static const size_t START = 6;
+    static const size_t BACK = 7;
   };
 
   breathe::gui::cRetroInputUpDown* pNumberOfPlayers;
   breathe::gui::cRetroInput* pPlayerName1;
   breathe::gui::cRetroInput* pPlayerName2;
+  breathe::gui::cRetroColourPicker* pPlayerColour1;
+  breathe::gui::cRetroColourPicker* pPlayerColour2;
 
   bool bIsKeyUp;
   bool bIsKeyDown;
   bool bIsKeyReturn;
+
+  size_t previousColour1;
+  size_t previousColour2;
 };
 
 class cStateHighScores : public cState
@@ -168,7 +178,7 @@ private:
 
   void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event);
 
-  void _OnWidgetEvent(const breathe::gui::cWidgetEvent& event);
+  breathe::gui::EVENT_RESULT _OnWidgetEvent(const breathe::gui::cWidgetEvent& event);
 
   void _Update(const spitfire::math::cTimeStep& timeStep);
   void _UpdateInput(const spitfire::math::cTimeStep& timeStep);
