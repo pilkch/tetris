@@ -4,6 +4,11 @@
 // Breathe headers
 #include <breathe/gui/cManager.h>
 #include <breathe/gui/cRenderer.h>
+#include <breathe/render/cContext.h>
+#include <breathe/render/cFont.h>
+#include <breathe/render/cSystem.h>
+#include <breathe/render/cVertexBufferObject.h>
+#include <breathe/render/cWindow.h>
 
 // Tetris headers
 #include "application.h"
@@ -22,9 +27,9 @@ public:
   tetris::cBoard& board;
   spitfire::string_t sName;
 
-  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectBoardTriangles;
-  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectPieceTriangles;
-  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectNextPieceTriangles;
+  breathe::render::cVertexBufferObject* pStaticVertexBufferObjectBoardTriangles;
+  breathe::render::cVertexBufferObject* pStaticVertexBufferObjectPieceTriangles;
+  breathe::render::cVertexBufferObject* pStaticVertexBufferObjectNextPieceTriangles;
 
   bool bIsInputPieceMoveLeft;
   bool bIsInputPieceMoveRight;
@@ -49,9 +54,9 @@ public:
   void Pause() { _OnPause(); }
   void Resume() { _OnResume(); }
 
-  void OnWindowEvent(const opengl::cWindowEvent& event) { _OnWindowEvent(event); }
-  void OnMouseEvent(const opengl::cMouseEvent& event) { _OnMouseEvent(event); }
-  void OnKeyboardEvent(const opengl::cKeyboardEvent& event) { _OnKeyboardEvent(event); }
+  void OnWindowEvent(const breathe::gui::cWindowEvent& event) { _OnWindowEvent(event); }
+  void OnMouseEvent(const breathe::gui::cMouseEvent& event) { _OnMouseEvent(event); }
+  void OnKeyboardEvent(const breathe::gui::cKeyboardEvent& event) { _OnKeyboardEvent(event); }
 
   void Update(const spitfire::math::cTimeStep& timeStep) { _Update(timeStep); }
   void UpdateInput(const spitfire::math::cTimeStep& timeStep) { _UpdateInput(timeStep); }
@@ -67,10 +72,10 @@ protected:
   cApplication& application;
   cSettings& settings;
 
-  opengl::cSystem& system;
-  opengl::cWindow* pWindow;
-  opengl::cContext* pContext;
-  opengl::cFont* pFont;
+  breathe::render::cSystem& system;
+  breathe::render::cWindow* pWindow;
+  breathe::render::cContext* pContext;
+  breathe::render::cFont* pFont;
 
   breathe::audio::cManager* pAudioManager;
 
@@ -87,17 +92,17 @@ private:
   virtual void _OnPause();
   virtual void _OnResume();
 
-  virtual void _OnWindowEvent(const opengl::cWindowEvent& event) {}
-  virtual void _OnMouseEvent(const opengl::cMouseEvent& event);
-  virtual void _OnKeyboardEvent(const opengl::cKeyboardEvent& event);
+  virtual void _OnWindowEvent(const breathe::gui::cWindowEvent& event) {}
+  virtual void _OnMouseEvent(const breathe::gui::cMouseEvent& event);
+  virtual void _OnKeyboardEvent(const breathe::gui::cKeyboardEvent& event);
 
   virtual void _Update(const spitfire::math::cTimeStep& timeStep) {}
   virtual void _UpdateInput(const spitfire::math::cTimeStep& timeStep) {}
   virtual void _Render(const spitfire::math::cTimeStep& timeStep) {}
 
 
-  virtual void _OnStateMouseEvent(const opengl::cMouseEvent& event) {}
-  virtual void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event) {}
+  virtual void _OnStateMouseEvent(const breathe::gui::cMouseEvent& event) {}
+  virtual void _OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event) {}
 
   virtual breathe::gui::EVENT_RESULT _OnWidgetEvent(const breathe::gui::cWidgetEvent& event) { return breathe::gui::EVENT_RESULT::NOT_HANDLED_PERCOLATE; }
 };
@@ -114,7 +119,7 @@ private:
   void _Update(const spitfire::math::cTimeStep& timeStep);
   void _Render(const spitfire::math::cTimeStep& timeStep);
 
-  void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event);
+  void _OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event);
 
   breathe::gui::EVENT_RESULT _OnWidgetEvent(const breathe::gui::cWidgetEvent& event);
 
@@ -136,7 +141,7 @@ public:
 private:
   void AddColours(breathe::gui::cRetroColourPicker* pColourPicker);
 
-  void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event);
+  void _OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event);
 
   breathe::gui::EVENT_RESULT _OnWidgetEvent(const breathe::gui::cWidgetEvent& event);
 
@@ -176,7 +181,7 @@ public:
 private:
   void UpdateText();
 
-  void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event);
+  void _OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event);
 
   breathe::gui::EVENT_RESULT _OnWidgetEvent(const breathe::gui::cWidgetEvent& event);
 
@@ -188,7 +193,7 @@ private:
     static const int BACK = 1;
   };
 
-  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectText;
+  breathe::render::cVertexBufferObject* pStaticVertexBufferObjectText;
 
   bool bIsDone;
 };
@@ -203,10 +208,10 @@ public:
 private:
   void UpdateText();
 
-  void UpdateBoardVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board);
-  void UpdatePieceVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board, const tetris::cPiece& piece);
+  void UpdateBoardVBO(breathe::render::cVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board);
+  void UpdatePieceVBO(breathe::render::cVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board, const tetris::cPiece& piece);
 
-  void _OnStateKeyboardEvent(const opengl::cKeyboardEvent& event);
+  void _OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event);
 
   void _Update(const spitfire::math::cTimeStep& timeStep);
   void _UpdateInput(const spitfire::math::cTimeStep& timeStep);
@@ -222,11 +227,11 @@ private:
   void _OnGameNewLevel(const tetris::cBoard& board, uint32_t uiLevel);
   void _OnGameOver(const tetris::cBoard& board);
 
-  opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectText;
+  breathe::render::cVertexBufferObject* pStaticVertexBufferObjectText;
 
-  opengl::cTexture* pTextureBlock;
+  breathe::render::cTexture* pTextureBlock;
 
-  opengl::cShader* pShaderBlock;
+  breathe::render::cShader* pShaderBlock;
   breathe::audio::cBufferRef pAudioBufferPieceHitsGround;
   breathe::audio::cBufferRef pAudioBufferScoreTetris;
   breathe::audio::cBufferRef pAudioBufferScoreOtherThanTetris;

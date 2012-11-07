@@ -23,15 +23,7 @@
 #include <SDL/SDL_image.h>
 
 // libopenglmm headers
-#include <libopenglmm/libopenglmm.h>
-#include <libopenglmm/cContext.h>
-#include <libopenglmm/cFont.h>
 #include <libopenglmm/cGeometry.h>
-#include <libopenglmm/cShader.h>
-#include <libopenglmm/cSystem.h>
-#include <libopenglmm/cTexture.h>
-#include <libopenglmm/cVertexBufferObject.h>
-#include <libopenglmm/cWindow.h>
 
 // Spitfire headers
 #include <spitfire/spitfire.h>
@@ -91,7 +83,7 @@ void cState::_OnResume()
   }
 }
 
-void cState::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
+void cState::_OnKeyboardEvent(const breathe::gui::cKeyboardEvent& event)
 {
   bool bIsHandled = false;
   if (event.IsKeyDown()) bIsHandled = pGuiManager->InjectEventKeyboardDown(event.GetKeyCode());
@@ -100,7 +92,7 @@ void cState::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
   if (!bIsHandled) _OnStateKeyboardEvent(event);
 }
 
-void cState::_OnMouseEvent(const opengl::cMouseEvent& event)
+void cState::_OnMouseEvent(const breathe::gui::cMouseEvent& event)
 {
   const float x = event.GetX() / pContext->GetWidth();
   const float y = event.GetY() / pContext->GetHeight();
@@ -409,16 +401,16 @@ void cStateMenu::_Update(const spitfire::math::cTimeStep& timeStep)
 }
 
 
-void cStateMenu::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
+void cStateMenu::_OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event)
 {
   if (event.IsKeyUp()) {
     switch (event.GetKeyCode()) {
-      case opengl::KEY::NUMBER_1: {
+      case breathe::gui::KEY::NUMBER_1: {
         std::cout<<"cStateMenu::_OnStateKeyboardEvent 1 up"<<std::endl;
         bIsWireframe = !bIsWireframe;
         break;
       }
-      case opengl::KEY::NUMBER_2: {
+      case breathe::gui::KEY::NUMBER_2: {
         std::cout<<"cStateMenu::_OnStateKeyboardEvent 2 up"<<std::endl;
         spring.SetPosition(spitfire::math::cVec2(0.0f, -0.05f));
         spring.SetVelocity(spitfire::math::cVec2(0.0f, -0.00001f));
@@ -555,21 +547,21 @@ void cStateNewGame::AddColours(breathe::gui::cRetroColourPicker* pColourPicker)
   pColourPicker->AddColour(TEXT("Yellow"), spitfire::math::cColour(1.0f, 1.0f, 0.0f));
 }
 
-void cStateNewGame::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
+void cStateNewGame::_OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event)
 {
   if (event.IsKeyUp()) {
     switch (event.GetKeyCode()) {
-      case opengl::KEY::UP: {
+      case breathe::gui::KEY::UP: {
         std::cout<<"cStateNewGame::_OnStateKeyboardEvent Up"<<std::endl;
         bIsKeyUp = true;
         break;
       }
-      case opengl::KEY::DOWN: {
+      case breathe::gui::KEY::DOWN: {
         std::cout<<"cStateNewGame::_OnStateKeyboardEvent Down"<<std::endl;
         bIsKeyDown = true;
         break;
       }
-      case opengl::KEY::RETURN: {
+      case breathe::gui::KEY::RETURN: {
         std::cout<<"cStateNewGame::_OnStateKeyboardEvent Return"<<std::endl;
         bIsKeyReturn = true;
         break;
@@ -791,12 +783,12 @@ void cStateHighScores::UpdateText()
   pStaticVertexBufferObjectText->Compile2D(system);
 }
 
-void cStateHighScores::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
+void cStateHighScores::_OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event)
 {
   if (event.IsKeyDown()) {
     switch (event.GetKeyCode()) {
-      case opengl::KEY::ESCAPE:
-      case opengl::KEY::RETURN: {
+      case breathe::gui::KEY::ESCAPE:
+      case breathe::gui::KEY::RETURN: {
         bIsDone = true;
         break;
       }
@@ -850,7 +842,7 @@ void cStateHighScores::_Render(const spitfire::math::cTimeStep& timeStep)
   pContext->BeginRenderToScreen();
 
   {
-    pContext->BeginRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN);
+    pContext->BeginRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN);
 
     // Draw the text overlay
     {
@@ -863,7 +855,7 @@ void cStateHighScores::_Render(const spitfire::math::cTimeStep& timeStep)
       pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
 
       {
-        pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
+        pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
 
         pContext->DrawStaticVertexBufferObjectTriangles2D(*pStaticVertexBufferObjectText);
       }
@@ -1052,7 +1044,7 @@ void cStateGame::UpdateText()
   pStaticVertexBufferObjectText->Compile2D(system);
 }
 
-void cStateGame::UpdateBoardVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board)
+void cStateGame::UpdateBoardVBO(breathe::render::cVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board)
 {
   assert(pStaticVertexBufferObject != nullptr);
 
@@ -1102,7 +1094,7 @@ void cStateGame::UpdateBoardVBO(opengl::cStaticVertexBufferObject* pStaticVertex
   }
 }
 
-void cStateGame::UpdatePieceVBO(opengl::cStaticVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board, const tetris::cPiece& piece)
+void cStateGame::UpdatePieceVBO(breathe::render::cVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board, const tetris::cPiece& piece)
 {
   std::cout<<"cStateGame::UpdatePieceVBO"<<std::endl;
   assert(pStaticVertexBufferObject != nullptr);
@@ -1271,14 +1263,14 @@ void cStateGame::_OnGameOver(const tetris::cBoard& board)
   }
 }
 
-void cStateGame::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
+void cStateGame::_OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event)
 {
   std::cout<<"cStateGame::_OnStateKeyboardEvent"<<std::endl;
 
   if (event.IsKeyDown()) {
     std::cout<<"cStateGame::_OnStateKeyboardEvent Key down"<<std::endl;
     switch (event.GetKeyCode()) {
-      case opengl::KEY::ESCAPE: {
+      case breathe::gui::KEY::ESCAPE: {
         std::cout<<"cStateGame::_OnStateKeyboardEvent Escape key pressed, quiting"<<std::endl;
         application.PopStateSoon();
         break;
@@ -1286,7 +1278,7 @@ void cStateGame::_OnStateKeyboardEvent(const opengl::cKeyboardEvent& event)
     }
   } else if (event.IsKeyUp()) {
     switch (event.GetKeyCode()) {
-      case opengl::KEY::NUMBER_1: {
+      case breathe::gui::KEY::NUMBER_1: {
         std::cout<<"cStateGame::_OnStateKeyboardEvent 1 up"<<std::endl;
         bIsWireframe = !bIsWireframe;
         break;
@@ -1349,30 +1341,30 @@ void cStateGame::_UpdateInput(const spitfire::math::cTimeStep& timeStep)
     cBoardRepresentation* pBoardRepresentation = boardRepresentations[0];
 
     // Player 1
-    if (pWindow->IsKeyUp(opengl::KEY::BACKSLASH)) {
+    if (pWindow->IsKeyUp(breathe::gui::KEY::BACKSLASH)) {
       //std::cout<<"cStateGame::UpdateInput BACKSLASH up"<<std::endl;
       pBoardRepresentation->bIsInputPieceRotateCounterClockWise = true;
     }
-    if (pWindow->IsKeyUp(opengl::KEY::UP)) {
+    if (pWindow->IsKeyUp(breathe::gui::KEY::UP)) {
       //std::cout<<"cStateGame::UpdateInput UP up"<<std::endl;
       pBoardRepresentation->bIsInputPieceRotateClockWise = true;
     }
-    if (pWindow->IsKeyHeld(opengl::KEY::DOWN)) {
+    if (pWindow->IsKeyHeld(breathe::gui::KEY::DOWN)) {
       //std::cout<<"cStateGame::UpdateInput DOWN held"<<std::endl;
       pBoardRepresentation->bIsInputPieceDropOneRow = true;
     }
-    if (pWindow->IsKeyUp(opengl::KEY::SPACE)) {
+    if (pWindow->IsKeyUp(breathe::gui::KEY::SPACE)) {
       //std::cout<<"cStateGame::UpdateInput SPACE up"<<std::endl;
       pBoardRepresentation->bIsInputPieceDropToGround = true;
     }
-    if (pWindow->IsKeyHeld(opengl::KEY::LEFT)) {
+    if (pWindow->IsKeyHeld(breathe::gui::KEY::LEFT)) {
       //std::cout<<"cStateGame::UpdateInput LEFT Held"<<std::endl;
       if ((timeStep.GetCurrentTimeMS() - pBoardRepresentation->lastKeyLeft) > 50) {
         pBoardRepresentation->bIsInputPieceMoveLeft = true;
         pBoardRepresentation->lastKeyLeft = timeStep.GetCurrentTimeMS();
       }
     }
-    if (pWindow->IsKeyHeld(opengl::KEY::RIGHT)) {
+    if (pWindow->IsKeyHeld(breathe::gui::KEY::RIGHT)) {
       //std::cout<<"cStateGame::UpdateInput RIGHT Held"<<std::endl;
       if ((timeStep.GetCurrentTimeMS() - pBoardRepresentation->lastKeyRight) > 50) {
         pBoardRepresentation->bIsInputPieceMoveRight = true;
@@ -1384,30 +1376,30 @@ void cStateGame::_UpdateInput(const spitfire::math::cTimeStep& timeStep)
       // Player 1
       cBoardRepresentation* pBoardRepresentation = boardRepresentations[0];
 
-      if (pWindow->IsKeyUp(opengl::KEY::Q)) {
+      if (pWindow->IsKeyUp(breathe::gui::KEY::Q)) {
         //std::cout<<"cStateGame::UpdateInput Q up"<<std::endl;
         pBoardRepresentation->bIsInputPieceRotateCounterClockWise = true;
       }
-      if (pWindow->IsKeyUp(opengl::KEY::W)) {
+      if (pWindow->IsKeyUp(breathe::gui::KEY::W)) {
         //std::cout<<"cStateGame::UpdateInput W up"<<std::endl;
         pBoardRepresentation->bIsInputPieceRotateClockWise = true;
       }
-      if (pWindow->IsKeyHeld(opengl::KEY::S)) {
+      if (pWindow->IsKeyHeld(breathe::gui::KEY::S)) {
         //std::cout<<"cStateGame::UpdateInput S Held"<<std::endl;
         pBoardRepresentation->bIsInputPieceDropOneRow = true;
       }
-      if (pWindow->IsKeyUp(opengl::KEY::F)) {
+      if (pWindow->IsKeyUp(breathe::gui::KEY::F)) {
         //std::cout<<"cStateGame::UpdateInput F up"<<std::endl;
         pBoardRepresentation->bIsInputPieceDropToGround = true;
       }
-      if (pWindow->IsKeyHeld(opengl::KEY::A)) {
+      if (pWindow->IsKeyHeld(breathe::gui::KEY::A)) {
         //std::cout<<"cStateGame::UpdateInput A Held"<<std::endl;
         if ((timeStep.GetCurrentTimeMS() - pBoardRepresentation->lastKeyLeft) > 50) {
           pBoardRepresentation->bIsInputPieceMoveLeft = true;
           pBoardRepresentation->lastKeyLeft = timeStep.GetCurrentTimeMS();
         }
       }
-      if (pWindow->IsKeyHeld(opengl::KEY::D)) {
+      if (pWindow->IsKeyHeld(breathe::gui::KEY::D)) {
         //std::cout<<"cStateGame::UpdateInput D Held"<<std::endl;
         if ((timeStep.GetCurrentTimeMS() - pBoardRepresentation->lastKeyRight) > 50) {
           pBoardRepresentation->bIsInputPieceMoveRight = true;
@@ -1420,30 +1412,30 @@ void cStateGame::_UpdateInput(const spitfire::math::cTimeStep& timeStep)
       // Player 2
       cBoardRepresentation* pBoardRepresentation = boardRepresentations[1];
 
-      if (pWindow->IsKeyUp(opengl::KEY::BACKSLASH)) {
+      if (pWindow->IsKeyUp(breathe::gui::KEY::BACKSLASH)) {
         //std::cout<<"cStateGame::UpdateInput BACKSLASH up"<<std::endl;
         pBoardRepresentation->bIsInputPieceRotateCounterClockWise = true;
       }
-      if (pWindow->IsKeyUp(opengl::KEY::UP)) {
+      if (pWindow->IsKeyUp(breathe::gui::KEY::UP)) {
         //std::cout<<"cStateGame::UpdateInput UP up"<<std::endl;
         pBoardRepresentation->bIsInputPieceRotateClockWise = true;
       }
-      if (pWindow->IsKeyHeld(opengl::KEY::DOWN)) {
+      if (pWindow->IsKeyHeld(breathe::gui::KEY::DOWN)) {
         //std::cout<<"cStateGame::UpdateInput DOWN Held"<<std::endl;
         pBoardRepresentation->bIsInputPieceDropOneRow = true;
       }
-      if (pWindow->IsKeyUp(opengl::KEY::SPACE)) {
+      if (pWindow->IsKeyUp(breathe::gui::KEY::SPACE)) {
         //std::cout<<"cStateGame::UpdateInput SPACE up"<<std::endl;
         pBoardRepresentation->bIsInputPieceDropToGround = true;
       }
-      if (pWindow->IsKeyHeld(opengl::KEY::LEFT)) {
+      if (pWindow->IsKeyHeld(breathe::gui::KEY::LEFT)) {
         //std::cout<<"cStateGame::UpdateInput LEFT Held"<<std::endl;
         if ((timeStep.GetCurrentTimeMS() - pBoardRepresentation->lastKeyLeft) > 50) {
           pBoardRepresentation->bIsInputPieceMoveLeft = true;
           pBoardRepresentation->lastKeyLeft = timeStep.GetCurrentTimeMS();
         }
       }
-      if (pWindow->IsKeyHeld(opengl::KEY::RIGHT)) {
+      if (pWindow->IsKeyHeld(breathe::gui::KEY::RIGHT)) {
         //std::cout<<"cStateGame::UpdateInput RIGHT Held"<<std::endl;
         if ((timeStep.GetCurrentTimeMS() - pBoardRepresentation->lastKeyRight) > 50) {
           pBoardRepresentation->bIsInputPieceMoveRight = true;
@@ -1465,7 +1457,7 @@ void cStateGame::_Render(const spitfire::math::cTimeStep& timeStep)
   if (bIsWireframe) pContext->EnableWireframe();
 
   {
-    pContext->BeginRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN);
+    pContext->BeginRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN);
 
     // Draw the boards
     {
@@ -1479,7 +1471,7 @@ void cStateGame::_Render(const spitfire::math::cTimeStep& timeStep)
         cBoardRepresentation* pBoardRepresentation = boardRepresentations[i];
         //const tetris::cBoard& board = pBoardRepresentation->board;
 
-        opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectBoardTriangles = pBoardRepresentation->pStaticVertexBufferObjectBoardTriangles;
+        breathe::render::cVertexBufferObject* pStaticVertexBufferObjectBoardTriangles = pBoardRepresentation->pStaticVertexBufferObjectBoardTriangles;
         if ((pStaticVertexBufferObjectBoardTriangles != nullptr) && pStaticVertexBufferObjectBoardTriangles->IsCompiled()) {
           spitfire::math::cMat4 matModelView2D;
           matModelView2D.SetTranslation(x, y, 0.0f);
@@ -1488,7 +1480,7 @@ void cStateGame::_Render(const spitfire::math::cTimeStep& timeStep)
 
           pContext->BindShader(*pShaderBlock);
 
-          pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
+          pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
 
           pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectBoardTriangles);
           pContext->DrawStaticVertexBufferObjectTriangles2D(*pStaticVertexBufferObjectBoardTriangles);
@@ -1499,7 +1491,7 @@ void cStateGame::_Render(const spitfire::math::cTimeStep& timeStep)
           pContext->UnBindTexture(0, *pTextureBlock);
         }
 
-        opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectPieceTriangles = pBoardRepresentation->pStaticVertexBufferObjectPieceTriangles;
+        breathe::render::cVertexBufferObject* pStaticVertexBufferObjectPieceTriangles = pBoardRepresentation->pStaticVertexBufferObjectPieceTriangles;
         if (pBoardRepresentation->board.IsPlaying() && (pStaticVertexBufferObjectPieceTriangles != nullptr) && pStaticVertexBufferObjectPieceTriangles->IsCompiled()) {
           spitfire::math::cMat4 matModelView2D;
           matModelView2D.SetTranslation(x + (0.015f * float(pBoardRepresentation->board.GetCurrentPieceX())), y + (0.015f * (float(pBoardRepresentation->board.GetHeight()) - float(pBoardRepresentation->board.GetCurrentPieceY()))), 0.0f);
@@ -1508,7 +1500,7 @@ void cStateGame::_Render(const spitfire::math::cTimeStep& timeStep)
 
           pContext->BindShader(*pShaderBlock);
 
-          pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
+          pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
 
           pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectPieceTriangles);
           pContext->DrawStaticVertexBufferObjectTriangles2D(*pStaticVertexBufferObjectPieceTriangles);
@@ -1519,7 +1511,7 @@ void cStateGame::_Render(const spitfire::math::cTimeStep& timeStep)
           pContext->UnBindTexture(0, *pTextureBlock);
         }
 
-        opengl::cStaticVertexBufferObject* pStaticVertexBufferObjectNextPieceTriangles = pBoardRepresentation->pStaticVertexBufferObjectNextPieceTriangles;
+        breathe::render::cVertexBufferObject* pStaticVertexBufferObjectNextPieceTriangles = pBoardRepresentation->pStaticVertexBufferObjectNextPieceTriangles;
         if ((pStaticVertexBufferObjectPieceTriangles != nullptr) && pStaticVertexBufferObjectNextPieceTriangles->IsCompiled()) {
           spitfire::math::cMat4 matModelView2D;
           matModelView2D.SetTranslation(x + (0.015f * float(pBoardRepresentation->board.GetWidth())) + (0.015f * 3.0f), y + (0.015f * (0.5f * float(pBoardRepresentation->board.GetHeight()))), 0.0f);
@@ -1528,7 +1520,7 @@ void cStateGame::_Render(const spitfire::math::cTimeStep& timeStep)
 
           pContext->BindShader(*pShaderBlock);
 
-          pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
+          pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
 
           pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectNextPieceTriangles);
           pContext->DrawStaticVertexBufferObjectTriangles2D(*pStaticVertexBufferObjectNextPieceTriangles);
@@ -1555,7 +1547,7 @@ void cStateGame::_Render(const spitfire::math::cTimeStep& timeStep)
       pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
 
       {
-        pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
+        pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
 
         pContext->DrawStaticVertexBufferObjectTriangles2D(*pStaticVertexBufferObjectText);
       }
