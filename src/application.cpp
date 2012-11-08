@@ -61,9 +61,9 @@ cApplication::cApplication() :
   pWindow(nullptr),
   pContext(nullptr),
 
-  pFont(nullptr),
-
   pAudioManager(nullptr),
+
+  pFont(nullptr),
 
   pGuiManager(nullptr),
   pGuiRenderer(nullptr)
@@ -100,7 +100,7 @@ bool cApplication::Create()
   resolution.height = 768;
   resolution.pixelFormat = opengl::PIXELFORMAT::R8G8B8A8;
 
-  pWindow = system.CreateWindow(TEXT("tetris"), resolution, false);
+  pWindow = system.CreateWindow(TEXT("Tetris"), resolution, false);
   if (pWindow == nullptr) {
     std::cout<<"Window could not be created"<<std::endl;
     return false;
@@ -182,13 +182,13 @@ void cApplication::_OnKeyboardEvent(const opengl::cKeyboardEvent& event)
 
 void cApplication::PushStateSoon(cState* pState)
 {
-  cStateEvent event(pState);
+  cStateEvent event = pState;
   stateEvents.push_back(event);
 }
 
 void cApplication::PopStateSoon()
 {
-  cStateEvent event(nullptr); // A null state event means "Pop the current state"
+  cStateEvent event = nullptr; // A null state event means "Pop the current state"
   stateEvents.push_back(event);
 }
 
@@ -242,7 +242,7 @@ void cApplication::ProcessStateEvents()
   stateEvents.clear();
 }
 
-void cApplication::Run()
+void cApplication::MainLoop()
 {
   assert(pContext != nullptr);
   assert(pContext->IsValid());
@@ -340,6 +340,14 @@ void cApplication::Run()
       }
     }
   };
+}
+
+void cApplication::Run()
+{
+  const bool bIsSuccess = Create();
+  if (bIsSuccess) MainLoop();
+
+  Destroy();
 }
 
 

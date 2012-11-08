@@ -28,9 +28,6 @@ public:
   cApplication();
   ~cApplication();
 
-  bool Create();
-  void Destroy();
-
   void Run();
 
   void PushStateSoon(cState* pState);
@@ -39,6 +36,11 @@ public:
   void PlaySound(breathe::audio::cBufferRef pBuffer);
 
 private:
+  bool Create();
+  void Destroy();
+
+  void MainLoop();
+
   void _OnWindowEvent(const opengl::cWindowEvent& event);
   void _OnMouseEvent(const opengl::cMouseEvent& event);
   void _OnKeyboardEvent(const opengl::cKeyboardEvent& event);
@@ -55,8 +57,9 @@ private:
 
   std::stack<cState*> states;
 
+  // State change event queue
   typedef cState* cStateEvent;
-  std::vector<cStateEvent> stateEvents;
+  std::vector<cState*> stateEvents;
 
   cSettings settings;
 
@@ -77,12 +80,12 @@ private:
   opengl::cWindow* pWindow;
   opengl::cContext* pContext;
 
-public:
+  breathe::audio::cManager* pAudioManager;
+
   // Text
   opengl::cFont* pFont;
 
-  breathe::audio::cManager* pAudioManager;
-
+  // Gui
   breathe::gui::cManager* pGuiManager;
   breathe::gui::cRenderer* pGuiRenderer;
 };
