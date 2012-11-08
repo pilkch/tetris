@@ -46,11 +46,9 @@
 // ** cState
 
 cState::cState(cApplication& _application) :
+  breathe::util::cState(_application),
   application(_application),
   settings(application.settings),
-  system(application.system),
-  pWindow(application.pWindow),
-  pContext(application.pContext),
   pFont(application.pFont),
   pAudioManager(application.pAudioManager),
   pGuiManager(application.pGuiManager),

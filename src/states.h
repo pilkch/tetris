@@ -9,6 +9,7 @@
 #include <breathe/render/cSystem.h>
 #include <breathe/render/cVertexBufferObject.h>
 #include <breathe/render/cWindow.h>
+#include <breathe/util/cApplication.h>
 
 // Tetris headers
 #include "application.h"
@@ -45,22 +46,11 @@ public:
 
 // ** cState
 
-class cState : public breathe::gui::cWidgetEventListener
+class cState : public breathe::util::cState
 {
 public:
   explicit cState(cApplication& application);
   virtual ~cState();
-
-  void Pause() { _OnPause(); }
-  void Resume() { _OnResume(); }
-
-  void OnWindowEvent(const breathe::gui::cWindowEvent& event) { _OnWindowEvent(event); }
-  void OnMouseEvent(const breathe::gui::cMouseEvent& event) { _OnMouseEvent(event); }
-  void OnKeyboardEvent(const breathe::gui::cKeyboardEvent& event) { _OnKeyboardEvent(event); }
-
-  void Update(const spitfire::math::cTimeStep& timeStep) { _Update(timeStep); }
-  void UpdateInput(const spitfire::math::cTimeStep& timeStep) { _UpdateInput(timeStep); }
-  void Render(const spitfire::math::cTimeStep& timeStep) { _Render(timeStep); }
 
 protected:
   breathe::gui::cStaticText* AddStaticText(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
@@ -70,11 +60,9 @@ protected:
   breathe::gui::cRetroColourPicker* AddRetroColourPicker(breathe::gui::id_t id, float x, float y, float width);
 
   cApplication& application;
+
   cSettings& settings;
 
-  breathe::render::cSystem& system;
-  breathe::render::cWindow* pWindow;
-  breathe::render::cContext* pContext;
   breathe::render::cFont* pFont;
 
   breathe::audio::cManager* pAudioManager;
