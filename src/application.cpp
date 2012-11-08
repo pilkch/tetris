@@ -53,11 +53,6 @@
 cApplication::cApplication() :
   bIsDone(false),
 
-  width(0),
-  height(0),
-
-  fZoom(0.0f),
-
   pWindow(nullptr),
   pContext(nullptr),
 

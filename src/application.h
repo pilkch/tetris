@@ -65,17 +65,6 @@ private:
 
   bool bIsDone;
 
-  // TODO: Can these be removed?
-  size_t width;
-  size_t height;
-  spitfire::math::cVec3 scale;
-
-  // For controlling the rotation and zoom of the trackball
-  // TODO: Can these be removed?
-  spitfire::math::cQuaternion rotationX;
-  spitfire::math::cQuaternion rotationZ;
-  float fZoom;
-
   opengl::cSystem system;
   opengl::cWindow* pWindow;
   opengl::cContext* pContext;
