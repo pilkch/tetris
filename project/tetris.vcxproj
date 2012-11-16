@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{9AB3CEEF-DD25-4BFF-A072-67572F5D57BA}</ProjectGuid>
+    <RootNamespace>tetris</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>C:\Users\media\dev\include;C:\Users\media\dev\library\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\media\dev\library\lib;C:\Users\media\dev\lib32;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>C:\Users\media\dev\include;C:\Users\media\dev\library\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\media\dev\library\lib;C:\Users\media\dev\lib32;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>BUILD_LIBOPENGLMM_OPENGL_VERSION=330;BUILD_LIBOPENGLMM_OPENGL_STRICT;NOMINMAX;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4100;4127;4512;4702;4244;4610;4510</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>freetype.lib;glu32.lib;opengl32.lib;SDL.lib;SDLmain.lib;SDL_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <IgnoreSpecificDefaultLibraries>msvcrt.lib</IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4100;4127;4512;4702;4244;4610;4510</DisableSpecificWarnings>
+      <PreprocessorDefinitions>NDEBUG;BUILD_LIBOPENGLMM_OPENGL_VERSION=330;BUILD_LIBOPENGLMM_OPENGL_STRICT;NOMINMAX;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>freetype.lib;glu32.lib;opengl32.lib;SDL.lib;SDLmain.lib;SDL_image.lib;;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\library\src\GL3\gl3w.c" />
+    <ClCompile Include="..\..\library\src\libopenglmm\cContext.cpp" />
+    <ClCompile Include="..\..\library\src\libopenglmm\cFont.cpp" />
+    <ClCompile Include="..\..\library\src\libopenglmm\cGeometry.cpp" />
+    <ClCompile Include="..\..\library\src\libopenglmm\cShader.cpp" />
+    <ClCompile Include="..\..\library\src\libopenglmm\cSystem.cpp" />
+    <ClCompile Include="..\..\library\src\libopenglmm\cTexture.cpp" />
+    <ClCompile Include="..\..\library\src\libopenglmm\cVertexBufferObject.cpp" />
+    <ClCompile Include="..\..\library\src\libopenglmm\cWindow.cpp" />
+    <ClCompile Include="..\..\library\src\libopenglmm\libopenglmm.cpp" />
+    <ClCompile Include="..\..\library\src\libvoodoomm\cImage.cpp" />
+    <ClCompile Include="..\..\library\src\libvoodoomm\libvoodoomm.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\math\cColour.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\math\cMat3.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\math\cMat4.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\math\cQuaternion.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\math\cVec2.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\math\cVec3.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\math\cVec4.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\math\math.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\storage\filesystem.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\util\log.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\util\string.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\util\thread.cpp" />
+    <ClCompile Include="..\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\shaders\gear.frag">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\shaders\gear.vert">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

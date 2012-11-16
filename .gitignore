@@ -1,3 +1,17 @@
+*.exe
+*.idb
+*.ilk
+*.lastbuildstate
+*.log
+*.obj
+*.pdb
+*.sdf
+*.sln
+*.suo
+*.tlog
+*.vcxproj.user
+stdout.txt
+
 project/*
 log/
 
