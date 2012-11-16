@@ -29,6 +29,8 @@
 #include <spitfire/storage/filesystem.h>
 #include <spitfire/storage/xml.h>
 
+#include <spitfire/util/log.h>
+
 // Breathe headers
 #include <breathe/audio/audio.h>
 
@@ -54,7 +56,7 @@ void cSettings::Load()
   spitfire::util::cProcessInterfaceVoid interface;
   spitfire::util::PROCESS_RESULT result = reader.ReadFromFile(interface, document, sFilename);
   if (result != spitfire::util::PROCESS_RESULT::COMPLETE) {
-    std::cout<<"cSettings::Load \""<<spitfire::string::ToUTF8(sFilename)<<"\" not found"<<std::endl;
+    LOG<<"cSettings::Load \""<<spitfire::string::ToUTF8(sFilename)<<"\" not found"<<std::endl;
     return;
   }
 }
@@ -64,12 +66,12 @@ void cSettings::Save()
   spitfire::xml::writer writer;
 
   const spitfire::string_t sDirectory = spitfire::filesystem::GetThisApplicationSettingsDirectory();
-  std::cout<<"cSettings::Save Creating directory \""<<sDirectory<<"\""<<std::endl;
+  LOG<<"cSettings::Save Creating directory \""<<sDirectory<<"\""<<std::endl;
   spitfire::filesystem::CreateDirectory(sDirectory);
   const spitfire::string_t sFilename = sDirectory + TEXT("config.xml");
-  std::cout<<"cSettings::Save Creating file \""<<sFilename<<"\""<<std::endl;
+  LOG<<"cSettings::Save Creating file \""<<sFilename<<"\""<<std::endl;
   if (!writer.WriteToFile(document, sFilename)) {
-    std::cout<<"cSettings::Save Error saving to file \""<<spitfire::string::ToUTF8(sFilename)<<"\""<<std::endl;
+    LOG<<"cSettings::Save Error saving to file \""<<spitfire::string::ToUTF8(sFilename)<<"\""<<std::endl;
     return;
   }
 }
@@ -90,7 +92,7 @@ T cSettings::GetXMLValue(const spitfire::string_t& sSection, const spitfire::str
       iter.FindChild(spitfire::string::ToUTF8(sItem));
       if (iter.IsValid()) {
         iter.GetAttribute(spitfire::string::ToUTF8(sAttribute), value);
-        //std::cout<<"cSettings::GetXMLValue Item \""<<sItem<<"\" found "<<spitfire::string::ToString(value)<<std::endl;
+        //LOG<<"cSettings::GetXMLValue Item \""<<sItem<<"\" found "<<spitfire::string::ToString(value)<<std::endl;
       }
     }
   }

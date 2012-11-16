@@ -769,7 +769,7 @@ void cStateHighScores::UpdateText()
   const size_t n = table.GetEntryCount();
   for (size_t i = 0; i < n; i++) {
     const cHighScoresTableEntry& entry = table.GetEntry(i);
-    std::ostringstream o;
+    spitfire::ostringstream_t o;
     o<<entry.score;
     pFont->PushBack(builder, entry.sName, white, spitfire::math::cVec2(x, y));
     pFont->PushBack(builder, o.str(), white, spitfire::math::cVec2(x + 0.2f, y));

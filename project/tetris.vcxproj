@@ -51,12 +51,12 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>BUILD_LIBOPENGLMM_OPENGL_VERSION=330;BUILD_LIBOPENGLMM_OPENGL_STRICT;NOMINMAX;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BUILD_LIBOPENGLMM_OPENGL_VERSION=330;BUILD_LIBOPENGLMM_OPENGL_STRICT;BUILD_OPENGLMM_FONT;BUILD_AUDIO_SDLMIXER;BUILD_SPITFIRE_UNITTEST;SPITFIRE_APPLICATION_NAME_LWR="tetris";NOMINMAX;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4100;4127;4512;4702;4244;4610;4510</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>freetype.lib;glu32.lib;opengl32.lib;SDL.lib;SDLmain.lib;SDL_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype.lib;glu32.lib;opengl32.lib;SDL.lib;SDLmain.lib;SDL_image.lib;SDL_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <IgnoreSpecificDefaultLibraries>msvcrt.lib</IgnoreSpecificDefaultLibraries>
@@ -70,18 +70,24 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <DisableSpecificWarnings>4100;4127;4512;4702;4244;4610;4510</DisableSpecificWarnings>
-      <PreprocessorDefinitions>NDEBUG;BUILD_LIBOPENGLMM_OPENGL_VERSION=330;BUILD_LIBOPENGLMM_OPENGL_STRICT;NOMINMAX;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;BUILD_LIBOPENGLMM_OPENGL_VERSION=330;BUILD_LIBOPENGLMM_OPENGL_STRICT;BUILD_OPENGLMM_FONT;BUILD_AUDIO_SDLMIXER;BUILD_SPITFIRE_UNITTEST;SPITFIRE_APPLICATION_NAME_LWR="tetris";NOMINMAX;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>freetype.lib;glu32.lib;opengl32.lib;SDL.lib;SDLmain.lib;SDL_image.lib;;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype.lib;glu32.lib;opengl32.lib;SDL.lib;SDLmain.lib;SDL_image.lib;SDL_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\library\src\breathe\audio\audio.cpp" />
+    <ClCompile Include="..\..\library\src\breathe\audio\audio_sdlmixer.cpp" />
+    <ClCompile Include="..\..\library\src\breathe\gui\cManager.cpp" />
+    <ClCompile Include="..\..\library\src\breathe\gui\cRenderer.cpp" />
+    <ClCompile Include="..\..\library\src\breathe\render\cTextureAtlas.cpp" />
+    <ClCompile Include="..\..\library\src\breathe\util\cApplication.cpp" />
     <ClCompile Include="..\..\library\src\GL3\gl3w.c" />
     <ClCompile Include="..\..\library\src\libopenglmm\cContext.cpp" />
     <ClCompile Include="..\..\library\src\libopenglmm\cFont.cpp" />
@@ -97,22 +103,43 @@
     <ClCompile Include="..\..\library\src\spitfire\math\cColour.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\math\cMat3.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\math\cMat4.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\math\cPlane.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\math\cQuaternion.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\math\cVec2.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\math\cVec3.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\math\cVec4.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\math\geometry.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\math\math.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\storage\document.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\storage\filesystem.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\storage\xml.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\util\log.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\util\string.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\util\thread.cpp" />
-    <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\util\unittest.cpp" />
+    <ClCompile Include="..\src\application.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\settings.cpp" />
+    <ClCompile Include="..\src\states.cpp" />
+    <ClCompile Include="..\src\tetris.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\shaders\gear.frag">
+    <None Include="..\data\shaders\font.frag">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </None>
-    <None Include="..\shaders\gear.vert">
+    <None Include="..\data\shaders\font.vert">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\data\shaders\passthroughalphamask.frag">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\data\shaders\passthroughalphamask.vert">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\data\shaders\passthroughwithcolour.frag">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\data\shaders\passthroughwithcolour.vert">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </None>
   </ItemGroup>

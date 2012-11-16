@@ -39,40 +39,39 @@
 #include <SDL/SDL_joystick.h>
 #include <SDL/SDL_net.h>
 
-// Breathe
+// Spitfire headers
+#include <spitfire/math/math.h>
+#include <spitfire/math/cVec2.h>
+#include <spitfire/math/cVec3.h>
+#include <spitfire/math/cVec4.h>
+#include <spitfire/math/cMat4.h>
+#include <spitfire/math/cPlane.h>
+#include <spitfire/math/cQuaternion.h>
+#include <spitfire/math/cColour.h>
+#include <spitfire/math/cFrustum.h>
+#include <spitfire/math/cOctree.h>
+
+#include <spitfire/storage/filesystem.h>
+#include <spitfire/storage/xml.h>
+
+#include <spitfire/util/lang.h>
+#include <spitfire/util/timer.h>
+#include <spitfire/util/string.h>
+#include <spitfire/util/log.h>
+
+// Breathe headers
 #include <breathe/breathe.h>
 
-#include <breathe/util/cString.h>
-#include <breathe/util/log.h>
 #include <breathe/util/cVar.h>
-
-#include <breathe/storage/filesystem.h>
-#include <breathe/storage/xml.h>
-
-#include <breathe/util/cTimer.h>
-#include <breathe/util/lang.h>
-
-#include <breathe/math/math.h>
-#include <breathe/math/cVec2.h>
-#include <breathe/math/cVec3.h>
-#include <breathe/math/cVec4.h>
-#include <breathe/math/cMat4.h>
-#include <breathe/math/cPlane.h>
-#include <breathe/math/cQuaternion.h>
-#include <breathe/math/cColour.h>
-#include <breathe/math/cFrustum.h>
-#include <breathe/math/cOctree.h>
 
 #include <breathe/util/base.h>
 #include <breathe/render/model/cMesh.h>
 #include <breathe/render/model/cModel.h>
 #include <breathe/render/model/cStatic.h>
 
-
 #include <breathe/render/cTexture.h>
 #include <breathe/render/cTextureAtlas.h>
 #include <breathe/render/cMaterial.h>
-#include <breathe/render/cRender.h>
 #include <breathe/render/cFont.h>
 #include <breathe/render/cParticleSystem.h>
 
