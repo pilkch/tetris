@@ -77,14 +77,11 @@ bool cApplication::_Create()
   assert(pContext != nullptr);
   assert(pContext->IsValid());
 
-  pFont = pContext->CreateFont(TEXT("data/fonts/pricedown.ttf"), 32, TEXT("data/shaders/font.vert"), TEXT("data/shaders/font.frag"));
-  assert(pFont != nullptr);
-  assert(pFont->IsValid());
-
-
   // Setup our gui
   pGuiManager = new breathe::gui::cManager;
   pGuiRenderer = new breathe::gui::cRenderer(*pGuiManager, system, *pContext);
+
+  _LoadResources();
 
   // Push our first state
   PushState(new cStateMenu(*this));
@@ -94,8 +91,26 @@ bool cApplication::_Create()
 
 void cApplication::_Destroy()
 {
+  _DestroyResources();
+
   spitfire::SAFE_DELETE(pGuiRenderer);
   spitfire::SAFE_DELETE(pGuiManager);
+}
+
+bool cApplication::_LoadResources()
+{
+  pFont = pContext->CreateFont(TEXT("data/fonts/pricedown.ttf"), 32, TEXT("data/shaders/font.vert"), TEXT("data/shaders/font.frag"));
+  assert(pFont != nullptr);
+  assert(pFont->IsValid());
+
+  pGuiRenderer->LoadResources();
+
+  return true;
+}
+
+void cApplication::_DestroyResources()
+{
+  pGuiRenderer->DestroyResources();
 
   if (pFont != nullptr) {
     pContext->DestroyFont(pFont);

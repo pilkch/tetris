@@ -39,6 +39,9 @@ private:
   virtual override bool _Create();
   virtual override void _Destroy();
 
+  virtual override bool _LoadResources();
+  virtual override void _DestroyResources();
+
   // Text
   opengl::cFont* pFont;
 

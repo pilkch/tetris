@@ -54,10 +54,7 @@ int main(int argc, char** argv)
   {
     cApplication application;
 
-    bIsSuccess = application.Create();
-    if (bIsSuccess) application.Run();
-
-    application.Destroy();
+    bIsSuccess = application.Run();
   }
 
   return bIsSuccess ? EXIT_SUCCESS : EXIT_FAILURE;
