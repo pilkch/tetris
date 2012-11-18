@@ -16,7 +16,6 @@ PROJECT(tetris)
 
 # Debug build
 SET(CMAKE_BUILD_TYPE Debug)
-ADD_DEFINITIONS("-DDEBUG")
 
 # Release build
 #SET(CMAKE_BUILD_TYPE Release)
@@ -128,7 +127,7 @@ SET(LIBRARY_SPITFIRE_SOURCE_FILES
 math/cVec2.cpp math/cVec3.cpp math/cVec4.cpp math/cMat3.cpp math/cMat4.cpp math/cQuaternion.cpp math/math.cpp math/cPlane.cpp math/cColour.cpp math/geometry.cpp
 spitfire.cpp
 storage/document.cpp storage/file.cpp storage/filesystem.cpp storage/xml.cpp
-util/log.cpp util/string.cpp util/thread.cpp util/unittest.cpp)
+util/string.cpp util/thread.cpp util/unittest.cpp)
 
 IF(WIN32)
   SET(LIBRARY_SPITFIRE_SOURCE_FILES ${LIBRARY_SPITFIRE_SOURCE_FILES})
