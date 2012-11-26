@@ -77,6 +77,8 @@ bool cApplication::_Create()
   assert(pContext != nullptr);
   assert(pContext->IsValid());
 
+  assert(pGuiManager == nullptr);
+  assert(pGuiRenderer == nullptr);
   // Setup our gui
   pGuiManager = new breathe::gui::cManager;
   pGuiRenderer = new breathe::gui::cRenderer(*pGuiManager, system, *pContext);
@@ -99,6 +101,9 @@ void cApplication::_Destroy()
 
 bool cApplication::_LoadResources()
 {
+  assert(pGuiManager != nullptr);
+  assert(pGuiRenderer != nullptr);
+
   pFont = pContext->CreateFont(TEXT("data/fonts/pricedown.ttf"), 32, TEXT("data/shaders/font.vert"), TEXT("data/shaders/font.frag"));
   assert(pFont != nullptr);
   assert(pFont->IsValid());
@@ -110,6 +115,9 @@ bool cApplication::_LoadResources()
 
 void cApplication::_DestroyResources()
 {
+  assert(pGuiManager != nullptr);
+  assert(pGuiRenderer != nullptr);
+
   pGuiRenderer->DestroyResources();
 
   if (pFont != nullptr) {
