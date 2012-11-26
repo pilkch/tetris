@@ -840,7 +840,7 @@ void cStateHighScores::_Render(const spitfire::math::cTimeStep& timeStep)
   pContext->BeginRenderToScreen();
 
   {
-    pContext->BeginRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN);
+    pContext->BeginRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN_KEEP_ASPECT_RATIO);
 
     // Draw the text overlay
     {
@@ -853,7 +853,7 @@ void cStateHighScores::_Render(const spitfire::math::cTimeStep& timeStep)
       pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
 
       {
-        pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
+        pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN_KEEP_ASPECT_RATIO, matModelView2D);
 
         pContext->DrawStaticVertexBufferObjectTriangles2D(*pStaticVertexBufferObjectText);
       }
@@ -1455,13 +1455,13 @@ void cStateGame::_Render(const spitfire::math::cTimeStep& timeStep)
   if (bIsWireframe) pContext->EnableWireframe();
 
   {
-    pContext->BeginRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN);
+    pContext->BeginRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN_KEEP_ASPECT_RATIO);
 
     // Draw the boards
     {
       assert(!game.boards.empty());
 
-      float x = 0.25f;
+      float x = 0.5f;
       const float y = 0.1f;
 
       const size_t n = boardRepresentations.size();
@@ -1478,7 +1478,7 @@ void cStateGame::_Render(const spitfire::math::cTimeStep& timeStep)
 
           pContext->BindShader(*pShaderBlock);
 
-          pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
+          pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN_KEEP_ASPECT_RATIO, matModelView2D);
 
           pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectBoardTriangles);
           pContext->DrawStaticVertexBufferObjectTriangles2D(*pStaticVertexBufferObjectBoardTriangles);
@@ -1498,7 +1498,7 @@ void cStateGame::_Render(const spitfire::math::cTimeStep& timeStep)
 
           pContext->BindShader(*pShaderBlock);
 
-          pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
+          pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN_KEEP_ASPECT_RATIO, matModelView2D);
 
           pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectPieceTriangles);
           pContext->DrawStaticVertexBufferObjectTriangles2D(*pStaticVertexBufferObjectPieceTriangles);
@@ -1518,7 +1518,7 @@ void cStateGame::_Render(const spitfire::math::cTimeStep& timeStep)
 
           pContext->BindShader(*pShaderBlock);
 
-          pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
+          pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN_KEEP_ASPECT_RATIO, matModelView2D);
 
           pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectNextPieceTriangles);
           pContext->DrawStaticVertexBufferObjectTriangles2D(*pStaticVertexBufferObjectNextPieceTriangles);
@@ -1545,7 +1545,7 @@ void cStateGame::_Render(const spitfire::math::cTimeStep& timeStep)
       pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
 
       {
-        pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN, matModelView2D);
+        pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN_KEEP_ASPECT_RATIO, matModelView2D);
 
         pContext->DrawStaticVertexBufferObjectTriangles2D(*pStaticVertexBufferObjectText);
       }
