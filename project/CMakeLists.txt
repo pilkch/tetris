@@ -51,7 +51,6 @@ ADD_DEFINITIONS("-DBUILD_LIBOPENGLMM_OPENGL_VERSION=330")
 ADD_DEFINITIONS("-DBUILD_LIBOPENGLMM_OPENGL_STRICT")
 ADD_DEFINITIONS("-DBUILD_OPENGLMM_FONT -DBUILD_AUDIO_OPENAL -DBUILD_AUDIO_SDLMIXER")
 ADD_DEFINITIONS("-DBUILD_SPITFIRE_UNITTEST")
-ADD_DEFINITIONS("-DBUILD_HTML_LOG")
 ADD_DEFINITIONS("-DBUILD_XML_MATH")
 
 INCLUDE_DIRECTORIES(${LIBRARY_INCLUDE})
@@ -125,7 +124,6 @@ SET(OUTPUT_LIBRARY_LIBXDGMM_SOURCE_FILES ${OUTPUT_FILES})
 SET(LIBRARY_SPITFIRE_SOURCE_DIRECTORY spitfire/)
 SET(LIBRARY_SPITFIRE_SOURCE_FILES
 math/cVec2.cpp math/cVec3.cpp math/cVec4.cpp math/cMat3.cpp math/cMat4.cpp math/cQuaternion.cpp math/math.cpp math/cPlane.cpp math/cColour.cpp math/geometry.cpp
-spitfire.cpp
 storage/document.cpp storage/file.cpp storage/filesystem.cpp storage/xml.cpp
 util/string.cpp util/thread.cpp util/unittest.cpp)
 
