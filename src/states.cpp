@@ -172,6 +172,19 @@ breathe::gui::cRetroColourPicker* cState::AddRetroColourPicker(breathe::gui::id_
   return pRetroColourPicker;
 }
 
+void cState::_Render(const spitfire::math::cTimeStep& timeStep)
+{
+  // Render the scene
+  const spitfire::math::cColour clearColour(0.0f, 0.0f, 0.0f);
+  pContext->SetClearColour(clearColour);
+
+  pContext->BeginRenderToScreen();
+
+    _RenderToTexture(timeStep);
+
+  pContext->EndRenderToScreen();
+}
+
 
 // ** cBoardRepresentation
 
@@ -449,13 +462,11 @@ breathe::gui::EVENT_RESULT cStateMenu::_OnWidgetEvent(const breathe::gui::cWidge
   return breathe::gui::EVENT_RESULT::NOT_HANDLED_PERCOLATE;
 }
 
-void cStateMenu::_Render(const spitfire::math::cTimeStep& timeStep)
+void cStateMenu::_RenderToTexture(const spitfire::math::cTimeStep& timeStep)
 {
   // Render the scene
   const spitfire::math::cColour clearColour(0.392156863f, 0.584313725f, 0.929411765f);
   pContext->SetClearColour(clearColour);
-
-  pContext->BeginRenderToScreen();
 
   {
     if (pGuiRenderer != nullptr) {
@@ -463,8 +474,6 @@ void cStateMenu::_Render(const spitfire::math::cTimeStep& timeStep)
       pGuiRenderer->Render();
     }
   }
-
-  pContext->EndRenderToScreen();
 }
 
 
@@ -671,13 +680,11 @@ void cStateNewGame::_Update(const spitfire::math::cTimeStep& timeStep)
   pGuiRenderer->Update();
 }
 
-void cStateNewGame::_Render(const spitfire::math::cTimeStep& timeStep)
+void cStateNewGame::_RenderToTexture(const spitfire::math::cTimeStep& timeStep)
 {
   // Render the scene
   const spitfire::math::cColour clearColour(0.392156863f, 0.584313725f, 0.929411765f);
   pContext->SetClearColour(clearColour);
-
-  pContext->BeginRenderToScreen();
 
   {
     if (pGuiRenderer != nullptr) {
@@ -685,8 +692,6 @@ void cStateNewGame::_Render(const spitfire::math::cTimeStep& timeStep)
       pGuiRenderer->Render();
     }
   }
-
-  pContext->EndRenderToScreen();
 }
 
 
@@ -831,13 +836,11 @@ void cStateHighScores::_UpdateInput(const spitfire::math::cTimeStep& timeStep)
   }
 }
 
-void cStateHighScores::_Render(const spitfire::math::cTimeStep& timeStep)
+void cStateHighScores::_RenderToTexture(const spitfire::math::cTimeStep& timeStep)
 {
   // Render the scene
   const spitfire::math::cColour clearColour(0.392156863f, 0.584313725f, 0.929411765f);
   pContext->SetClearColour(clearColour);
-
-  pContext->BeginRenderToScreen();
 
   {
     pContext->BeginRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN_KEEP_ASPECT_RATIO);
@@ -870,8 +873,6 @@ void cStateHighScores::_Render(const spitfire::math::cTimeStep& timeStep)
       pGuiRenderer->Render();
     }
   }
-
-  pContext->EndRenderToScreen();
 }
 
 
@@ -1444,13 +1445,11 @@ void cStateGame::_UpdateInput(const spitfire::math::cTimeStep& timeStep)
   }
 }
 
-void cStateGame::_Render(const spitfire::math::cTimeStep& timeStep)
+void cStateGame::_RenderToTexture(const spitfire::math::cTimeStep& timeStep)
 {
   // Render the scene
   const spitfire::math::cColour clearColour(0.392156863f, 0.584313725f, 0.929411765f);
   pContext->SetClearColour(clearColour);
-
-  pContext->BeginRenderToScreen();
 
   if (bIsWireframe) pContext->EnableWireframe();
 
@@ -1562,8 +1561,6 @@ void cStateGame::_Render(const spitfire::math::cTimeStep& timeStep)
       pGuiRenderer->Render();
     }
   }
-
-  pContext->EndRenderToScreen();
 }
 
 

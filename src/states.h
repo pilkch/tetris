@@ -84,10 +84,11 @@ private:
   virtual override void _OnMouseEvent(const breathe::gui::cMouseEvent& event);
   virtual override void _OnKeyboardEvent(const breathe::gui::cKeyboardEvent& event);
 
-  virtual void _Render(const spitfire::math::cTimeStep& timeStep) {}
   virtual override void _Update(const spitfire::math::cTimeStep& timeStep) {}
   virtual override void _UpdateInput(const spitfire::math::cTimeStep& timeStep) {}
+  virtual override void _Render(const spitfire::math::cTimeStep& timeStep);
 
+  virtual void _RenderToTexture(const spitfire::math::cTimeStep& timeStep) {}
 
 
   virtual override void _OnStateMouseEvent(const breathe::gui::cMouseEvent& event) {}
@@ -106,7 +107,7 @@ public:
 
 private:
   void _Update(const spitfire::math::cTimeStep& timeStep);
-  void _Render(const spitfire::math::cTimeStep& timeStep);
+  void _RenderToTexture(const spitfire::math::cTimeStep& timeStep);
 
   void _OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event);
 
@@ -135,7 +136,7 @@ private:
   breathe::gui::EVENT_RESULT _OnWidgetEvent(const breathe::gui::cWidgetEvent& event);
 
   void _Update(const spitfire::math::cTimeStep& timeStep);
-  void _Render(const spitfire::math::cTimeStep& timeStep);
+  void _RenderToTexture(const spitfire::math::cTimeStep& timeStep);
 
   struct OPTION {
     static const size_t NUMBER_OF_PLAYERS = 1;
@@ -176,7 +177,7 @@ private:
 
   void _Update(const spitfire::math::cTimeStep& timeStep);
   void _UpdateInput(const spitfire::math::cTimeStep& timeStep);
-  void _Render(const spitfire::math::cTimeStep& timeStep);
+  void _RenderToTexture(const spitfire::math::cTimeStep& timeStep);
 
   struct OPTION {
     static const int BACK = 1;
@@ -204,7 +205,7 @@ private:
 
   void _Update(const spitfire::math::cTimeStep& timeStep);
   void _UpdateInput(const spitfire::math::cTimeStep& timeStep);
-  void _Render(const spitfire::math::cTimeStep& timeStep);
+  void _RenderToTexture(const spitfire::math::cTimeStep& timeStep);
 
   void _OnPieceMoved(const tetris::cBoard& board);
   void _OnPieceRotated(const tetris::cBoard& board);
