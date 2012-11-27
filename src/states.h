@@ -75,24 +75,25 @@ protected:
   bool bIsWireframe;
 
 private:
-  virtual void _OnEnter() {}
-  virtual void _OnExit() {}
-  virtual void _OnPause();
-  virtual void _OnResume();
+  virtual override void _OnEnter() {}
+  virtual override void _OnExit() {}
+  virtual override void _OnPause();
+  virtual override void _OnResume();
 
-  virtual void _OnWindowEvent(const breathe::gui::cWindowEvent& event) {}
-  virtual void _OnMouseEvent(const breathe::gui::cMouseEvent& event);
-  virtual void _OnKeyboardEvent(const breathe::gui::cKeyboardEvent& event);
+  virtual override void _OnWindowEvent(const breathe::gui::cWindowEvent& event) {}
+  virtual override void _OnMouseEvent(const breathe::gui::cMouseEvent& event);
+  virtual override void _OnKeyboardEvent(const breathe::gui::cKeyboardEvent& event);
 
-  virtual void _Update(const spitfire::math::cTimeStep& timeStep) {}
-  virtual void _UpdateInput(const spitfire::math::cTimeStep& timeStep) {}
   virtual void _Render(const spitfire::math::cTimeStep& timeStep) {}
+  virtual override void _Update(const spitfire::math::cTimeStep& timeStep) {}
+  virtual override void _UpdateInput(const spitfire::math::cTimeStep& timeStep) {}
 
 
-  virtual void _OnStateMouseEvent(const breathe::gui::cMouseEvent& event) {}
-  virtual void _OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event) {}
 
-  virtual breathe::gui::EVENT_RESULT _OnWidgetEvent(const breathe::gui::cWidgetEvent& event) { return breathe::gui::EVENT_RESULT::NOT_HANDLED_PERCOLATE; }
+  virtual override void _OnStateMouseEvent(const breathe::gui::cMouseEvent& event) {}
+  virtual override void _OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event) {}
+
+  virtual override breathe::gui::EVENT_RESULT _OnWidgetEvent(const breathe::gui::cWidgetEvent& event) { return breathe::gui::EVENT_RESULT::NOT_HANDLED_PERCOLATE; }
 };
 
 
