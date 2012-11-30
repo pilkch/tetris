@@ -52,6 +52,9 @@ public:
   explicit cState(cApplication& application);
   virtual ~cState();
 
+  void LoadResources();
+  void DestroyResources();
+
 protected:
   breathe::gui::cStaticText* AddStaticText(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
   breathe::gui::cRetroButton* AddRetroButton(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width);
@@ -95,6 +98,19 @@ private:
   virtual override void _OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event) {}
 
   virtual override breathe::gui::EVENT_RESULT _OnWidgetEvent(const breathe::gui::cWidgetEvent& event) { return breathe::gui::EVENT_RESULT::NOT_HANDLED_PERCOLATE; }
+
+  void CreateVertexBufferObjectLetterBoxedRectangle(size_t width, size_t height);
+  void DestroyVertexBufferObjectLetterBoxedRectangle();
+
+  void CreateFrameBufferObjectLetterBoxedRectangle(size_t width, size_t height);
+  void DestroyFrameBufferObjectLetterBoxedRectangle();
+
+  void CreateShaderLetterBoxedRectangle();
+  void DestroyShaderLetterBoxedRectangle();
+
+  breathe::render::cVertexBufferObject* pVertexBufferObjectLetterBoxedRectangle;
+  breathe::render::cTextureFrameBufferObject* pFrameBufferObjectLetterBoxedRectangle;
+  breathe::render::cShader* pShaderLetterBoxedRectangle;
 };
 
 

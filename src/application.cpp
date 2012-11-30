@@ -48,6 +48,40 @@
 #include "application.h"
 #include "states.h"
 
+// ** cLetterBox
+
+cLetterBox::cLetterBox(size_t width, size_t height) :
+  desiredWidth(0),
+  desiredHeight(0),
+  fDesiredRatio(0.0f),
+  fRatio(0.0f),
+  letterBoxedWidth(0),
+  letterBoxedHeight(0)
+{
+  desiredWidth = 1920;
+  desiredHeight = 1080;
+  fDesiredRatio = float(desiredWidth) / float(desiredHeight);
+
+  fRatio = float(width) / float(height);
+
+  // Apply letter boxing
+  letterBoxedWidth = width;
+  letterBoxedHeight = height;
+
+  if (fRatio < fDesiredRatio) {
+    // Taller (4:3, 16:10 for example)
+    letterBoxedHeight = width / fDesiredRatio;
+  } else {
+    // Wider
+    letterBoxedWidth = height * fDesiredRatio;
+  }
+
+  // Round up to the next even number
+  if ((letterBoxedWidth % 2) != 0) letterBoxedWidth++;
+  if ((letterBoxedHeight % 2) != 0) letterBoxedHeight++;
+}
+
+
 // ** cApplication
 
 cApplication::cApplication() :
@@ -108,13 +142,35 @@ bool cApplication::_LoadResources()
   assert(pFont != nullptr);
   assert(pFont->IsValid());
 
-  pGuiRenderer->LoadResources();
+  cLetterBox letterBox(pContext->GetWidth(), pContext->GetHeight());
+
+  pGuiRenderer->LoadResources(letterBox.letterBoxedWidth, letterBox.letterBoxedHeight);
+
+  // Load the resources of all the states
+  std::list<breathe::util::cState*>::iterator iter = states.begin();
+  const std::list<breathe::util::cState*>::iterator iterEnd = states.end();
+  while (iter != iterEnd) {
+    cState* pState = static_cast<cState*>(*iter);
+    if (pState != nullptr) pState->LoadResources();
+
+    iter++;
+  }
 
   return true;
 }
 
 void cApplication::_DestroyResources()
 {
+  // Destroy the resources of all the states
+  std::list<breathe::util::cState*>::iterator iter = states.begin();
+  const std::list<breathe::util::cState*>::iterator iterEnd = states.end();
+  while (iter != iterEnd) {
+    cState* pState = static_cast<cState*>(*iter);
+    if (pState != nullptr) pState->DestroyResources();
+
+    iter++;
+  }
+
   assert(pGuiManager != nullptr);
   assert(pGuiRenderer != nullptr);
 

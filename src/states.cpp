@@ -54,12 +54,19 @@ cState::cState(cApplication& _application) :
   pGuiManager(application.pGuiManager),
   pGuiRenderer(application.pGuiRenderer),
   pLayer(nullptr),
-  bIsWireframe(false)
+  bIsWireframe(false),
+  pVertexBufferObjectLetterBoxedRectangle(nullptr),
+  pFrameBufferObjectLetterBoxedRectangle(nullptr),
+  pShaderLetterBoxedRectangle(nullptr)
 {
 }
 
 cState::~cState()
 {
+  if (pVertexBufferObjectLetterBoxedRectangle != nullptr) DestroyVertexBufferObjectLetterBoxedRectangle();
+  if (pFrameBufferObjectLetterBoxedRectangle != nullptr) DestroyFrameBufferObjectLetterBoxedRectangle();
+  if (pShaderLetterBoxedRectangle != nullptr) DestroyShaderLetterBoxedRectangle();
+
   if (pLayer != nullptr) {
     breathe::gui::cWidget* pRoot = pGuiManager->GetRoot();
     ASSERT(pRoot != nullptr);
@@ -172,17 +179,184 @@ breathe::gui::cRetroColourPicker* cState::AddRetroColourPicker(breathe::gui::id_
   return pRetroColourPicker;
 }
 
+void cState::CreateVertexBufferObjectLetterBoxedRectangle(size_t width, size_t height)
+{
+  ASSERT(pVertexBufferObjectLetterBoxedRectangle == nullptr);
+
+  pVertexBufferObjectLetterBoxedRectangle = pContext->CreateStaticVertexBufferObject();
+
+  opengl::cGeometryDataPtr pGeometryDataPtr = opengl::CreateGeometryData();
+
+  opengl::cGeometryBuilder_v2_c4_t2 builder(*pGeometryDataPtr);
+
+
+  cLetterBox letterBox(width, height);
+
+  const float fWidth = float(letterBox.letterBoxedWidth);
+  const float fHeight = float(letterBox.letterBoxedHeight);
+
+  // Texture coordinates
+  // NOTE: The v coordinates have been swapped, the code looks correct but with normal v coordinates the gui is rendered upside down
+  const float fU = 0.0f;
+  const float fV = float(letterBox.letterBoxedHeight);
+  const float fU2 = float(letterBox.letterBoxedWidth);
+  const float fV2 = 0.0f;
+
+  const float x = 0.0f;
+  const float y = 0.0f;
+
+  const spitfire::math::cColour colour(1.0f, 1.0f, 1.0f, 1.0f);
+
+  // Front facing triangles
+  builder.PushBack(spitfire::math::cVec2(x, y + fHeight), colour, spitfire::math::cVec2(fU, fV2));
+  builder.PushBack(spitfire::math::cVec2(x + fWidth, y + fHeight), colour, spitfire::math::cVec2(fU2, fV2));
+  builder.PushBack(spitfire::math::cVec2(x + fWidth, y), colour, spitfire::math::cVec2(fU2, fV));
+  builder.PushBack(spitfire::math::cVec2(x + fWidth, y), colour, spitfire::math::cVec2(fU2, fV));
+  builder.PushBack(spitfire::math::cVec2(x, y), colour, spitfire::math::cVec2(fU, fV));
+  builder.PushBack(spitfire::math::cVec2(x, y + fHeight), colour, spitfire::math::cVec2(fU, fV2));
+
+  pVertexBufferObjectLetterBoxedRectangle->SetData(pGeometryDataPtr);
+
+  pVertexBufferObjectLetterBoxedRectangle->Compile2D(system);
+}
+
+void cState::DestroyVertexBufferObjectLetterBoxedRectangle()
+{
+  if (pVertexBufferObjectLetterBoxedRectangle != nullptr) {
+    pContext->DestroyStaticVertexBufferObject(pVertexBufferObjectLetterBoxedRectangle);
+    pVertexBufferObjectLetterBoxedRectangle = nullptr;
+  }
+}
+
+void cState::CreateFrameBufferObjectLetterBoxedRectangle(size_t width, size_t height)
+{
+  ASSERT(pFrameBufferObjectLetterBoxedRectangle == nullptr);
+
+  cLetterBox letterBox(width, height);
+
+  pFrameBufferObjectLetterBoxedRectangle = pContext->CreateTextureFrameBufferObjectNoMipMaps(letterBox.letterBoxedWidth, letterBox.letterBoxedHeight, opengl::PIXELFORMAT::R8G8B8A8);
+}
+
+void cState::DestroyFrameBufferObjectLetterBoxedRectangle()
+{
+  if (pFrameBufferObjectLetterBoxedRectangle != nullptr) {
+    pContext->DestroyTextureFrameBufferObject(pFrameBufferObjectLetterBoxedRectangle);
+    pFrameBufferObjectLetterBoxedRectangle = nullptr;
+  }
+}
+
+void cState::CreateShaderLetterBoxedRectangle()
+{
+  ASSERT(pShaderLetterBoxedRectangle == nullptr);
+
+  pShaderLetterBoxedRectangle = pContext->CreateShader(TEXT("data/shaders/passthroughwithcolour.vert"), TEXT("data/shaders/passthroughwithcolourrect.frag"));
+}
+
+void cState::DestroyShaderLetterBoxedRectangle()
+{
+  if (pShaderLetterBoxedRectangle != nullptr) {
+    pContext->DestroyShader(pShaderLetterBoxedRectangle);
+    pShaderLetterBoxedRectangle = nullptr;
+  }
+}
+
+void cState::LoadResources()
+{
+  const size_t width = pContext->GetWidth();
+  const size_t height = pContext->GetHeight();
+  CreateFrameBufferObjectLetterBoxedRectangle(width, height);
+  CreateShaderLetterBoxedRectangle();
+  CreateVertexBufferObjectLetterBoxedRectangle(width, height);
+}
+
+void cState::DestroyResources()
+{
+  DestroyFrameBufferObjectLetterBoxedRectangle();
+  DestroyShaderLetterBoxedRectangle();
+  DestroyVertexBufferObjectLetterBoxedRectangle();
+}
+
 void cState::_Render(const spitfire::math::cTimeStep& timeStep)
 {
-  // Render the scene
-  const spitfire::math::cColour clearColour(0.0f, 0.0f, 0.0f);
-  pContext->SetClearColour(clearColour);
+  const size_t width = pContext->GetWidth();
+  const size_t height = pContext->GetHeight();
 
-  pContext->BeginRenderToScreen();
+  cLetterBox letterBox(width, height);
 
-    _RenderToTexture(timeStep);
+  if ((width == letterBox.desiredWidth) || (height == letterBox.desiredHeight)) {
+    // Render the scene
+    const spitfire::math::cColour clearColour(0.392156863f, 0.584313725f, 0.929411765f);
+    pContext->SetClearColour(clearColour);
 
-  pContext->EndRenderToScreen();
+    pContext->BeginRenderToScreen();
+
+      if (bIsWireframe) pContext->EnableWireframe();
+
+      _RenderToTexture(timeStep);
+
+    pContext->EndRenderToScreen();
+  } else {
+    // Render the scene to a texture and draw the texture to the screen letter boxed
+
+    if (pVertexBufferObjectLetterBoxedRectangle == nullptr) CreateVertexBufferObjectLetterBoxedRectangle(width, height);
+    if (pFrameBufferObjectLetterBoxedRectangle == nullptr) CreateFrameBufferObjectLetterBoxedRectangle(width, height);
+    if (pShaderLetterBoxedRectangle == nullptr) CreateShaderLetterBoxedRectangle();
+
+    // Render the scene to the texture
+    {
+      const spitfire::math::cColour clearColour(0.392156863f, 0.584313725f, 0.929411765f);
+      pContext->SetClearColour(clearColour);
+
+      pContext->BeginRenderToTexture(*pFrameBufferObjectLetterBoxedRectangle);
+
+        if (bIsWireframe) pContext->EnableWireframe();
+
+        _RenderToTexture(timeStep);
+
+      pContext->EndRenderToTexture(*pFrameBufferObjectLetterBoxedRectangle);
+    }
+
+    // Render the texture to the screen
+    {
+      const spitfire::math::cColour clearColour(1.0f, 0.0f, 0.0f);
+      pContext->SetClearColour(clearColour);
+
+      pContext->BeginRenderToScreen();
+
+        //if (bIsWireframe) pContext->EnableWireframe();
+
+        pContext->BeginRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN);
+
+          {
+            // Set the position of the layer
+            spitfire::math::cMat4 matModelView2D;
+            if (letterBox.fRatio < letterBox.fDesiredRatio) matModelView2D.SetTranslation(0.0f, float((height - letterBox.letterBoxedHeight) / 2), 0.0f);
+            else matModelView2D.SetTranslation(float((width - letterBox.letterBoxedWidth) / 2), 0.0f, 0.0f);
+
+            pContext->EnableBlending();
+
+            pContext->BindTexture(0, *pFrameBufferObjectLetterBoxedRectangle);
+
+            pContext->BindShader(*pShaderLetterBoxedRectangle);
+
+            pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN_KEEP_DIMENSIONS_AND_ASPECT_RATIO, matModelView2D);
+
+            pContext->BindStaticVertexBufferObject2D(*pVertexBufferObjectLetterBoxedRectangle);
+            pContext->DrawStaticVertexBufferObjectTriangles2D(*pVertexBufferObjectLetterBoxedRectangle);
+            pContext->UnBindStaticVertexBufferObject2D(*pVertexBufferObjectLetterBoxedRectangle);
+
+            pContext->UnBindShader(*pShaderLetterBoxedRectangle);
+
+            pContext->UnBindTexture(0, *pFrameBufferObjectLetterBoxedRectangle);
+
+            pContext->DisableBlending();
+          }
+
+        pContext->EndRenderMode2D();
+
+      pContext->EndRenderToScreen();
+    }
+  }
 }
 
 
