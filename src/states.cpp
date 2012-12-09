@@ -59,6 +59,10 @@ cState::cState(cApplication& _application) :
   pFrameBufferObjectLetterBoxedRectangle(nullptr),
   pShaderLetterBoxedRectangle(nullptr)
 {
+  breathe::gui::cLayer* pRoot = static_cast<breathe::gui::cLayer*>(pGuiManager->GetRoot());
+
+  pLayer = new breathe::gui::cLayer;
+  pRoot->AddChild(pLayer);
 }
 
 cState::~cState()
@@ -499,12 +503,6 @@ cStateMenu::cStateMenu(cApplication& application) :
 {
   std::cout<<"cStateMenu::cStateMenu"<<std::endl;
 
-  breathe::gui::cLayer* pRoot = new breathe::gui::cLayer;
-  pGuiManager->SetRoot(pRoot);
-
-  pLayer = new breathe::gui::cLayer;
-  pRoot->AddChild(pLayer);
-
   const size_t ids[] = {
     OPTION::NEW_GAME,
     OPTION::HIGH_SCORES,
@@ -664,11 +662,6 @@ cStateNewGame::cStateNewGame(cApplication& application) :
   previousColour1(0),
   previousColour2(1)
 {
-  breathe::gui::cWidget* pRoot = pGuiManager->GetRoot();
-
-  pLayer = new breathe::gui::cLayer;
-  pRoot->AddChild(pLayer);
-
   const float fSpacerVertical = 0.007f;
   const float fSpacerHorizontal = 0.007f;
 
@@ -873,75 +866,34 @@ void cStateNewGame::_RenderToTexture(const spitfire::math::cTimeStep& timeStep)
 
 cStateHighScores::cStateHighScores(cApplication& application) :
   cState(application),
-  pStaticVertexBufferObjectText(nullptr),
   bIsDone(false)
 {
-  UpdateText();
-
-  breathe::gui::cWidget* pRoot = pGuiManager->GetRoot();
-
-  pLayer = new breathe::gui::cLayer;
-  pRoot->AddChild(pLayer);
-
   const float fSpacerVertical = 0.007f;
 
   const float x = 0.04f;
   float y = 0.2f;
   const float width = 0.4f;
 
-  // Header
-  y += 0.05f;
-  y += 0.05f;
-  y += 0.05f;
-
-  cHighScoresTable table(settings);
-  table.Load();
-
-  y += float(table.GetEntryCount()) * 0.03f;
-
-  AddRetroButton(OPTION::BACK, TEXT("Back"), x, y, width);
-  y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
-}
-
-cStateHighScores::~cStateHighScores()
-{
-  if (pStaticVertexBufferObjectText != nullptr) {
-    pContext->DestroyStaticVertexBufferObject(pStaticVertexBufferObjectText);
-    pStaticVertexBufferObjectText = nullptr;
-  }
-}
-
-void cStateHighScores::UpdateText()
-{
-  assert(pFont != nullptr);
-
-  if (pStaticVertexBufferObjectText != nullptr) {
-    pContext->DestroyStaticVertexBufferObject(pStaticVertexBufferObjectText);
-    pStaticVertexBufferObjectText = nullptr;
-  }
-
-  pStaticVertexBufferObjectText = pContext->CreateStaticVertexBufferObject();
-
-  opengl::cGeometryDataPtr pGeometryDataPtr = opengl::CreateGeometryData();
-
-  opengl::cGeometryBuilder_v2_c4_t2 builder(*pGeometryDataPtr);
-
   const spitfire::math::cColour white(1.0f, 1.0f, 1.0f);
   const spitfire::math::cColour red(1.0f, 0.0f, 0.0f);
 
-  const float x = 0.04f;
-  float y = 0.2f;
+  breathe::gui::cStaticText* pStaticText = nullptr;
 
-  {
-    // Create the text for this option
-    pFont->PushBack(builder, TEXT("High Scores"), red, spitfire::math::cVec2(x, y));
-    y += 0.05f;
-    y += 0.05f;
-    pFont->PushBack(builder, TEXT("Name"), red, spitfire::math::cVec2(x, y));
-    pFont->PushBack(builder, TEXT("Score"), red, spitfire::math::cVec2(x + 0.2f, y));
-    y += 0.05f;
-  }
 
+  // Header
+  pStaticText = AddStaticText(-1, TEXT("High Scores"), x, y, width);
+  pStaticText->SetTextColour(red);
+  y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
+  y += 0.05f;
+
+  pStaticText = AddStaticText(-1, TEXT("Name"), x, y, width);
+  pStaticText->SetTextColour(red);
+  pStaticText = AddStaticText(-1, TEXT("Score"), x + 0.2f, y, width);
+  pStaticText->SetTextColour(red);
+  y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
+
+
+  // Scores
   cHighScoresTable table(settings);
   table.Load();
 
@@ -950,14 +902,17 @@ void cStateHighScores::UpdateText()
     const cHighScoresTableEntry& entry = table.GetEntry(i);
     spitfire::ostringstream_t o;
     o<<entry.score;
-    pFont->PushBack(builder, entry.sName, white, spitfire::math::cVec2(x, y));
-    pFont->PushBack(builder, o.str(), white, spitfire::math::cVec2(x + 0.2f, y));
-    y += 0.03f;
+    pStaticText = AddStaticText(-1, entry.sName, x, y, width);
+    pStaticText->SetTextColour(white);
+    pStaticText = AddStaticText(-1, o.str(), x + 0.2f, y, width);
+    pStaticText->SetTextColour(white);
+    y += pGuiManager->GetStaticTextHeight();
   }
 
-  pStaticVertexBufferObjectText->SetData(pGeometryDataPtr);
+  y += fSpacerVertical;
 
-  pStaticVertexBufferObjectText->Compile2D(system);
+  AddRetroButton(OPTION::BACK, TEXT("Back"), x, y, width);
+  y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
 }
 
 void cStateHighScores::_OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event)
@@ -1017,31 +972,6 @@ void cStateHighScores::_RenderToTexture(const spitfire::math::cTimeStep& timeSte
   pContext->SetClearColour(clearColour);
 
   {
-    pContext->BeginRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN_KEEP_ASPECT_RATIO);
-
-    // Draw the text overlay
-    {
-      // Render the text
-      spitfire::math::cMat4 matModelView2D;
-      matModelView2D.SetTranslation(0.0f, 0.0f, 0.0f);
-
-      pContext->BindFont(*pFont);
-
-      pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
-
-      {
-        pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN_KEEP_ASPECT_RATIO, matModelView2D);
-
-        pContext->DrawStaticVertexBufferObjectTriangles2D(*pStaticVertexBufferObjectText);
-      }
-
-      pContext->UnBindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
-
-      pContext->UnBindFont(*pFont);
-    }
-
-    pContext->EndRenderMode2D();
-
     if (pGuiRenderer != nullptr) {
       pGuiRenderer->SetWireFrame(bIsWireframe);
       pGuiRenderer->Render();
@@ -1054,8 +984,6 @@ void cStateHighScores::_RenderToTexture(const spitfire::math::cTimeStep& timeSte
 
 cStateGame::cStateGame(cApplication& application) :
   cState(application),
-
-  pStaticVertexBufferObjectText(nullptr),
 
   pTextureBlock(nullptr),
 
@@ -1097,6 +1025,41 @@ cStateGame::cStateGame(cApplication& application) :
     UpdatePieceVBO(pBoardRepresentation->pStaticVertexBufferObjectNextPieceTriangles, board, board.GetNextPiece());
 
     boardRepresentations.push_back(pBoardRepresentation);
+  }
+
+
+  const spitfire::math::cColour red(1.0f, 0.0f, 0.0f);
+  const spitfire::math::cColour green(0.0f, 1.0f, 0.0f);
+  const spitfire::math::cColour blue(0.0f, 0.0f, 1.0f);
+  const spitfire::math::cColour yellow(1.0f, 1.0f, 0.0f);
+
+  // Text
+  const float x = 0.02f;
+  float y = 0.2f;
+  const float width = 0.4f;
+
+  for (size_t i = 0; i < game.boards.size(); i++) {
+    const spitfire::string_t sColour = settings.GetPlayerColour(i);
+    spitfire::math::cColour colour = red;
+    if (sColour == TEXT("Green")) colour = green;
+    else if (sColour == TEXT("Blue")) colour = blue;
+    else if (sColour == TEXT("Yellow")) colour = yellow;
+
+    // Create the text for this board
+    breathe::gui::cStaticText* pName = AddStaticText(-1, settings.GetPlayerName(i), x, y, width);
+    pName->SetTextColour(colour);
+    y += pGuiManager->GetStaticTextHeight();
+
+    spitfire::ostringstream_t o;
+
+    pLevelText[i] = AddStaticText(-1, TEXT("Level 1"), x, y, width);
+    pLevelText[i]->SetTextColour(colour);
+    y += pGuiManager->GetStaticTextHeight();
+    pScoreText[i] = AddStaticText(-1, TEXT("Score 0"), x, y, width);
+    pScoreText[i]->SetTextColour(colour);
+    y += pGuiManager->GetStaticTextHeight();
+
+    y += 0.05f;
   }
 
   UpdateText();
@@ -1150,71 +1113,28 @@ cStateGame::~cStateGame()
   }
 
 
-  if (pStaticVertexBufferObjectText != nullptr) {
-    pContext->DestroyStaticVertexBufferObject(pStaticVertexBufferObjectText);
-    pStaticVertexBufferObjectText = nullptr;
-  }
-
   std::cout<<"cStateGame::~cStateGame returning"<<std::endl;
 }
 
 void cStateGame::UpdateText()
 {
-  assert(pFont != nullptr);
-
-  if (pStaticVertexBufferObjectText != nullptr) {
-    pContext->DestroyStaticVertexBufferObject(pStaticVertexBufferObjectText);
-    pStaticVertexBufferObjectText = nullptr;
-  }
-
-  pStaticVertexBufferObjectText = pContext->CreateStaticVertexBufferObject();
-
-  opengl::cGeometryDataPtr pGeometryDataPtr = opengl::CreateGeometryData();
-
-  opengl::cGeometryBuilder_v2_c4_t2 builder(*pGeometryDataPtr);
-
-  const spitfire::math::cColour red(1.0f, 0.0f, 0.0f);
-  const spitfire::math::cColour green(0.0f, 1.0f, 0.0f);
-  const spitfire::math::cColour blue(0.0f, 0.0f, 1.0f);
-  const spitfire::math::cColour yellow(1.0f, 1.0f, 0.0f);
-
-  float y = 0.2f;
-
   for (size_t i = 0; i < game.boards.size(); i++) {
     tetris::cBoard& board = *(game.boards[i]);
-
-    const spitfire::string_t sColour = settings.GetPlayerColour(i);
-    spitfire::math::cColour colour = red;
-    if (sColour == TEXT("Green")) colour = green;
-    else if (sColour == TEXT("Blue")) colour = blue;
-    else if (sColour == TEXT("Yellow")) colour = yellow;
-
-    // Create the text for this board
-    pFont->PushBack(builder, settings.GetPlayerName(i), colour, spitfire::math::cVec2(0.0f, y));
-    y += 0.05f;
 
     spitfire::ostringstream_t o;
 
     const uint32_t uiLevel = board.GetLevel();
     o<<TEXT("Level ");
     o<<uiLevel;
-    pFont->PushBack(builder, o.str(), colour, spitfire::math::cVec2(0.0f, y));
-    y += 0.05f;
+    pLevelText[i]->SetCaption(o.str());
     o.str(TEXT(""));
 
     const uint32_t uiScore = board.GetScore();
     o<<TEXT("Score ");
     o<<uiScore;
-    pFont->PushBack(builder, o.str(), colour, spitfire::math::cVec2(0.0f, y));
-    y += 0.05f;
+    pScoreText[i]->SetCaption(o.str());
     o.str(TEXT(""));
-
-    y += 0.05f;
   }
-
-  pStaticVertexBufferObjectText->SetData(pGeometryDataPtr);
-
-  pStaticVertexBufferObjectText->Compile2D(system);
 }
 
 void cStateGame::UpdateBoardVBO(breathe::render::cVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board)
@@ -1704,28 +1624,6 @@ void cStateGame::_RenderToTexture(const spitfire::math::cTimeStep& timeStep)
 
         x += 0.4f;
       }
-    }
-
-
-    // Draw the text overlay
-    {
-      // Rendering the font in the middle of the screen
-      spitfire::math::cMat4 matModelView2D;
-      matModelView2D.SetTranslation(0.1f, 0.1f, 0.0f);
-
-      pContext->BindFont(*pFont);
-
-      pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
-
-      {
-        pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN_KEEP_ASPECT_RATIO, matModelView2D);
-
-        pContext->DrawStaticVertexBufferObjectTriangles2D(*pStaticVertexBufferObjectText);
-      }
-
-      pContext->UnBindStaticVertexBufferObject2D(*pStaticVertexBufferObjectText);
-
-      pContext->UnBindFont(*pFont);
     }
 
     pContext->EndRenderMode2D();

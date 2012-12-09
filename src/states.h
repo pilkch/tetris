@@ -182,11 +182,8 @@ class cStateHighScores : public cState
 {
 public:
   explicit cStateHighScores(cApplication& application);
-  ~cStateHighScores();
 
 private:
-  void UpdateText();
-
   void _OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event);
 
   breathe::gui::EVENT_RESULT _OnWidgetEvent(const breathe::gui::cWidgetEvent& event);
@@ -198,8 +195,6 @@ private:
   struct OPTION {
     static const int BACK = 1;
   };
-
-  breathe::render::cVertexBufferObject* pStaticVertexBufferObjectText;
 
   bool bIsDone;
 };
@@ -233,7 +228,8 @@ private:
   void _OnGameNewLevel(const tetris::cBoard& board, uint32_t uiLevel);
   void _OnGameOver(const tetris::cBoard& board);
 
-  breathe::render::cVertexBufferObject* pStaticVertexBufferObjectText;
+  breathe::gui::cStaticText* pLevelText[4];
+  breathe::gui::cStaticText* pScoreText[4];
 
   breathe::render::cTexture* pTextureBlock;
 
