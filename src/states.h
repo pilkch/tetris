@@ -39,8 +39,8 @@ public:
   bool bIsInputPieceDropOneRow;
   bool bIsInputPieceDropToGround;
 
-  spitfire::sampletime_t lastKeyLeft;
-  spitfire::sampletime_t lastKeyRight;
+  spitfire::durationms_t lastKeyLeft;
+  spitfire::durationms_t lastKeyRight;
 };
 
 

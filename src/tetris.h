@@ -29,8 +29,8 @@ namespace tetris
 
     std::vector<cBoard*> boards;
 
-    void StartGame(spitfire::sampletime_t currentTime);
-    void Update(spitfire::sampletime_t currentTime);
+    void StartGame(spitfire::durationms_t currentTime);
+    void Update(spitfire::durationms_t currentTime);
 
   private:
     void _AddRandomLinesToEveryOtherBoard(const cBoard& rhs, size_t lines);
@@ -86,8 +86,8 @@ namespace tetris
     explicit cBoard(cGame& game);
     ~cBoard();
 
-    void StartGame(spitfire::sampletime_t currentTime);
-    void Update(spitfire::sampletime_t currentTime);
+    void StartGame(spitfire::durationms_t currentTime);
+    void Update(spitfire::durationms_t currentTime);
 
     void CopySettingsFrom(const cBoard& rhs);
     void SetWidth(size_t width);
@@ -124,14 +124,14 @@ namespace tetris
     void AddPossiblePiece(const cPiece& piece);
     void AddRandomLineAddEnd();
 
-    void PieceGenerate(spitfire::sampletime_t currentTime);
+    void PieceGenerate(spitfire::durationms_t currentTime);
 
     void PieceMoveLeft();
     void PieceMoveRight();
     void PieceRotateCounterClockWise();
     void PieceRotateClockWise();
-    void PieceDropOneRow(spitfire::sampletime_t currentTime);
-    void PieceDropToGround(spitfire::sampletime_t currentTime);
+    void PieceDropOneRow(spitfire::durationms_t currentTime);
+    void PieceDropToGround(spitfire::durationms_t currentTime);
 
 #define BUILD_DEBUG
 #ifdef BUILD_DEBUG
@@ -149,7 +149,7 @@ namespace tetris
 
     bool _IsCollided(const cPiece& rhs, size_t position_x, size_t position_y) const;
 
-    void _AddPieceToBoardCheckAndGenerate(spitfire::sampletime_t currentTime);
+    void _AddPieceToBoardCheckAndGenerate(spitfire::durationms_t currentTime);
     void _AddPieceToBoard();
 
     cGame& game;
@@ -171,7 +171,7 @@ namespace tetris
     size_t level;
     size_t rows_this_level;
 
-    spitfire::sampletime_t lastUpdatedTime;
+    spitfire::durationms_t lastUpdatedTime;
 
     cBoard();
     NO_COPY(cBoard);

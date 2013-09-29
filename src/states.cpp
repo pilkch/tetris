@@ -995,7 +995,7 @@ cStateGame::cStateGame(cApplication& application) :
 
   pShaderBlock = pContext->CreateShader(TEXT("data/shaders/passthroughwithcolour.vert"), TEXT("data/shaders/passthroughwithcolour.frag"));
 
-  const spitfire::sampletime_t currentTime = SDL_GetTicks();
+  const spitfire::durationms_t currentTime = SDL_GetTicks();
 
   spitfire::math::SetRandomSeed(currentTime);
 

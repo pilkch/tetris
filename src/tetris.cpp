@@ -82,7 +82,7 @@ namespace tetris
     view.OnGameOver(board);
   }
 
-  void cGame::StartGame(spitfire::sampletime_t currentTime)
+  void cGame::StartGame(spitfire::durationms_t currentTime)
   {
     const size_t width = 10;
     const size_t height = 40;
@@ -173,7 +173,7 @@ namespace tetris
     }
   }
 
-  void cGame::Update(spitfire::sampletime_t currentTime)
+  void cGame::Update(spitfire::durationms_t currentTime)
   {
     iterator iter = boards.begin();
     const iterator iterEnd = boards.end();
@@ -411,7 +411,7 @@ namespace tetris
     state = rhs.state;
   }
 
-  void cBoard::StartGame(spitfire::sampletime_t currentTime)
+  void cBoard::StartGame(spitfire::durationms_t currentTime)
   {
     lastUpdatedTime = currentTime;
 
@@ -441,7 +441,7 @@ namespace tetris
     PieceGenerate(currentTime);
   }
 
-  void cBoard::Update(spitfire::sampletime_t currentTime)
+  void cBoard::Update(spitfire::durationms_t currentTime)
   {
     // If we have wait a sufficient amount of time, then do an update
     if ((currentTime - lastUpdatedTime) > (1500 / level)) {
@@ -523,7 +523,7 @@ namespace tetris
     }
   }
 
-  void cBoard::_AddPieceToBoardCheckAndGenerate(spitfire::sampletime_t currentTime)
+  void cBoard::_AddPieceToBoardCheckAndGenerate(spitfire::durationms_t currentTime)
   {
     _AddPieceToBoard();
 
@@ -604,7 +604,7 @@ namespace tetris
   }
 
 
-  void cBoard::PieceGenerate(spitfire::sampletime_t currentTime)
+  void cBoard::PieceGenerate(spitfire::durationms_t currentTime)
   {
     current_piece = next_piece;
 
@@ -744,7 +744,7 @@ namespace tetris
     game.OnPieceRotated(*this);
   }
 
-  void cBoard::PieceDropOneRow(spitfire::sampletime_t currentTime)
+  void cBoard::PieceDropOneRow(spitfire::durationms_t currentTime)
   {
     if (state != STATE_PLAYING) return;
 
@@ -763,7 +763,7 @@ namespace tetris
     }
   }
 
-  void cBoard::PieceDropToGround(spitfire::sampletime_t currentTime)
+  void cBoard::PieceDropToGround(spitfire::durationms_t currentTime)
   {
     if (state != STATE_PLAYING) return;
 
