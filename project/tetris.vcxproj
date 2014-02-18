@@ -53,6 +53,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>BUILD_LIBOPENGLMM_OPENGL_VERSION=330;BUILD_LIBOPENGLMM_OPENGL_STRICT;BUILD_OPENGLMM_FONT;BUILD_AUDIO_SDLMIXER;BUILD_SPITFIRE_UNITTEST;SPITFIRE_APPLICATION_NAME_LWR="tetris";NOMINMAX;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4100;4127;4512;4702;4244;4610;4510</DisableSpecificWarnings>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -71,6 +72,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <DisableSpecificWarnings>4100;4127;4512;4702;4244;4610;4510</DisableSpecificWarnings>
       <PreprocessorDefinitions>NDEBUG;BUILD_LIBOPENGLMM_OPENGL_VERSION=330;BUILD_LIBOPENGLMM_OPENGL_STRICT;BUILD_OPENGLMM_FONT;BUILD_AUDIO_SDLMIXER;BUILD_SPITFIRE_UNITTEST;SPITFIRE_APPLICATION_NAME_LWR="tetris";NOMINMAX;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
