@@ -45,7 +45,7 @@ class cApplication : public breathe::util::cApplication
 public:
   friend class cState;
 
-  cApplication();
+  cApplication(int argc, const char* const* argv);
   ~cApplication();
 
   void PlaySound(breathe::audio::cBufferRef pBuffer);

@@ -881,14 +881,14 @@ cStateHighScores::cStateHighScores(cApplication& application) :
 
 
   // Header
-  pStaticText = AddStaticText(-1, TEXT("High Scores"), x, y, width);
+  pStaticText = AddStaticText(0, TEXT("High Scores"), x, y, width);
   pStaticText->SetTextColour(red);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
   y += 0.05f;
 
-  pStaticText = AddStaticText(-1, TEXT("Name"), x, y, width);
+  pStaticText = AddStaticText(0, TEXT("Name"), x, y, width);
   pStaticText->SetTextColour(red);
-  pStaticText = AddStaticText(-1, TEXT("Score"), x + 0.2f, y, width);
+  pStaticText = AddStaticText(0, TEXT("Score"), x + 0.2f, y, width);
   pStaticText->SetTextColour(red);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
 
@@ -902,9 +902,9 @@ cStateHighScores::cStateHighScores(cApplication& application) :
     const cHighScoresTableEntry& entry = table.GetEntry(i);
     spitfire::ostringstream_t o;
     o<<entry.score;
-    pStaticText = AddStaticText(-1, entry.sName, x, y, width);
+    pStaticText = AddStaticText(0, entry.sName, x, y, width);
     pStaticText->SetTextColour(white);
-    pStaticText = AddStaticText(-1, o.str(), x + 0.2f, y, width);
+    pStaticText = AddStaticText(0, o.str(), x + 0.2f, y, width);
     pStaticText->SetTextColour(white);
     y += pGuiManager->GetStaticTextHeight();
   }
@@ -1046,16 +1046,16 @@ cStateGame::cStateGame(cApplication& application) :
     else if (sColour == TEXT("Yellow")) colour = yellow;
 
     // Create the text for this board
-    breathe::gui::cStaticText* pName = AddStaticText(-1, settings.GetPlayerName(i), x, y, width);
+    breathe::gui::cStaticText* pName = AddStaticText(0, settings.GetPlayerName(i), x, y, width);
     pName->SetTextColour(colour);
     y += pGuiManager->GetStaticTextHeight();
 
     spitfire::ostringstream_t o;
 
-    pLevelText[i] = AddStaticText(-1, TEXT("Level 1"), x, y, width);
+    pLevelText[i] = AddStaticText(0, TEXT("Level 1"), x, y, width);
     pLevelText[i]->SetTextColour(colour);
     y += pGuiManager->GetStaticTextHeight();
-    pScoreText[i] = AddStaticText(-1, TEXT("Score 0"), x, y, width);
+    pScoreText[i] = AddStaticText(0, TEXT("Score 0"), x, y, width);
     pScoreText[i]->SetTextColour(colour);
     y += pGuiManager->GetStaticTextHeight();
 

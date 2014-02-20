@@ -12,12 +12,12 @@ int main(int argc, char** argv)
   std::cout.rdbuf(std::cerr.rdbuf());
   #endif
 
-  bool bIsSuccess = true;
+  int iResult = EXIT_SUCCESS;
 
   {
-    cApplication application;
+    cApplication application(argc, argv);
 
-    bIsSuccess = application.Run();
+    iResult = application.Run();
   }
 
   #if defined(BUILD_DEBUG) && defined(PLATFORM_LINUX_OR_UNIX)
@@ -25,5 +25,5 @@ int main(int argc, char** argv)
   std::cout.rdbuf(backup);
   #endif
 
-  return bIsSuccess ? EXIT_SUCCESS : EXIT_FAILURE;
+  return iResult;
 }

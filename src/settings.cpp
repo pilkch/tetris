@@ -56,7 +56,7 @@ void cSettings::Load()
   spitfire::util::cProcessInterfaceVoid interface;
   spitfire::util::PROCESS_RESULT result = reader.ReadFromFile(interface, document, sFilename);
   if (result != spitfire::util::PROCESS_RESULT::COMPLETE) {
-    LOG<<"cSettings::Load \""<<spitfire::string::ToUTF8(sFilename)<<"\" not found"<<std::endl;
+    LOG<<"cSettings::Load \""<<sFilename<<"\" not found"<<std::endl;
     return;
   }
 }
@@ -71,7 +71,7 @@ void cSettings::Save()
   const spitfire::string_t sFilename = sDirectory + TEXT("config.xml");
   LOG<<"cSettings::Save Creating file \""<<sFilename<<"\""<<std::endl;
   if (!writer.WriteToFile(document, sFilename)) {
-    LOG<<"cSettings::Save Error saving to file \""<<spitfire::string::ToUTF8(sFilename)<<"\""<<std::endl;
+    LOG<<"cSettings::Save Error saving to file \""<<sFilename<<"\""<<std::endl;
     return;
   }
 }

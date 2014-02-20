@@ -33,6 +33,8 @@
 #include <spitfire/math/cQuaternion.h>
 #include <spitfire/math/cColour.h>
 
+#include <spitfire/util/log.h>
+
 // libopenglmm headers
 #include <libopenglmm/libopenglmm.h>
 #include <libopenglmm/cContext.h>
@@ -84,7 +86,9 @@ cLetterBox::cLetterBox(size_t width, size_t height) :
 
 // ** cApplication
 
-cApplication::cApplication() :
+cApplication::cApplication(int argc, const char* const* argv) :
+  breathe::util::cApplication(argc, argv),
+
   pFont(nullptr),
 
   pGuiManager(nullptr),

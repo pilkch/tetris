@@ -51,9 +51,8 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>BUILD_LIBOPENGLMM_OPENGL_VERSION=330;BUILD_LIBOPENGLMM_OPENGL_STRICT;BUILD_OPENGLMM_FONT;BUILD_AUDIO_SDLMIXER;BUILD_SPITFIRE_UNITTEST;SPITFIRE_APPLICATION_NAME_LWR="tetris";NOMINMAX;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BUILD_LIBOPENGLMM_OPENGL_VERSION=330;BUILD_LIBOPENGLMM_OPENGL_STRICT;BUILD_LIBOPENGLMM_FONT;BUILD_LIBOPENGLMM_WINDOW_SDL;BUILD_AUDIO_SDLMIXER;BUILD_SPITFIRE_UNITTEST;SPITFIRE_APPLICATION_NAME="Tetris";SPITFIRE_APPLICATION_NAME_LWR="tetris";SPITFIRE_APPLICATION_COMPANY_NAME="Iluo";BUILD_APPLICATION_VERSION_STRING="0.1";NOMINMAX;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4100;4127;4512;4702;4244;4610;4510</DisableSpecificWarnings>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -71,8 +70,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <DisableSpecificWarnings>4100;4127;4512;4702;4244;4610;4510</DisableSpecificWarnings>
-      <PreprocessorDefinitions>NDEBUG;BUILD_LIBOPENGLMM_OPENGL_VERSION=330;BUILD_LIBOPENGLMM_OPENGL_STRICT;BUILD_OPENGLMM_FONT;BUILD_AUDIO_SDLMIXER;BUILD_SPITFIRE_UNITTEST;SPITFIRE_APPLICATION_NAME_LWR="tetris";NOMINMAX;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PreprocessorDefinitions>NDEBUG;BUILD_LIBOPENGLMM_OPENGL_VERSION=330;BUILD_LIBOPENGLMM_OPENGL_STRICT;BUILD_LIBOPENGLMM_FONT;BUILD_LIBOPENGLMM_WINDOW_SDL;BUILD_AUDIO_SDLMIXER;BUILD_SPITFIRE_UNITTEST;SPITFIRE_APPLICATION_NAME="Tetris";SPITFIRE_APPLICATION_NAME_LWR="tetris";SPITFIRE_APPLICATION_COMPANY_NAME="Iluo";BUILD_APPLICATION_VERSION_STRING="0.1";NOMINMAX;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -115,6 +113,8 @@
     <ClCompile Include="..\..\library\src\spitfire\storage\document.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\storage\filesystem.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\storage\xml.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\util\cConsoleApplication.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\util\datetime.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\util\log.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\util\string.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\util\thread.cpp" />
