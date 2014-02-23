@@ -20,7 +20,7 @@
 #include <GL/glu.h>
 
 // SDL headers
-#include <SDL/SDL_image.h>
+#include <SDL2/SDL_image.h>
 
 // libopenglmm headers
 #include <libopenglmm/cGeometry.h>
@@ -298,7 +298,7 @@ void cState::_Render(const spitfire::math::cTimeStep& timeStep)
 
       _RenderToTexture(timeStep);
 
-    pContext->EndRenderToScreen();
+    pContext->EndRenderToScreen(*pWindow);
   } else {
     // Render the scene to a texture and draw the texture to the screen letter boxed
 
@@ -358,7 +358,7 @@ void cState::_Render(const spitfire::math::cTimeStep& timeStep)
 
         pContext->EndRenderMode2D();
 
-      pContext->EndRenderToScreen();
+      pContext->EndRenderToScreen(*pWindow);
     }
   }
 }

@@ -339,18 +339,18 @@ void cGame::LoadConfiguration()
 
 bool cGame::InitScene()
 {
-	LOG.Success("Game", "InitScene");
+  LOG.Success("Game", "InitScene");
 
-	LoadConfiguration();
+  LoadConfiguration();
 
   StartGame();
 
   PushState(new cTetrisStatePlaying(*this));
 
-	SDL_ShowCursor(SDL_DISABLE);
-	SDL_WarpMouse(pRender->uiWidth>>1, pRender->uiHeight>>1);
+  SDL_SetRelativeMouseMode(SDL_TRUE);
+  SDL_WarpMouseInWindow(window, pRender->uiWidth / 2, pRender->uiHeight / 2);
 
-	return breathe::GOOD;
+  return breathe::GOOD;
 }
 
 void cGame::StartGame()
