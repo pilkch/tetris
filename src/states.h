@@ -78,26 +78,26 @@ protected:
   bool bIsWireframe;
 
 private:
-  virtual override void _OnEnter() {}
-  virtual override void _OnExit() {}
-  virtual override void _OnPause();
-  virtual override void _OnResume();
+  virtual void _OnEnter() override {}
+  virtual void _OnExit() override {}
+  virtual void _OnPause() override;
+  virtual void _OnResume() override;
 
-  virtual override void _OnWindowEvent(const breathe::gui::cWindowEvent& event) {}
-  virtual override void _OnMouseEvent(const breathe::gui::cMouseEvent& event);
-  virtual override void _OnKeyboardEvent(const breathe::gui::cKeyboardEvent& event);
+  virtual void _OnWindowEvent(const breathe::gui::cWindowEvent& event) override {}
+  virtual void _OnMouseEvent(const breathe::gui::cMouseEvent& event) override;
+  virtual void _OnKeyboardEvent(const breathe::gui::cKeyboardEvent& event) override;
 
-  virtual override void _Update(const spitfire::math::cTimeStep& timeStep) {}
-  virtual override void _UpdateInput(const spitfire::math::cTimeStep& timeStep) {}
-  virtual override void _Render(const spitfire::math::cTimeStep& timeStep);
+  virtual void _Update(const spitfire::math::cTimeStep& timeStep) override {}
+  virtual void _UpdateInput(const spitfire::math::cTimeStep& timeStep) override {}
+  virtual void _Render(const spitfire::math::cTimeStep& timeStep) override;
 
   virtual void _RenderToTexture(const spitfire::math::cTimeStep& timeStep) {}
 
 
-  virtual override void _OnStateMouseEvent(const breathe::gui::cMouseEvent& event) {}
-  virtual override void _OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event) {}
+  virtual void _OnStateMouseEvent(const breathe::gui::cMouseEvent& event) override {}
+  virtual void _OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event) override {}
 
-  virtual override breathe::gui::EVENT_RESULT _OnWidgetEvent(const breathe::gui::cWidgetEvent& event) { return breathe::gui::EVENT_RESULT::NOT_HANDLED_PERCOLATE; }
+  virtual breathe::gui::EVENT_RESULT _OnWidgetEvent(const breathe::gui::cWidgetEvent& event) override { return breathe::gui::EVENT_RESULT::NOT_HANDLED_PERCOLATE; }
 
   void CreateVertexBufferObjectLetterBoxedRectangle(size_t width, size_t height);
   void DestroyVertexBufferObjectLetterBoxedRectangle();

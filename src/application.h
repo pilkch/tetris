@@ -54,11 +54,11 @@ protected:
   cSettings settings;
 
 private:
-  virtual override bool _Create();
-  virtual override void _Destroy();
+  virtual bool _Create() override;
+  virtual void _Destroy() override;
 
-  virtual override bool _LoadResources();
-  virtual override void _DestroyResources();
+  virtual bool _LoadResources() override;
+  virtual void _DestroyResources() override;
 
   // Text
   opengl::cFont* pFont;
