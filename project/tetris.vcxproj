@@ -88,6 +88,7 @@
     <ClCompile Include="..\..\library\src\breathe\gui\cRenderer.cpp" />
     <ClCompile Include="..\..\library\src\breathe\render\cTextureAtlas.cpp" />
     <ClCompile Include="..\..\library\src\breathe\util\cApplication.cpp" />
+    <ClCompile Include="..\..\library\src\breathe\util\joystick.cpp" />
     <ClCompile Include="..\..\library\src\GL3\gl3w.c" />
     <ClCompile Include="..\..\library\src\libopenglmm\cContext.cpp" />
     <ClCompile Include="..\..\library\src\libopenglmm\cFont.cpp" />
