@@ -754,7 +754,7 @@ void cStateNewGame::_OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& ev
 
 breathe::gui::EVENT_RESULT cStateNewGame::_OnWidgetEvent(const breathe::gui::cWidgetEvent& event)
 {
-  std::cout<<"cStateMenu::_OnWidgetEvent"<<std::endl;
+  std::cout<<"cStateNewGame::_OnWidgetEvent"<<std::endl;
 
   switch (event.GetWidget()->GetId()) {
     case OPTION::COLOUR_PLAYER1:
@@ -988,6 +988,104 @@ void cStateHighScores::_RenderToTexture(const spitfire::math::cTimeStep& timeSte
 }
 
 
+// ** cStatePauseMenu
+
+cStatePauseMenu::cStatePauseMenu(cApplication& application, cStateGame& _parentState) :
+  cState(application),
+  parentState(_parentState),
+  bIsKeyReturn(false)
+{
+  std::cout<<"cStatePauseMenu::cStatePauseMenu"<<std::endl;
+  
+  const float fSpacerVertical = 0.007f;
+
+  const float x = 0.04f;
+  float y = 0.2f;
+  const float width = 0.4f;
+
+  const spitfire::math::cColour red(1.0f, 0.0f, 0.0f);
+
+  breathe::gui::cStaticText* pStaticText = nullptr;
+
+  // Header
+  pStaticText = AddStaticText(0, TEXT("Paused"), x, y, width);
+  pStaticText->SetTextColour(red);
+  y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
+  y += 0.05f;
+
+
+  const size_t ids[] = {
+    OPTION::RESUME_GAME,
+    OPTION::END_GAME,
+  };
+  const spitfire::string_t options[] = {
+    TEXT("Resum Game"),
+    TEXT("End Game")
+  };
+
+  const size_t n = countof(options);
+  for (size_t i = 0; i < n; i++) {
+    // Create the text for this option
+    AddRetroButton(ids[i], options[i], x, y, 0.15f);
+
+    y += pGuiManager->GetStaticTextHeight() + 0.007f;
+  }
+
+  pLayer->SetFocusToNextChild();
+}
+
+void cStatePauseMenu::_Update(const spitfire::math::cTimeStep& timeStep)
+{
+  // Update the hud offset to shake the gui
+  spring.Update(timeStep);
+
+  pGuiManager->SetHUDOffset(spring.GetPosition());
+
+  pGuiRenderer->Update();
+}
+
+void cStatePauseMenu::_OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event)
+{
+}
+
+breathe::gui::EVENT_RESULT cStatePauseMenu::_OnWidgetEvent(const breathe::gui::cWidgetEvent& event)
+{
+  std::cout<<"cStatePauseMenu::_OnWidgetEvent"<<std::endl;
+
+  if (event.IsPressed()) {
+    switch (event.GetWidget()->GetId()) {
+      case OPTION::RESUME_GAME: {
+        // Pop our menu state
+        application.PopStateSoon();
+        break;
+      }
+      case OPTION::END_GAME: {
+        // Pop our menu state
+        application.PopStateSoon();
+        parentState.SetQuitSoon();
+        break;
+      }
+    }
+  }
+
+  return breathe::gui::EVENT_RESULT::NOT_HANDLED_PERCOLATE;
+}
+
+void cStatePauseMenu::_RenderToTexture(const spitfire::math::cTimeStep& timeStep)
+{
+  // Render the scene
+  const spitfire::math::cColour clearColour(0.392156863f, 0.584313725f, 0.929411765f);
+  pContext->SetClearColour(clearColour);
+
+  {
+    if (pGuiRenderer != nullptr) {
+      pGuiRenderer->SetWireFrame(bIsWireframe);
+      pGuiRenderer->Render();
+    }
+  }
+}
+
+
 // ** cStateGame
 
 cStateGame::cStateGame(cApplication& application) :
@@ -999,7 +1097,8 @@ cStateGame::cStateGame(cApplication& application) :
 
   game(*this),
 
-  bPauseSoon(false)
+  bPauseSoon(false),
+  bQuitSoon(false)
 {
   pTextureBlock = pContext->CreateTexture(TEXT("data/textures/block.png"));
 
@@ -1124,6 +1223,11 @@ cStateGame::~cStateGame()
 
 
   std::cout<<"cStateGame::~cStateGame returning"<<std::endl;
+}
+
+void cStateGame::SetQuitSoon()
+{
+  bQuitSoon = true;
 }
 
 void cStateGame::UpdateText()
@@ -1474,13 +1578,17 @@ void cStateGame::_Update(const spitfire::math::cTimeStep& timeStep)
     }
   }
 
-  game.Update(timeStep.GetCurrentTimeMS());
-
-
   if (bPauseSoon) {
-    application.PopStateSoon();
+    // Push our game state
+    application.PushStateSoon(new cStatePauseMenu(application, *this));
     bPauseSoon = false;
   }
+  if (bQuitSoon) {
+    // Pop our menu state
+    application.PopStateSoon();
+  }
+
+  game.Update(timeStep.GetCurrentTimeMS());
 
   // Update the hud offset to shake the gui
   spring.Update(timeStep);

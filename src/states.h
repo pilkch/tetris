@@ -202,12 +202,38 @@ private:
   bool bIsDone;
 };
 
+class cStateGame;
+
+class cStatePauseMenu : public cState
+{
+public:
+  cStatePauseMenu(cApplication& application, cStateGame& parentState);
+
+private:
+  void _Update(const spitfire::math::cTimeStep& timeStep);
+  void _RenderToTexture(const spitfire::math::cTimeStep& timeStep);
+
+  void _OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event);
+
+  breathe::gui::EVENT_RESULT _OnWidgetEvent(const breathe::gui::cWidgetEvent& event);
+
+  cStateGame& parentState;
+
+  struct OPTION {
+    static const int RESUME_GAME = 1;
+    static const int END_GAME = 3;
+  };
+
+  bool bIsKeyReturn;
+};
 
 class cStateGame : public cState, public tetris::cView
 {
 public:
   explicit cStateGame(cApplication& application);
   ~cStateGame();
+
+  void SetQuitSoon(); // Called by the pause menu when the game should quit
 
 private:
   void UpdateText();
@@ -248,6 +274,7 @@ private:
   tetris::cGame game;
 
   bool bPauseSoon;
+  bool bQuitSoon;
 };
 
 #endif // TETRIS_STATES_H
