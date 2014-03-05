@@ -114,6 +114,14 @@ void cState::_OnMouseEvent(const breathe::gui::cMouseEvent& event)
   if (!bIsHandled) _OnStateMouseEvent(event);
 }
 
+  void cState::_OnJoystickEvent(const breathe::util::cJoystickEvent& event)
+  {
+    bool bIsHandled = false;
+    if (event.IsButtonDown()) bIsHandled = pGuiManager->InjectEventJoystickEvent(event);
+
+    if (!bIsHandled) _OnStateJoystickEvent(event);
+  }
+
 breathe::gui::cStaticText* cState::AddStaticText(breathe::gui::id_t id, const spitfire::string_t& sText, float x, float y, float width)
 {
   breathe::gui::cStaticText* pStaticText = new breathe::gui::cStaticText;
@@ -989,7 +997,9 @@ cStateGame::cStateGame(cApplication& application) :
 
   pShaderBlock(nullptr),
 
-  game(*this)
+  game(*this),
+
+  bPauseSoon(false)
 {
   pTextureBlock = pContext->CreateTexture(TEXT("data/textures/block.png"));
 
@@ -1364,8 +1374,8 @@ void cStateGame::_OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event
     std::cout<<"cStateGame::_OnStateKeyboardEvent Key down"<<std::endl;
     switch (event.GetKeyCode()) {
       case breathe::gui::KEY::ESCAPE: {
-        std::cout<<"cStateGame::_OnStateKeyboardEvent Escape key pressed, quiting"<<std::endl;
-        application.PopStateSoon();
+        std::cout<<"cStateGame::_OnStateKeyboardEvent Escape down"<<std::endl;
+        bPauseSoon = true;
         break;
       }
     }
@@ -1379,6 +1389,56 @@ void cStateGame::_OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event
     }
   }
 }
+
+  void cStateGame::_OnStateJoystickEvent(const breathe::util::cJoystickEvent& event)
+  {
+    const size_t index = event.GetIndex();
+    const size_t n = boardRepresentations.size();
+    if (index > n) return;
+
+    // Convert the joystick button up events to keyboard events
+    if (event.IsButtonUp()) {
+      cBoardRepresentation* pBoardRepresentation = boardRepresentations[index];
+
+      switch (event.GetButton()) {
+        case breathe::util::GAMECONTROLLER_BUTTON::DPAD_LEFT: {
+          pBoardRepresentation->bIsInputPieceMoveLeft = true;
+          break;
+        }
+        case breathe::util::GAMECONTROLLER_BUTTON::DPAD_RIGHT: {
+          pBoardRepresentation->bIsInputPieceMoveRight = true;
+          break;
+        }
+        case breathe::util::GAMECONTROLLER_BUTTON::DPAD_UP: {
+          pBoardRepresentation->bIsInputPieceRotateCounterClockWise = true;
+          break;
+        }
+        case breathe::util::GAMECONTROLLER_BUTTON::DPAD_DOWN: {
+          pBoardRepresentation->bIsInputPieceDropOneRow = true;
+          break;
+        }
+
+        case breathe::util::GAMECONTROLLER_BUTTON::X: {
+          pBoardRepresentation->bIsInputPieceRotateCounterClockWise = true;
+          break;
+        }
+        case breathe::util::GAMECONTROLLER_BUTTON::B: {
+          pBoardRepresentation->bIsInputPieceRotateClockWise = true;
+          break;
+        }
+
+        case breathe::util::GAMECONTROLLER_BUTTON::A: {
+          pBoardRepresentation->bIsInputPieceDropToGround = true;
+          break;
+        }
+
+        case breathe::util::GAMECONTROLLER_BUTTON::START: {
+          bPauseSoon = true;
+          break;
+        }
+      }
+    }
+  }
 
 void cStateGame::_Update(const spitfire::math::cTimeStep& timeStep)
 {
@@ -1416,6 +1476,11 @@ void cStateGame::_Update(const spitfire::math::cTimeStep& timeStep)
 
   game.Update(timeStep.GetCurrentTimeMS());
 
+
+  if (bPauseSoon) {
+    application.PopStateSoon();
+    bPauseSoon = false;
+  }
 
   // Update the hud offset to shake the gui
   spring.Update(timeStep);

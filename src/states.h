@@ -10,6 +10,7 @@
 #include <breathe/render/cVertexBufferObject.h>
 #include <breathe/render/cWindow.h>
 #include <breathe/util/cApplication.h>
+#include <breathe/util/joystick.h>
 
 // Tetris headers
 #include "application.h"
@@ -86,6 +87,7 @@ private:
   virtual void _OnWindowEvent(const breathe::gui::cWindowEvent& event) override {}
   virtual void _OnMouseEvent(const breathe::gui::cMouseEvent& event) override;
   virtual void _OnKeyboardEvent(const breathe::gui::cKeyboardEvent& event) override;
+  virtual void _OnJoystickEvent(const breathe::util::cJoystickEvent& event) override;
 
   virtual void _Update(const spitfire::math::cTimeStep& timeStep) override {}
   virtual void _UpdateInput(const spitfire::math::cTimeStep& timeStep) override {}
@@ -96,6 +98,7 @@ private:
 
   virtual void _OnStateMouseEvent(const breathe::gui::cMouseEvent& event) override {}
   virtual void _OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event) override {}
+  virtual void _OnStateJoystickEvent(const breathe::util::cJoystickEvent& event) override {}
 
   virtual breathe::gui::EVENT_RESULT _OnWidgetEvent(const breathe::gui::cWidgetEvent& event) override { return breathe::gui::EVENT_RESULT::NOT_HANDLED_PERCOLATE; }
 
@@ -212,7 +215,8 @@ private:
   void UpdateBoardVBO(breathe::render::cVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board);
   void UpdatePieceVBO(breathe::render::cVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board, const tetris::cPiece& piece);
 
-  void _OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event);
+  virtual void _OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event) override;
+  virtual void _OnStateJoystickEvent(const breathe::util::cJoystickEvent& event) override;
 
   void _Update(const spitfire::math::cTimeStep& timeStep);
   void _UpdateInput(const spitfire::math::cTimeStep& timeStep);
@@ -242,6 +246,8 @@ private:
   std::vector<cBoardRepresentation*> boardRepresentations;
 
   tetris::cGame game;
+
+  bool bPauseSoon;
 };
 
 #endif // TETRIS_STATES_H
