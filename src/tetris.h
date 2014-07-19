@@ -96,9 +96,9 @@ namespace tetris
     bool IsPlaying() const { return (state == STATE_PLAYING); }
     bool IsFinished() const { return (state == STATE_FINISHED); }
 
-    int GetScore() const { return score; }
+    size_t GetScore() const { return score; }
     void AddScore(int value) { score += value; }
-    int GetLevel() const { return level; }
+    size_t GetLevel() const { return level; }
     void SetNextLevel() { level++; }
 
     size_t GetWidth() const { return board.GetWidth(); }
@@ -167,7 +167,7 @@ namespace tetris
     size_t current_y;
 
     STATE state;
-    uint32_t score;
+    size_t score;
     size_t level;
     size_t rows_this_level;
 
@@ -188,9 +188,9 @@ namespace tetris
     void OnPieceChanged(const cBoard& board) { _OnPieceChanged(board); }
     void OnPieceHitsGround(const cBoard& board) { _OnPieceHitsGround(board); }
     void OnBoardChanged(const cBoard& board) { _OnBoardChanged(board); }
-    void OnGameScoreTetris(const cBoard& board, uint32_t uiScore) { _OnGameScoreTetris(board, uiScore); }
-    void OnGameScoreOtherThanTetris(const cBoard& board, uint32_t uiScore) { _OnGameScoreOtherThanTetris(board, uiScore); }
-    void OnGameNewLevel(const cBoard& board, uint32_t uiLevel) { _OnGameNewLevel(board, uiLevel); }
+    void OnGameScoreTetris(const cBoard& board, size_t uiScore) { _OnGameScoreTetris(board, uiScore); }
+    void OnGameScoreOtherThanTetris(const cBoard& board, size_t uiScore) { _OnGameScoreOtherThanTetris(board, uiScore); }
+    void OnGameNewLevel(const cBoard& board, size_t uiLevel) { _OnGameNewLevel(board, uiLevel); }
     void OnGameOver(const cBoard& board) { _OnGameOver(board); }
 
   private:
@@ -199,9 +199,9 @@ namespace tetris
     virtual void _OnPieceChanged(const cBoard& board) = 0;
     virtual void _OnPieceHitsGround(const cBoard& board) = 0;
     virtual void _OnBoardChanged(const cBoard& board) = 0;
-    virtual void _OnGameScoreTetris(const cBoard& board, uint32_t uiScore) = 0;
-    virtual void _OnGameScoreOtherThanTetris(const cBoard& board, uint32_t uiScore) = 0;
-    virtual void _OnGameNewLevel(const cBoard& board, uint32_t uiLevel) = 0;
+    virtual void _OnGameScoreTetris(const cBoard& board, size_t uiScore) = 0;
+    virtual void _OnGameScoreOtherThanTetris(const cBoard& board, size_t uiScore) = 0;
+    virtual void _OnGameNewLevel(const cBoard& board, size_t uiLevel) = 0;
     virtual void _OnGameOver(const cBoard& board) = 0;
   };
 }

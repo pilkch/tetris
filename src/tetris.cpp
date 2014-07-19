@@ -121,42 +121,42 @@ namespace tetris
       const size_t iOrange = pBoard->GetColourFromName("orange");
 
       cPiece pieceLong;
-      pieceLong.SetBlock(0, 0, iRed);
-      pieceLong.SetBlock(0, 1, iRed);
-      pieceLong.SetBlock(0, 2, iRed);
-      pieceLong.SetBlock(0, 3, iRed);
+      pieceLong.SetBlock(0, 0, int(iRed));
+      pieceLong.SetBlock(0, 1, int(iRed));
+      pieceLong.SetBlock(0, 2, int(iRed));
+      pieceLong.SetBlock(0, 3, int(iRed));
 
 
       cPiece pieceSquare;
-      pieceSquare.SetBlock(0, 0, iBlue); pieceSquare.SetBlock(1, 0, iBlue);
-      pieceSquare.SetBlock(0, 1, iBlue); pieceSquare.SetBlock(1, 1, iBlue);
+      pieceSquare.SetBlock(0, 0, int(iBlue)); pieceSquare.SetBlock(1, 0, int(iBlue));
+      pieceSquare.SetBlock(0, 1, int(iBlue)); pieceSquare.SetBlock(1, 1, int(iBlue));
 
 
       cPiece pieceLReverse;
-                                             pieceLReverse.SetBlock(1, 0, iYellow);
-                                             pieceLReverse.SetBlock(1, 1, iYellow);
-      pieceLReverse.SetBlock(0, 2, iYellow); pieceLReverse.SetBlock(1, 2, iYellow);
+                                                  pieceLReverse.SetBlock(1, 0, int(iYellow));
+                                                  pieceLReverse.SetBlock(1, 1, int(iYellow));
+      pieceLReverse.SetBlock(0, 2, int(iYellow)); pieceLReverse.SetBlock(1, 2, int(iYellow));
 
 
       cPiece pieceL;
-      pieceL.SetBlock(0, 0, iPink);
-      pieceL.SetBlock(0, 1, iPink);
-      pieceL.SetBlock(0, 2, iPink); pieceL.SetBlock(1, 2, iPink);
+      pieceL.SetBlock(0, 0, int(iPink));
+      pieceL.SetBlock(0, 1, int(iPink));
+      pieceL.SetBlock(0, 2, int(iPink)); pieceL.SetBlock(1, 2, int(iPink));
 
 
       cPiece piecePyramid;
-                                           piecePyramid.SetBlock(1, 0, iGreen);
-      piecePyramid.SetBlock(0, 1, iGreen); piecePyramid.SetBlock(1, 1, iGreen); piecePyramid.SetBlock(2, 1, iGreen);
+                                                piecePyramid.SetBlock(1, 0, int(iGreen));
+      piecePyramid.SetBlock(0, 1, int(iGreen)); piecePyramid.SetBlock(1, 1, int(iGreen)); piecePyramid.SetBlock(2, 1, int(iGreen));
 
 
       cPiece pieceS;
-                                         pieceS.SetBlock(1, 0, iLightBlue); pieceS.SetBlock(2, 0, iLightBlue);
-      pieceS.SetBlock(0, 1, iLightBlue); pieceS.SetBlock(1, 1, iLightBlue);
+                                              pieceS.SetBlock(1, 0, int(iLightBlue)); pieceS.SetBlock(2, 0, int(iLightBlue));
+      pieceS.SetBlock(0, 1, int(iLightBlue)); pieceS.SetBlock(1, 1, int(iLightBlue));
 
 
       cPiece pieceZ;
-      pieceZ.SetBlock(0, 0, iOrange); pieceZ.SetBlock(1, 0, iOrange);
-                                      pieceZ.SetBlock(1, 1, iOrange); pieceZ.SetBlock(2, 1, iOrange);
+      pieceZ.SetBlock(0, 0, int(iOrange)); pieceZ.SetBlock(1, 0, int(iOrange));
+                                           pieceZ.SetBlock(1, 1, int(iOrange)); pieceZ.SetBlock(2, 1, int(iOrange));
 
 
       pBoard->AddPossiblePiece(pieceLong);
@@ -434,7 +434,7 @@ namespace tetris
 
     // Add some random blocks to make it interesting at the start
     for (size_t i = 0; i < 60; i++) {
-      board.SetBlock(spitfire::math::random(board.GetWidth()), spitfire::math::random(board.GetHeight()>>1), spitfire::math::random(GetColours()));
+      board.SetBlock(spitfire::math::random(int(board.GetWidth())), spitfire::math::random(int(board.GetHeight()>>1)), spitfire::math::random(int(GetColours())));
     }
 
     PieceGenerate(currentTime);
@@ -675,21 +675,21 @@ namespace tetris
     for (i = 0; i < n; i ++) possible_blocks.push_back(0);
 
     n = width;
-    for (; i < n; i++) possible_blocks.push_back(spitfire::math::random(possible_colours_n));
+    for (; i < n; i++) possible_blocks.push_back(spitfire::math::random(int(possible_colours_n)));
 
     size_t colour = 0;
     n = width - 1;
     //size_t startingCount = possible_blocks.size();
     for (i = 0; i < n; i++) {
       size_t count = possible_blocks.size();
-      colour = GetListElement(possible_blocks, spitfire::math::random(count));
+      colour = GetListElement(possible_blocks, spitfire::math::random(int(count)));
       assert(colour < possible_colours.size());
-      board.SetBlock(i, 0, colour);
+      board.SetBlock(i, 0, int(colour));
     }
 
     colour = GetListElement(possible_blocks, 0);
     assert(colour < possible_colours.size());
-    board.SetBlock(i, 0, colour);
+    board.SetBlock(i, 0, int(colour));
 
     game.OnBoardChanged(*this);
   }

@@ -244,19 +244,19 @@ private:
   virtual void _OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event) override;
   virtual void _OnStateJoystickEvent(const breathe::util::cJoystickEvent& event) override;
 
-  void _Update(const spitfire::math::cTimeStep& timeStep);
-  void _UpdateInput(const spitfire::math::cTimeStep& timeStep);
-  void _RenderToTexture(const spitfire::math::cTimeStep& timeStep);
+  virtual void _Update(const spitfire::math::cTimeStep& timeStep) override;
+  virtual void _UpdateInput(const spitfire::math::cTimeStep& timeStep) override;
+  virtual void _RenderToTexture(const spitfire::math::cTimeStep& timeStep) override;
 
-  void _OnPieceMoved(const tetris::cBoard& board);
-  void _OnPieceRotated(const tetris::cBoard& board);
-  void _OnPieceChanged(const tetris::cBoard& board);
-  void _OnPieceHitsGround(const tetris::cBoard& board);
-  void _OnBoardChanged(const tetris::cBoard& board);
-  void _OnGameScoreTetris(const tetris::cBoard& board, uint32_t uiScore);
-  void _OnGameScoreOtherThanTetris(const tetris::cBoard& board, uint32_t uiScore);
-  void _OnGameNewLevel(const tetris::cBoard& board, uint32_t uiLevel);
-  void _OnGameOver(const tetris::cBoard& board);
+  virtual void _OnPieceMoved(const tetris::cBoard& board) override;
+  virtual void _OnPieceRotated(const tetris::cBoard& board) override;
+  virtual void _OnPieceChanged(const tetris::cBoard& board) override;
+  virtual void _OnPieceHitsGround(const tetris::cBoard& board) override;
+  virtual void _OnBoardChanged(const tetris::cBoard& board) override;
+  virtual void _OnGameScoreTetris(const tetris::cBoard& board, size_t uiScore) override;
+  virtual void _OnGameScoreOtherThanTetris(const tetris::cBoard& board, size_t uiScore) override;
+  virtual void _OnGameNewLevel(const tetris::cBoard& board, size_t uiLevel) override;
+  virtual void _OnGameOver(const tetris::cBoard& board) override;
 
   breathe::gui::cStaticText* pLevelText[4];
   breathe::gui::cStaticText* pScoreText[4];

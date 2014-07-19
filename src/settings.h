@@ -13,7 +13,7 @@ public:
   static bool ScoreCompare(const cHighScoresTableEntry& lhs, const cHighScoresTableEntry& rhs);
 
   spitfire::string_t sName;
-  int score;
+  size_t score;
 };
 
 inline bool cHighScoresTableEntry::ScoreCompare(const cHighScoresTableEntry& lhs, const cHighScoresTableEntry& rhs)
