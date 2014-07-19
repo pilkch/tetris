@@ -4,9 +4,6 @@
 // Standard headers
 #include <stack>
 
-// Spitfire headers
-#include <spitfire/math/math.h>
-
 // Breathe headers
 #include <breathe/audio/audio.h>
 
@@ -17,23 +14,6 @@
 
 // Tetris headers
 #include "settings.h"
-
-// ** A simple class for calculating letter box dimensions
-
-class cLetterBox
-{
-public:
-  cLetterBox(size_t width, size_t height);
-
-  size_t desiredWidth;
-  size_t desiredHeight;
-  float fDesiredRatio;
-
-  float fRatio;
-
-  size_t letterBoxedWidth;
-  size_t letterBoxedHeight;
-};
 
 
 class cState;

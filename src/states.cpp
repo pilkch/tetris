@@ -13,7 +13,6 @@
 #include <list>
 
 // Boost headers
-#include <boost/shared_ptr.hpp>
 
 // OpenGL headers
 #include <GL/GLee.h>

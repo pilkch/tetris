@@ -13,7 +13,6 @@
 #include <list>
 
 // Boost headers
-#include <boost/shared_ptr.hpp>
 
 // OpenGL headers
 #include <GL/GLee.h>
@@ -29,6 +28,7 @@
 #include <spitfire/math/cMat4.h>
 #include <spitfire/math/cQuaternion.h>
 #include <spitfire/math/cColour.h>
+#include <spitfire/math/letterbox.h>
 
 #include <spitfire/util/log.h>
 
@@ -47,39 +47,8 @@
 #include "application.h"
 #include "states.h"
 
-// ** cLetterBox
-
-cLetterBox::cLetterBox(size_t width, size_t height) :
-  desiredWidth(0),
-  desiredHeight(0),
-  fDesiredRatio(0.0f),
-  fRatio(0.0f),
-  letterBoxedWidth(0),
-  letterBoxedHeight(0)
-{
-  desiredWidth = 1920;
-  desiredHeight = 1080;
-  fDesiredRatio = float(desiredWidth) / float(desiredHeight);
-
-  fRatio = float(width) / float(height);
-
-  // Apply letter boxing
-  letterBoxedWidth = width;
-  letterBoxedHeight = height;
-
-  if (fRatio < fDesiredRatio) {
-    // Taller (4:3, 16:10 for example)
-    letterBoxedHeight = width / fDesiredRatio;
-  } else {
-    // Wider
-    letterBoxedWidth = height * fDesiredRatio;
-  }
-
-  // Round up to the next even number
-  if ((letterBoxedWidth % 2) != 0) letterBoxedWidth++;
-  if ((letterBoxedHeight % 2) != 0) letterBoxedHeight++;
-}
-
+const size_t targetWidth = 1920;
+const size_t targetHeight = 1080;
 
 // ** cApplication
 
@@ -119,7 +88,7 @@ bool cApplication::_Create()
 
   // Setup our gui
   pGuiManager = new breathe::gui::cManager;
-  pGuiRenderer = new breathe::gui::cRenderer(*pGuiManager, system, *pContext);
+  pGuiRenderer = new breathe::gui::cRenderer(*pGuiManager, *pContext);
 
   _LoadResources();
 
@@ -148,7 +117,7 @@ bool cApplication::_LoadResources()
   assert(pFont != nullptr);
   assert(pFont->IsValid());
 
-  cLetterBox letterBox(pContext->GetWidth(), pContext->GetHeight());
+  spitfire::math::cLetterBox letterBox(targetWidth, targetHeight, pContext->GetWidth(), pContext->GetHeight());
 
   pGuiRenderer->LoadResources(letterBox.letterBoxedWidth, letterBox.letterBoxedHeight);
 
