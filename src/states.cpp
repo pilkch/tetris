@@ -55,7 +55,6 @@ cState::cState(cApplication& _application) :
   pGuiRenderer(application.pGuiRenderer),
   pLayer(nullptr),
   bIsWireframe(false),
-  pVertexBufferObjectLetterBoxedRectangle(nullptr),
   pFrameBufferObjectLetterBoxedRectangle(nullptr),
   pShaderLetterBoxedRectangle(nullptr)
 {
@@ -67,7 +66,7 @@ cState::cState(cApplication& _application) :
 
 cState::~cState()
 {
-  if (pVertexBufferObjectLetterBoxedRectangle != nullptr) DestroyVertexBufferObjectLetterBoxedRectangle();
+  DestroyVertexBufferObjectLetterBoxedRectangle();
   if (pFrameBufferObjectLetterBoxedRectangle != nullptr) DestroyFrameBufferObjectLetterBoxedRectangle();
   if (pShaderLetterBoxedRectangle != nullptr) DestroyShaderLetterBoxedRectangle();
 
@@ -193,9 +192,7 @@ breathe::gui::cRetroColourPicker* cState::AddRetroColourPicker(breathe::gui::id_
 
 void cState::CreateVertexBufferObjectLetterBoxedRectangle(size_t width, size_t height)
 {
-  ASSERT(pVertexBufferObjectLetterBoxedRectangle == nullptr);
-
-  pVertexBufferObjectLetterBoxedRectangle = pContext->CreateStaticVertexBufferObject();
+  pContext->CreateStaticVertexBufferObject(vertexBufferObjectLetterBoxedRectangle);
 
   opengl::cGeometryDataPtr pGeometryDataPtr = opengl::CreateGeometryData();
 
@@ -226,17 +223,14 @@ void cState::CreateVertexBufferObjectLetterBoxedRectangle(size_t width, size_t h
   builder.PushBack(spitfire::math::cVec2(x, y), colour, spitfire::math::cVec2(fU, fV));
   builder.PushBack(spitfire::math::cVec2(x, y + fHeight), colour, spitfire::math::cVec2(fU, fV2));
 
-  pVertexBufferObjectLetterBoxedRectangle->SetData(pGeometryDataPtr);
+  vertexBufferObjectLetterBoxedRectangle.SetData(pGeometryDataPtr);
 
-  pVertexBufferObjectLetterBoxedRectangle->Compile2D(system);
+  vertexBufferObjectLetterBoxedRectangle.Compile2D();
 }
 
 void cState::DestroyVertexBufferObjectLetterBoxedRectangle()
 {
-  if (pVertexBufferObjectLetterBoxedRectangle != nullptr) {
-    pContext->DestroyStaticVertexBufferObject(pVertexBufferObjectLetterBoxedRectangle);
-    pVertexBufferObjectLetterBoxedRectangle = nullptr;
-  }
+  pContext->DestroyStaticVertexBufferObject(vertexBufferObjectLetterBoxedRectangle);
 }
 
 void cState::CreateFrameBufferObjectLetterBoxedRectangle(size_t width, size_t height)
@@ -309,7 +303,7 @@ void cState::_Render(const spitfire::math::cTimeStep& timeStep)
   } else {
     // Render the scene to a texture and draw the texture to the screen letter boxed
 
-    if (pVertexBufferObjectLetterBoxedRectangle == nullptr) CreateVertexBufferObjectLetterBoxedRectangle(width, height);
+    if (!vertexBufferObjectLetterBoxedRectangle.IsCompiled()) CreateVertexBufferObjectLetterBoxedRectangle(width, height);
     if (pFrameBufferObjectLetterBoxedRectangle == nullptr) CreateFrameBufferObjectLetterBoxedRectangle(width, height);
     if (pShaderLetterBoxedRectangle == nullptr) CreateShaderLetterBoxedRectangle();
 
@@ -352,9 +346,9 @@ void cState::_Render(const spitfire::math::cTimeStep& timeStep)
 
             pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(opengl::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN_KEEP_DIMENSIONS_AND_ASPECT_RATIO, matModelView2D);
 
-            pContext->BindStaticVertexBufferObject2D(*pVertexBufferObjectLetterBoxedRectangle);
-            pContext->DrawStaticVertexBufferObjectTriangles2D(*pVertexBufferObjectLetterBoxedRectangle);
-            pContext->UnBindStaticVertexBufferObject2D(*pVertexBufferObjectLetterBoxedRectangle);
+            pContext->BindStaticVertexBufferObject2D(vertexBufferObjectLetterBoxedRectangle);
+            pContext->DrawStaticVertexBufferObjectTriangles2D(vertexBufferObjectLetterBoxedRectangle);
+            pContext->UnBindStaticVertexBufferObject2D(vertexBufferObjectLetterBoxedRectangle);
 
             pContext->UnBindShader(*pShaderLetterBoxedRectangle);
 
@@ -376,10 +370,6 @@ void cState::_Render(const spitfire::math::cTimeStep& timeStep)
 cBoardRepresentation::cBoardRepresentation(tetris::cBoard& _board, const spitfire::string_t& _sName) :
   board(_board),
   sName(_sName),
-
-  pStaticVertexBufferObjectBoardTriangles(nullptr),
-  pStaticVertexBufferObjectPieceTriangles(nullptr),
-  pStaticVertexBufferObjectNextPieceTriangles(nullptr),
 
   bIsInputPieceMoveLeft(false),
   bIsInputPieceMoveRight(false),
@@ -1123,14 +1113,14 @@ cStateGame::cStateGame(cApplication& application) :
 
     cBoardRepresentation* pBoardRepresentation = new cBoardRepresentation(board, settings.GetPlayerName(i));
 
-    pBoardRepresentation->pStaticVertexBufferObjectBoardTriangles = pContext->CreateStaticVertexBufferObject();
-    UpdateBoardVBO(pBoardRepresentation->pStaticVertexBufferObjectBoardTriangles, board);
+    pContext->CreateStaticVertexBufferObject(pBoardRepresentation->vertexBufferObjectBoardTriangles);
+    UpdateBoardVBO(pBoardRepresentation->vertexBufferObjectBoardTriangles, board);
 
-    pBoardRepresentation->pStaticVertexBufferObjectPieceTriangles = pContext->CreateStaticVertexBufferObject();
-    UpdatePieceVBO(pBoardRepresentation->pStaticVertexBufferObjectPieceTriangles, board, board.GetCurrentPiece());
+    pContext->CreateStaticVertexBufferObject(pBoardRepresentation->vertexBufferObjectPieceTriangles);
+    UpdatePieceVBO(pBoardRepresentation->vertexBufferObjectPieceTriangles, board, board.GetCurrentPiece());
 
-    pBoardRepresentation->pStaticVertexBufferObjectNextPieceTriangles = pContext->CreateStaticVertexBufferObject();
-    UpdatePieceVBO(pBoardRepresentation->pStaticVertexBufferObjectNextPieceTriangles, board, board.GetNextPiece());
+    pContext->CreateStaticVertexBufferObject(pBoardRepresentation->vertexBufferObjectNextPieceTriangles);
+    UpdatePieceVBO(pBoardRepresentation->vertexBufferObjectNextPieceTriangles, board, board.GetNextPiece());
 
     boardRepresentations.push_back(pBoardRepresentation);
   }
@@ -1191,18 +1181,9 @@ cStateGame::~cStateGame()
   const size_t n = boardRepresentations.size();
   for (size_t i = 0; i < n; i++) {
     cBoardRepresentation* pBoardRepresentation = boardRepresentations[i];
-    if (pBoardRepresentation->pStaticVertexBufferObjectNextPieceTriangles != nullptr) {
-      pContext->DestroyStaticVertexBufferObject(pBoardRepresentation->pStaticVertexBufferObjectNextPieceTriangles);
-      pBoardRepresentation->pStaticVertexBufferObjectNextPieceTriangles = nullptr;
-    }
-    if (pBoardRepresentation->pStaticVertexBufferObjectPieceTriangles != nullptr) {
-      pContext->DestroyStaticVertexBufferObject(pBoardRepresentation->pStaticVertexBufferObjectPieceTriangles);
-      pBoardRepresentation->pStaticVertexBufferObjectPieceTriangles = nullptr;
-    }
-    if (pBoardRepresentation->pStaticVertexBufferObjectBoardTriangles != nullptr) {
-      pContext->DestroyStaticVertexBufferObject(pBoardRepresentation->pStaticVertexBufferObjectBoardTriangles);
-      pBoardRepresentation->pStaticVertexBufferObjectBoardTriangles = nullptr;
-    }
+    pContext->DestroyStaticVertexBufferObject(pBoardRepresentation->vertexBufferObjectNextPieceTriangles);
+    pContext->DestroyStaticVertexBufferObject(pBoardRepresentation->vertexBufferObjectPieceTriangles);
+    pContext->DestroyStaticVertexBufferObject(pBoardRepresentation->vertexBufferObjectBoardTriangles);
     spitfire::SAFE_DELETE(pBoardRepresentation);
   }
 
@@ -1250,15 +1231,11 @@ void cStateGame::UpdateText()
   }
 }
 
-void cStateGame::UpdateBoardVBO(breathe::render::cVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board)
+void cStateGame::UpdateBoardVBO(breathe::render::cVertexBufferObject& vertexBufferObject, const tetris::cBoard& board)
 {
-  assert(pStaticVertexBufferObject != nullptr);
-
-  //if (boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles != nullptr) {
-  //  pContext->DestroyStaticVertexBufferObject(boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles);
-  //  boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles = nullptr;
-  //}
-  //pBoardRepresentation->pStaticVertexBufferObjectBoardTriangles = pContext->CreateStaticVertexBufferObject();
+  //pContext->DestroyStaticVertexBufferObject(boardRepresentations[i]->vertexBufferObjectPieceTriangles);
+  //
+  //pBoardRepresentation->vertexBufferObjectBoardTriangles = pContext->CreateStaticVertexBufferObject();
 
   opengl::cGeometryDataPtr pGeometryDataPtr = opengl::CreateGeometryData();
 
@@ -1294,22 +1271,19 @@ void cStateGame::UpdateBoardVBO(breathe::render::cVertexBufferObject* pStaticVer
   }
 
   if (pGeometryDataPtr->nVertexCount != 0) {
-    pStaticVertexBufferObject->SetData(pGeometryDataPtr);
+    vertexBufferObject.SetData(pGeometryDataPtr);
 
-    pStaticVertexBufferObject->Compile2D(system);
+    vertexBufferObject.Compile2D();
   }
 }
 
-void cStateGame::UpdatePieceVBO(breathe::render::cVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board, const tetris::cPiece& piece)
+void cStateGame::UpdatePieceVBO(breathe::render::cVertexBufferObject& vertexBufferObject, const tetris::cBoard& board, const tetris::cPiece& piece)
 {
   std::cout<<"cStateGame::UpdatePieceVBO"<<std::endl;
-  assert(pStaticVertexBufferObject != nullptr);
 
-  //if (boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles != nullptr) {
-  //  pContext->DestroyStaticVertexBufferObject(boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles);
-  //  boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles = nullptr;
-  //}
-  //pBoardRepresentation->pStaticVertexBufferObjectBoardTriangles = pContext->CreateStaticVertexBufferObject();
+  //pContext->DestroyStaticVertexBufferObject(boardRepresentations[i]->vertexBufferObjectPieceTriangles);
+  //
+  //pBoardRepresentation->vertexBufferObjectBoardTriangles = pContext->CreateStaticVertexBufferObject();
 
   opengl::cGeometryDataPtr pGeometryDataPtr = opengl::CreateGeometryData();
 
@@ -1345,9 +1319,9 @@ void cStateGame::UpdatePieceVBO(breathe::render::cVertexBufferObject* pStaticVer
   }
 
   if (pGeometryDataPtr->nVertexCount != 0) {
-    pStaticVertexBufferObject->SetData(pGeometryDataPtr);
+    vertexBufferObject.SetData(pGeometryDataPtr);
 
-    pStaticVertexBufferObject->Compile2D(system);
+    vertexBufferObject.Compile2D();
   }
 }
 
@@ -1364,12 +1338,10 @@ void cStateGame::_OnPieceRotated(const tetris::cBoard& board)
   const size_t n = boardRepresentations.size();
   for (size_t i = 0; i < n; i++) {
     if (&boardRepresentations[i]->board == &board) {
-      if (boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles != nullptr) {
-        pContext->DestroyStaticVertexBufferObject(boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles);
-        boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles = nullptr;
-      }
-      boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles = pContext->CreateStaticVertexBufferObject();
-      UpdatePieceVBO(boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles, board, board.GetCurrentPiece());
+      pContext->DestroyStaticVertexBufferObject(boardRepresentations[i]->vertexBufferObjectPieceTriangles);
+
+      pContext->CreateStaticVertexBufferObject(boardRepresentations[i]->vertexBufferObjectPieceTriangles);
+      UpdatePieceVBO(boardRepresentations[i]->vertexBufferObjectPieceTriangles, board, board.GetCurrentPiece());
     }
   }
 }
@@ -1381,19 +1353,15 @@ void cStateGame::_OnPieceChanged(const tetris::cBoard& board)
   const size_t n = boardRepresentations.size();
   for (size_t i = 0; i < n; i++) {
     if (&boardRepresentations[i]->board == &board) {
-      if (boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles != nullptr) {
-        pContext->DestroyStaticVertexBufferObject(boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles);
-        boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles = nullptr;
-      }
-      boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles = pContext->CreateStaticVertexBufferObject();
-      UpdatePieceVBO(boardRepresentations[i]->pStaticVertexBufferObjectPieceTriangles, board, board.GetCurrentPiece());
+      pContext->DestroyStaticVertexBufferObject(boardRepresentations[i]->vertexBufferObjectPieceTriangles);
 
-      if (boardRepresentations[i]->pStaticVertexBufferObjectNextPieceTriangles != nullptr) {
-        pContext->DestroyStaticVertexBufferObject(boardRepresentations[i]->pStaticVertexBufferObjectNextPieceTriangles);
-        boardRepresentations[i]->pStaticVertexBufferObjectNextPieceTriangles = nullptr;
-      }
-      boardRepresentations[i]->pStaticVertexBufferObjectNextPieceTriangles = pContext->CreateStaticVertexBufferObject();
-      UpdatePieceVBO(boardRepresentations[i]->pStaticVertexBufferObjectNextPieceTriangles, board, board.GetNextPiece());
+      pContext->CreateStaticVertexBufferObject(boardRepresentations[i]->vertexBufferObjectPieceTriangles);
+      UpdatePieceVBO(boardRepresentations[i]->vertexBufferObjectPieceTriangles, board, board.GetCurrentPiece());
+
+      pContext->DestroyStaticVertexBufferObject(boardRepresentations[i]->vertexBufferObjectNextPieceTriangles);
+
+      pContext->CreateStaticVertexBufferObject(boardRepresentations[i]->vertexBufferObjectNextPieceTriangles);
+      UpdatePieceVBO(boardRepresentations[i]->vertexBufferObjectNextPieceTriangles, board, board.GetNextPiece());
     }
   }
 }
@@ -1415,12 +1383,9 @@ void cStateGame::_OnBoardChanged(const tetris::cBoard& board)
   const size_t n = boardRepresentations.size();
   for (size_t i = 0; i < n; i++) {
     if (&boardRepresentations[i]->board == &board) {
-      if (boardRepresentations[i]->pStaticVertexBufferObjectBoardTriangles != nullptr) {
-        pContext->DestroyStaticVertexBufferObject(boardRepresentations[i]->pStaticVertexBufferObjectBoardTriangles);
-        boardRepresentations[i]->pStaticVertexBufferObjectBoardTriangles = nullptr;
-      }
-      boardRepresentations[i]->pStaticVertexBufferObjectBoardTriangles = pContext->CreateStaticVertexBufferObject();
-      UpdateBoardVBO(boardRepresentations[i]->pStaticVertexBufferObjectBoardTriangles, board);
+      pContext->DestroyStaticVertexBufferObject(boardRepresentations[i]->vertexBufferObjectBoardTriangles);
+      pContext->CreateStaticVertexBufferObject(boardRepresentations[i]->vertexBufferObjectBoardTriangles);
+      UpdateBoardVBO(boardRepresentations[i]->vertexBufferObjectBoardTriangles, board);
     }
   }
 }
@@ -1443,7 +1408,7 @@ void cStateGame::_OnGameScoreOtherThanTetris(const tetris::cBoard& board, size_t
   UpdateText();
 }
 
-void cStateGame::_OnGameNewLevel(const tetris::cBoard& board, uint32_t uiLevel)
+void cStateGame::_OnGameNewLevel(const tetris::cBoard& board, size_t uiLevel)
 {
   std::cout<<"cStateGame::_OnGameNewLevel"<<std::endl;
   //... show new level message
@@ -1734,8 +1699,8 @@ void cStateGame::_RenderToTexture(const spitfire::math::cTimeStep& timeStep)
         cBoardRepresentation* pBoardRepresentation = boardRepresentations[i];
         //const tetris::cBoard& board = pBoardRepresentation->board;
 
-        breathe::render::cVertexBufferObject* pStaticVertexBufferObjectBoardTriangles = pBoardRepresentation->pStaticVertexBufferObjectBoardTriangles;
-        if ((pStaticVertexBufferObjectBoardTriangles != nullptr) && pStaticVertexBufferObjectBoardTriangles->IsCompiled()) {
+        breathe::render::cVertexBufferObject& vertexBufferObjectBoardTriangles = pBoardRepresentation->vertexBufferObjectBoardTriangles;
+        if (vertexBufferObjectBoardTriangles.IsCompiled()) {
           spitfire::math::cMat4 matModelView2D;
           matModelView2D.SetTranslation(x, y, 0.0f);
 
@@ -1745,17 +1710,17 @@ void cStateGame::_RenderToTexture(const spitfire::math::cTimeStep& timeStep)
 
           pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN_KEEP_ASPECT_RATIO, matModelView2D);
 
-          pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectBoardTriangles);
-          pContext->DrawStaticVertexBufferObjectTriangles2D(*pStaticVertexBufferObjectBoardTriangles);
-          pContext->UnBindStaticVertexBufferObject2D(*pStaticVertexBufferObjectBoardTriangles);
+          pContext->BindStaticVertexBufferObject2D(vertexBufferObjectBoardTriangles);
+          pContext->DrawStaticVertexBufferObjectTriangles2D(vertexBufferObjectBoardTriangles);
+          pContext->UnBindStaticVertexBufferObject2D(vertexBufferObjectBoardTriangles);
 
           pContext->UnBindShader(*pShaderBlock);
 
           pContext->UnBindTexture(0, *pTextureBlock);
         }
 
-        breathe::render::cVertexBufferObject* pStaticVertexBufferObjectPieceTriangles = pBoardRepresentation->pStaticVertexBufferObjectPieceTriangles;
-        if (pBoardRepresentation->board.IsPlaying() && (pStaticVertexBufferObjectPieceTriangles != nullptr) && pStaticVertexBufferObjectPieceTriangles->IsCompiled()) {
+        breathe::render::cVertexBufferObject& vertexBufferObjectPieceTriangles = pBoardRepresentation->vertexBufferObjectPieceTriangles;
+        if (pBoardRepresentation->board.IsPlaying() && vertexBufferObjectPieceTriangles.IsCompiled()) {
           spitfire::math::cMat4 matModelView2D;
           matModelView2D.SetTranslation(x + (0.015f * float(pBoardRepresentation->board.GetCurrentPieceX())), y + (0.015f * (float(pBoardRepresentation->board.GetHeight()) - float(pBoardRepresentation->board.GetCurrentPieceY()))), 0.0f);
 
@@ -1765,17 +1730,17 @@ void cStateGame::_RenderToTexture(const spitfire::math::cTimeStep& timeStep)
 
           pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN_KEEP_ASPECT_RATIO, matModelView2D);
 
-          pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectPieceTriangles);
-          pContext->DrawStaticVertexBufferObjectTriangles2D(*pStaticVertexBufferObjectPieceTriangles);
-          pContext->UnBindStaticVertexBufferObject2D(*pStaticVertexBufferObjectPieceTriangles);
+          pContext->BindStaticVertexBufferObject2D(vertexBufferObjectPieceTriangles);
+          pContext->DrawStaticVertexBufferObjectTriangles2D(vertexBufferObjectPieceTriangles);
+          pContext->UnBindStaticVertexBufferObject2D(vertexBufferObjectPieceTriangles);
 
           pContext->UnBindShader(*pShaderBlock);
 
           pContext->UnBindTexture(0, *pTextureBlock);
         }
 
-        breathe::render::cVertexBufferObject* pStaticVertexBufferObjectNextPieceTriangles = pBoardRepresentation->pStaticVertexBufferObjectNextPieceTriangles;
-        if ((pStaticVertexBufferObjectPieceTriangles != nullptr) && pStaticVertexBufferObjectNextPieceTriangles->IsCompiled()) {
+        breathe::render::cVertexBufferObject& vertexBufferObjectNextPieceTriangles = pBoardRepresentation->vertexBufferObjectNextPieceTriangles;
+        if (vertexBufferObjectNextPieceTriangles.IsCompiled()) {
           spitfire::math::cMat4 matModelView2D;
           matModelView2D.SetTranslation(x + (0.015f * float(pBoardRepresentation->board.GetWidth())) + (0.015f * 3.0f), y + (0.015f * (0.5f * float(pBoardRepresentation->board.GetHeight()))), 0.0f);
 
@@ -1785,9 +1750,9 @@ void cStateGame::_RenderToTexture(const spitfire::math::cTimeStep& timeStep)
 
           pContext->SetShaderProjectionAndModelViewMatricesRenderMode2D(breathe::render::MODE2D_TYPE::Y_INCREASES_DOWN_SCREEN_KEEP_ASPECT_RATIO, matModelView2D);
 
-          pContext->BindStaticVertexBufferObject2D(*pStaticVertexBufferObjectNextPieceTriangles);
-          pContext->DrawStaticVertexBufferObjectTriangles2D(*pStaticVertexBufferObjectNextPieceTriangles);
-          pContext->UnBindStaticVertexBufferObject2D(*pStaticVertexBufferObjectNextPieceTriangles);
+          pContext->BindStaticVertexBufferObject2D(vertexBufferObjectNextPieceTriangles);
+          pContext->DrawStaticVertexBufferObjectTriangles2D(vertexBufferObjectNextPieceTriangles);
+          pContext->UnBindStaticVertexBufferObject2D(vertexBufferObjectNextPieceTriangles);
 
           pContext->UnBindShader(*pShaderBlock);
 
