@@ -406,8 +406,8 @@ public:
 
   size_t GetEntryCount() const;
   const cHighScoresTableEntry& GetEntry(size_t index) const;
-  bool IsScoreGoodEnough(int score) const;
-  bool SubmitEntry(const spitfire::string_t& sName, int score);
+  bool IsScoreGoodEnough(size_t score) const;
+  bool SubmitEntry(const spitfire::string_t& sName, size_t score);
 
 private:
   void Clear();
@@ -465,7 +465,7 @@ const cHighScoresTableEntry& cHighScoresTable::GetEntry(size_t index) const
   return entries[index];
 }
 
-bool cHighScoresTable::IsScoreGoodEnough(int score) const
+bool cHighScoresTable::IsScoreGoodEnough(size_t score) const
 {
   const size_t n = entries.size();
   if (n < nMaxEntries) return true;
@@ -474,7 +474,7 @@ bool cHighScoresTable::IsScoreGoodEnough(int score) const
   return (score > entries[nMaxEntries - 1].score);
 }
 
-bool cHighScoresTable::SubmitEntry(const spitfire::string_t& sName, int score)
+bool cHighScoresTable::SubmitEntry(const spitfire::string_t& sName, size_t score)
 {
   // If we don't have enough scores yet then add a new entry
   if (GetEntryCount() < nMaxEntries) {
@@ -677,7 +677,7 @@ cStateNewGame::cStateNewGame(cApplication& application) :
   const float width = 0.4f;
 
   AddStaticText(0, TEXT("Number of Players:"), x, y, width);
-  pNumberOfPlayers = AddRetroInputUpDown(OPTION::NUMBER_OF_PLAYERS, 1, 2, settings.GetNumberOfPlayers(), x + width + fSpacerHorizontal, y, width);
+  pNumberOfPlayers = AddRetroInputUpDown(OPTION::NUMBER_OF_PLAYERS, 1, 2, int(settings.GetNumberOfPlayers()), x + width + fSpacerHorizontal, y, width);
   y += pGuiManager->GetStaticTextHeight() + fSpacerVertical;
 
   AddStaticText(0, TEXT("Player 1"), x, y, width);
@@ -1236,13 +1236,13 @@ void cStateGame::UpdateText()
 
     spitfire::ostringstream_t o;
 
-    const uint32_t uiLevel = board.GetLevel();
+    const size_t uiLevel = board.GetLevel();
     o<<TEXT("Level ");
     o<<uiLevel;
     pLevelText[i]->SetCaption(o.str());
     o.str(TEXT(""));
 
-    const uint32_t uiScore = board.GetScore();
+    const size_t uiScore = board.GetScore();
     o<<TEXT("Score ");
     o<<uiScore;
     pScoreText[i]->SetCaption(o.str());
@@ -1425,7 +1425,7 @@ void cStateGame::_OnBoardChanged(const tetris::cBoard& board)
   }
 }
 
-void cStateGame::_OnGameScoreTetris(const tetris::cBoard& board, uint32_t uiScore)
+void cStateGame::_OnGameScoreTetris(const tetris::cBoard& board, size_t uiScore)
 {
   std::cout<<"cStateGame::_OnGameScoreTetris"<<std::endl;
   application.PlaySound(pAudioBufferScoreTetris);
@@ -1436,7 +1436,7 @@ void cStateGame::_OnGameScoreTetris(const tetris::cBoard& board, uint32_t uiScor
   spring.SetVelocity(spitfire::math::cVec2(0.0f, -0.00001f));
 }
 
-void cStateGame::_OnGameScoreOtherThanTetris(const tetris::cBoard& board, uint32_t uiScore)
+void cStateGame::_OnGameScoreOtherThanTetris(const tetris::cBoard& board, size_t uiScore)
 {
   std::cout<<"cStateGame::_OnGameScoreOtherThanTetris"<<std::endl;
   application.PlaySound(pAudioBufferScoreOtherThanTetris);
