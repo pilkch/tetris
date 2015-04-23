@@ -29,9 +29,9 @@ public:
   tetris::cBoard& board;
   spitfire::string_t sName;
 
-  breathe::render::cVertexBufferObject* pStaticVertexBufferObjectBoardTriangles;
-  breathe::render::cVertexBufferObject* pStaticVertexBufferObjectPieceTriangles;
-  breathe::render::cVertexBufferObject* pStaticVertexBufferObjectNextPieceTriangles;
+  breathe::render::cVertexBufferObject vertexBufferObjectBoardTriangles;
+  breathe::render::cVertexBufferObject vertexBufferObjectPieceTriangles;
+  breathe::render::cVertexBufferObject vertexBufferObjectNextPieceTriangles;
 
   bool bIsInputPieceMoveLeft;
   bool bIsInputPieceMoveRight;
@@ -111,7 +111,7 @@ private:
   void CreateShaderLetterBoxedRectangle();
   void DestroyShaderLetterBoxedRectangle();
 
-  breathe::render::cVertexBufferObject* pVertexBufferObjectLetterBoxedRectangle;
+  breathe::render::cVertexBufferObject vertexBufferObjectLetterBoxedRectangle;
   breathe::render::cTextureFrameBufferObject* pFrameBufferObjectLetterBoxedRectangle;
   breathe::render::cShader* pShaderLetterBoxedRectangle;
 };
@@ -238,8 +238,8 @@ public:
 private:
   void UpdateText();
 
-  void UpdateBoardVBO(breathe::render::cVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board);
-  void UpdatePieceVBO(breathe::render::cVertexBufferObject* pStaticVertexBufferObject, const tetris::cBoard& board, const tetris::cPiece& piece);
+  void UpdateBoardVBO(breathe::render::cVertexBufferObject& vertexBufferObject, const tetris::cBoard& board);
+  void UpdatePieceVBO(breathe::render::cVertexBufferObject& vertexBufferObject, const tetris::cBoard& board, const tetris::cPiece& piece);
 
   virtual void _OnStateKeyboardEvent(const breathe::gui::cKeyboardEvent& event) override;
   virtual void _OnStateJoystickEvent(const breathe::util::cJoystickEvent& event) override;
