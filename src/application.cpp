@@ -47,9 +47,6 @@
 #include "application.h"
 #include "states.h"
 
-const size_t targetWidth = 1920;
-const size_t targetHeight = 1080;
-
 // ** cApplication
 
 cApplication::cApplication(int argc, const char* const* argv) :
@@ -117,7 +114,7 @@ bool cApplication::_LoadResources()
   assert(pFont != nullptr);
   assert(pFont->IsValid());
 
-  spitfire::math::cLetterBox letterBox(targetWidth, targetHeight, pContext->GetWidth(), pContext->GetHeight());
+  spitfire::math::cLetterBox letterBox(TETRIS_VIDEO_TARGET_WIDTH, TETRIS_VIDEO_TARGET_HEIGHT, pContext->GetWidth(), pContext->GetHeight());
 
   pGuiRenderer->LoadResources(letterBox.letterBoxedWidth, letterBox.letterBoxedHeight);
 

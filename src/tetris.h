@@ -7,6 +7,9 @@
 #include <spitfire/algorithm/algorithm.h>
 #include <spitfire/math/cColour.h>
 
+#define TETRIS_VIDEO_TARGET_WIDTH 1920
+#define TETRIS_VIDEO_TARGET_HEIGHT 1080
+
 namespace tetris
 {
   class cBoard;

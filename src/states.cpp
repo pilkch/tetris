@@ -34,6 +34,7 @@
 #include <spitfire/math/cMat4.h>
 #include <spitfire/math/cQuaternion.h>
 #include <spitfire/math/cColour.h>
+#include <spitfire/math/letterbox.h>
 
 #include <spitfire/storage/filesystem.h>
 #include <spitfire/storage/xml.h>
@@ -200,8 +201,7 @@ void cState::CreateVertexBufferObjectLetterBoxedRectangle(size_t width, size_t h
 
   opengl::cGeometryBuilder_v2_c4_t2 builder(*pGeometryDataPtr);
 
-
-  cLetterBox letterBox(width, height);
+  spitfire::math::cLetterBox letterBox(TETRIS_VIDEO_TARGET_WIDTH, TETRIS_VIDEO_TARGET_HEIGHT, width, height);
 
   const float fWidth = float(letterBox.letterBoxedWidth);
   const float fHeight = float(letterBox.letterBoxedHeight);
@@ -243,7 +243,7 @@ void cState::CreateFrameBufferObjectLetterBoxedRectangle(size_t width, size_t he
 {
   ASSERT(pFrameBufferObjectLetterBoxedRectangle == nullptr);
 
-  cLetterBox letterBox(width, height);
+  spitfire::math::cLetterBox letterBox(TETRIS_VIDEO_TARGET_WIDTH, TETRIS_VIDEO_TARGET_HEIGHT, width, height);
 
   pFrameBufferObjectLetterBoxedRectangle = pContext->CreateTextureFrameBufferObjectNoMipMaps(letterBox.letterBoxedWidth, letterBox.letterBoxedHeight, opengl::PIXELFORMAT::R8G8B8A8);
 }
@@ -292,7 +292,7 @@ void cState::_Render(const spitfire::math::cTimeStep& timeStep)
   const size_t width = pContext->GetWidth();
   const size_t height = pContext->GetHeight();
 
-  cLetterBox letterBox(width, height);
+  spitfire::math::cLetterBox letterBox(TETRIS_VIDEO_TARGET_WIDTH, TETRIS_VIDEO_TARGET_HEIGHT, width, height);
 
   if ((width == letterBox.desiredWidth) || (height == letterBox.desiredHeight)) {
     // Render the scene
