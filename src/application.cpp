@@ -75,7 +75,7 @@ void cApplication::PlaySound(breathe::audio::cBufferRef pBuffer)
 
 bool cApplication::_Create()
 {
-  LOG<<"cApplication::_Create"<<std::endl;
+  LOG("");
 
   assert(pContext != nullptr);
   assert(pContext->IsValid());
@@ -105,7 +105,7 @@ void cApplication::_Destroy()
 
 bool cApplication::_LoadResources()
 {
-  LOG<<"cApplication::_LoadResources"<<std::endl;
+  LOG("");
 
   assert(pGuiManager != nullptr);
   assert(pGuiRenderer != nullptr);
@@ -133,7 +133,7 @@ bool cApplication::_LoadResources()
 
 void cApplication::_DestroyResources()
 {
-  LOG<<"cApplication::_DestroyResources"<<std::endl;
+  LOG("");
 
   // Destroy the resources of all the states
   std::list<breathe::util::cState*>::iterator iter = states.begin();

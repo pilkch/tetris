@@ -55,7 +55,7 @@ void cSettings::Load()
   spitfire::util::cProcessInterfaceVoid interface;
   spitfire::util::PROCESS_RESULT result = reader.ReadFromFile(interface, document, sFilename);
   if (result != spitfire::util::PROCESS_RESULT::COMPLETE) {
-    LOG<<"cSettings::Load \""<<sFilename<<"\" not found"<<std::endl;
+    LOG("\"", sFilename, "\" not found");
     return;
   }
 }
@@ -65,12 +65,12 @@ void cSettings::Save()
   spitfire::xml::writer writer;
 
   const spitfire::string_t sDirectory = spitfire::filesystem::GetThisApplicationSettingsDirectory();
-  LOG<<"cSettings::Save Creating directory \""<<sDirectory<<"\""<<std::endl;
+  LOG("Creating directory \"", sDirectory, "\"");
   spitfire::filesystem::CreateDirectory(sDirectory);
   const spitfire::string_t sFilename = sDirectory + TEXT("config.xml");
-  LOG<<"cSettings::Save Creating file \""<<sFilename<<"\""<<std::endl;
+  LOG("Creating file \"", sFilename, "\"");
   if (!writer.WriteToFile(document, sFilename)) {
-    LOG<<"cSettings::Save Error saving to file \""<<sFilename<<"\""<<std::endl;
+    LOG("Error saving to file \"", sFilename, "\"");
     return;
   }
 }
@@ -91,7 +91,7 @@ T cSettings::GetXMLValue(const spitfire::string_t& sSection, const spitfire::str
       iter.FindChild(spitfire::string::ToUTF8(sItem));
       if (iter.IsValid()) {
         iter.GetAttribute(spitfire::string::ToUTF8(sAttribute), value);
-        //LOG<<"cSettings::GetXMLValue Item \""<<sItem<<"\" found "<<spitfire::string::ToString(value)<<std::endl;
+        //LOG("Item \"", sItem, "\" found ", spitfire::string::ToString(value));
       }
     }
   }

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -27,25 +27,25 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -70,8 +70,8 @@
     <LibraryPath>C:\Users\media\dev\boost_1_55_0\lib64-msvc-11.0;C:\Users\media\dev\library\lib;C:\Users\media\dev\lib32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\media\dev\boost_1_55_0\include;C:\Users\media\dev\include;C:\Users\media\dev\library\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\media\dev\boost_1_55_0\lib64-msvc-11.0;C:\Users\media\dev\library\lib;C:\Users\media\dev\lib32;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\media\dev\boost_1_55_0;C:\Users\media\dev\library\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\media\dev\boost_1_55_0\lib64-msvc-12.0;C:\Users\media\dev\library\lib;C:\Users\media\dev\lib32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>C:\Users\media\dev\boost_1_55_0\include;C:\Users\media\dev\include;C:\Users\media\dev\library\include;$(IncludePath)</IncludePath>
@@ -186,10 +186,12 @@
     <ClCompile Include="..\..\library\src\spitfire\math\geometry.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\math\math.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\storage\document.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\storage\file.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\storage\filesystem.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\storage\xml.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\util\cConsoleApplication.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\util\datetime.cpp" />
+    <ClCompile Include="..\..\library\src\spitfire\util\lang.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\util\log.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\util\string.cpp" />
     <ClCompile Include="..\..\library\src\spitfire\util\thread.cpp" />
